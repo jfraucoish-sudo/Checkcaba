@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CheckResto</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --coral:#D85A30;--coral-l:#FAECE7;--coral-d:#712B13;
+  --purple:#534AB7;--purple-l:#EEEDFE;--purple-d:#3C3489;
+  --green:#3B6D11;--green-l:#EAF3DE;
+  --amber:#BA7517;--amber-l:#FAEEDA;
+  --blue:#185FA5;--blue-l:#E6F1FB;
+  --teal:#0F6E56;--teal-l:#E1F5EE;--teal-d:#085041;
+  --gray:#5F5E5A;--gray-l:#F1EFE8;
+  --red:#A32D2D;--red-l:#FCEBEB;
+  --bg:#fff;--bg2:#f7f6f3;--bg3:#f0efe9;
+  --txt:#1a1a18;--txt2:#5f5e5a;--txt3:#9c9a92;
+  --border:#e8e6df;--border2:#d3d1c7;
+  --r:10px;--rsm:6px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg2);color:var(--txt);font-size:14px;min-height:100vh;}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:block;}
+
+/* ── LOGIN ── */
+.login-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem 1.5rem;}
+.login-logo{width:56px;height:56px;background:var(--coral);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:1.2rem;}
+.login-logo svg{width:28px;height:28px;fill:white;}
+.login-title{font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:.3rem;}
+.login-sub{font-size:13px;color:var(--txt2);margin-bottom:2rem;text-align:center;}
+.punto-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:380px;margin-bottom:1.5rem;}
+.punto-card{background:var(--bg);border:2px solid var(--border);border-radius:var(--r);padding:20px 16px;text-align:center;cursor:pointer;transition:all .18s;}
+.punto-card:hover{border-color:var(--coral);background:var(--coral-l);}
+.punto-card.selected{border-color:var(--coral);background:var(--coral-l);}
+.punto-card .pc-icon{font-size:28px;margin-bottom:8px;}
+.punto-card .pc-name{font-size:14px;font-weight:600;color:var(--txt);}
+.punto-card .pc-sub{font-size:11px;color:var(--txt2);margin-top:3px;}
+.login-name-wrap{width:100%;max-width:380px;margin-bottom:1rem;}
+.login-name-wrap label{font-size:12px;font-weight:500;color:var(--txt2);display:block;margin-bottom:5px;}
+.login-name-wrap input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--r);font-size:14px;background:var(--bg);color:var(--txt);outline:none;}
+.login-name-wrap input:focus{border-color:var(--coral);}
+.login-btn{width:100%;max-width:380px;padding:13px;background:var(--coral);color:white;font-size:15px;font-weight:600;border:none;border-radius:var(--r);cursor:pointer;transition:opacity .15s;}
+.login-btn:hover{opacity:.9;}
+.admin-link{margin-top:1rem;font-size:12px;color:var(--txt3);cursor:pointer;text-decoration:underline;}
+
+/* ── APP HEADER ── */
+.app-header{background:var(--bg);border-bottom:1px solid var(--border);padding:11px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;}
+.hdr-left{display:flex;align-items:center;gap:9px;}
+.hdr-logo{width:32px;height:32px;background:var(--coral);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.hdr-logo svg{width:16px;height:16px;fill:white;}
+.hdr-title{font-size:14px;font-weight:600;}
+.hdr-sub{font-size:11px;color:var(--txt2);}
+.hdr-right{display:flex;gap:6px;align-items:center;}
+.hdr-btn{width:32px;height:32px;border:1px solid var(--border);border-radius:var(--rsm);background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;}
+.hdr-notif{position:absolute;top:4px;right:4px;width:7px;height:7px;background:#E24B4A;border-radius:50%;border:1.5px solid var(--bg);}
+.punto-badge{font-size:11px;padding:3px 8px;border-radius:8px;font-weight:600;background:var(--coral-l);color:var(--coral-d);}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);display:flex;z-index:100;}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;cursor:pointer;color:var(--txt3);transition:color .15s;}
+.bn-item.active{color:var(--coral);}
+.bn-item svg{width:20px;height:20px;stroke:currentColor;}
+.bn-label{font-size:10px;margin-top:2px;font-weight:500;}
+
+/* ── CONTENT ── */
+.page-content{padding-bottom:80px;}
+
+/* ── TABS ── */
+.area-scroll{overflow-x:auto;background:var(--bg);border-bottom:1px solid var(--border);padding:0 16px;display:flex;gap:0;scrollbar-width:none;}
+.area-scroll::-webkit-scrollbar{display:none;}
+.area-tab{padding:10px 13px;font-size:12px;font-weight:500;color:var(--txt2);white-space:nowrap;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+.area-tab.active{color:var(--coral);border-bottom-color:var(--coral);}
+.turno-bar{padding:10px 16px;display:flex;gap:6px;overflow-x:auto;background:var(--bg2);scrollbar-width:none;}
+.turno-bar::-webkit-scrollbar{display:none;}
+.turno-chip{padding:5px 13px;font-size:12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;white-space:nowrap;background:var(--bg);color:var(--txt2);transition:all .15s;font-weight:500;}
+.turno-chip.active{background:var(--coral-l);color:var(--coral-d);border-color:var(--coral);}
+
+/* ── PROGRESS ── */
+.prog-wrap{margin:10px 16px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;}
+.prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.prog-label{font-size:12px;color:var(--txt2);}
+.prog-pct{font-size:13px;font-weight:600;}
+.prog-track{height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:2px;background:var(--coral);transition:width .4s;}
+
+/* ── CARDS ── */
+.sec-lbl{font-size:10px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.07em;padding:0 16px;margin:12px 0 5px;}
+.task-card{margin:0 16px 7px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.task-main{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;}
+.chk{width:20px;height:20px;border:1.5px solid var(--border2);border-radius:5px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:all .15s;}
+.chk.done{background:var(--green);border-color:var(--green);}
+.task-body{flex:1;min-width:0;}
+.task-name{font-size:13px;color:var(--txt);line-height:1.4;}
+.task-name.done{text-decoration:line-through;color:var(--txt3);}
+.task-badges{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;}
+.badge{font-size:10px;padding:2px 6px;border-radius:7px;font-weight:500;}
+.b-crit{background:var(--coral-l);color:var(--coral-d);}
+.b-temp{background:var(--blue-l);color:var(--blue);}
+.b-aseo{background:var(--green-l);color:var(--green);}
+.b-dinero{background:var(--purple-l);color:var(--purple-d);}
+.b-rot{background:var(--amber-l);color:var(--amber);}
+.b-freq{background:var(--blue-l);color:var(--blue);}
+.task-extra{padding:8px 13px 11px;}
+.field-row{display:flex;align-items:center;gap:7px;margin-top:6px;}
+.field-label{font-size:12px;color:var(--txt2);}
+input[type=number],input[type=text],textarea,select{font-size:13px;border:1px solid var(--border);border-radius:var(--rsm);background:var(--bg);color:var(--txt);outline:none;}
+input[type=number],input[type=text]{padding:5px 9px;}
+input[type=number]:focus,input[type=text]:focus{border-color:var(--coral);}
+textarea{padding:8px 10px;resize:vertical;font-family:inherit;line-height:1.5;}
+textarea:focus{border-color:var(--coral);}
+select{padding:4px 7px;}
+.range-note{font-size:11px;color:var(--txt3);margin-top:2px;}
+.temp-status{font-size:11px;padding:2px 7px;border-radius:7px;}
+.ts-ok{background:var(--green-l);color:var(--green);}
+.ts-warn{background:var(--red-l);color:var(--red);}
+.ts-nd{background:var(--bg3);color:var(--txt3);}
+
+/* ── STARS ── */
+.stars{display:flex;gap:2px;margin-top:5px;}
+.star{width:26px;height:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.star svg{width:21px;height:21px;fill:var(--border2);transition:fill .1s;}
+.star.lit svg{fill:#EF9F27;}
+.star-lbl{font-size:11px;color:var(--txt3);margin-top:2px;}
+
+/* ── ARQUEO ── */
+.arqueo-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px;}
+.arq-cell{background:var(--bg2);border-radius:var(--rsm);padding:9px 11px;}
+.arq-lbl{font-size:10px;color:var(--txt3);margin-bottom:3px;}
+.arq-val{font-size:16px;font-weight:600;color:var(--txt);}
+.arq-val.neg{color:var(--red);}
+.arq-val.pos{color:var(--green);}
+
+/* ── FIRMA / OBS ── */
+.obs-card{margin:0 16px 7px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px;}
+.obs-card textarea{width:100%;min-height:65px;}
+.firma-card{margin:0 16px 7px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px;}
+.firma-card input{width:100%;padding:9px 11px;}
+.cierre-btn{margin:10px 16px 16px;width:calc(100% - 32px);padding:13px;background:var(--coral);color:white;font-size:14px;font-weight:600;border:none;border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+.signed-banner{margin:0 16px 7px;background:var(--green-l);border:1px solid #97C459;border-radius:var(--r);padding:11px 14px;display:flex;align-items:center;gap:8px;}
+.signed-txt{font-size:13px;color:var(--green);font-weight:500;}
+.signed-sub{font-size:11px;color:var(--green);}
+
+/* ── DASHBOARD ── */
+.dash-header{padding:14px 16px 0;}
+.dash-title{font-size:18px;font-weight:700;letter-spacing:-.3px;}
+.dash-sub{font-size:12px;color:var(--txt2);margin-top:3px;}
+.dash-date-row{display:flex;gap:7px;padding:10px 16px;overflow-x:auto;scrollbar-width:none;}
+.dash-date-row::-webkit-scrollbar{display:none;}
+.date-chip{padding:5px 12px;font-size:12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;white-space:nowrap;background:var(--bg);color:var(--txt2);transition:all .15s;}
+.date-chip.active{background:var(--coral-l);color:var(--coral-d);border-color:var(--coral);}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px;margin:4px 0;}
+.kpi-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:12px;}
+.kpi-label{font-size:11px;color:var(--txt2);margin-bottom:4px;}
+.kpi-val{font-size:22px;font-weight:700;color:var(--txt);}
+.kpi-sub{font-size:11px;color:var(--txt3);margin-top:2px;}
+.kpi-val.bad{color:var(--red);}
+.kpi-val.good{color:var(--green);}
+.compare-card{margin:0 16px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
+.compare-title{font-size:13px;font-weight:600;margin-bottom:12px;}
+.cmp-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.cmp-area{font-size:12px;color:var(--txt2);width:90px;flex-shrink:0;}
+.cmp-bars{flex:1;display:flex;flex-direction:column;gap:4px;}
+.cmp-bar-wrap{display:flex;align-items:center;gap:6px;}
+.cmp-bar-track{flex:1;height:7px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.cmp-bar-fill{height:100%;border-radius:3px;transition:width .5s;}
+.cmp-bar-lbl{font-size:10px;width:30px;text-align:right;color:var(--txt2);}
+.cmp-legend{display:flex;gap:12px;margin-bottom:8px;}
+.cmp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.cmp-leg-lbl{font-size:11px;color:var(--txt2);}
+
+/* ── ALERTAS DASH ── */
+.alert-item{margin:0 16px 8px;border-radius:var(--r);padding:11px 14px;border:1px solid;}
+.alert-crit{background:#FCEBEB;border-color:#F7C1C1;}
+.alert-warn{background:var(--amber-l);border-color:#FAC775;}
+.alert-ok{background:var(--green-l);border-color:#97C459;}
+.alert-txt{font-size:13px;line-height:1.4;}
+.alert-sub{font-size:11px;margin-top:3px;}
+.alert-crit .alert-txt{color:#791F1F;}
+.alert-crit .alert-sub{color:#A32D2D;}
+.alert-warn .alert-txt{color:#633806;}
+.alert-warn .alert-sub{color:#854F0B;}
+.alert-ok .alert-txt{color:var(--green);}
+.wsp-btn{margin:4px 16px 8px;display:flex;align-items:center;gap:7px;padding:10px 14px;background:#25D366;color:white;border:none;border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:600;width:calc(100% - 32px);}
+.wsp-btn svg{width:18px;height:18px;fill:white;flex-shrink:0;}
+
+/* ── HISTORIAL ── */
+.hist-card{margin:0 16px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:13px;}
+.hist-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.hist-title{font-size:13px;font-weight:600;}
+.hist-badge{font-size:11px;padding:2px 8px;border-radius:8px;}
+.hist-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);}
+.hist-row:last-child{border-bottom:none;}
+.hist-area{font-size:12px;color:var(--txt);}
+.hist-data{display:flex;align-items:center;gap:8px;}
+.hist-pct{font-size:12px;font-weight:600;}
+.pct-bar{width:60px;height:5px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.pct-fill{height:100%;border-radius:2px;}
+.empty-dash{padding:3rem 1rem;text-align:center;color:var(--txt3);font-size:13px;}
+
+/* ── DATOFONOS ── */
+.dat-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);}
+.dat-row:last-child{border-bottom:none;}
+.dat-num{width:20px;height:20px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--txt2);flex-shrink:0;}
+</style>
+</head>
+<body>
+
+<!-- ══ SCREEN: LOGIN ══════════════════════════════════════════ -->
+<div class="screen active" id="screen-login">
+  <div class="login-wrap">
+    <div class="login-logo"><svg viewBox="0 0 24 24"><path d="M12 3C7 3 3 7 3 12h2c0-3.9 3.1-7 7-7s7 3.1 7 7h2c0-5-4-9-9-9zm-1 5v5l4.3 2.5.7-1.2-3.5-2.1V8H11z"/></svg></div>
+    <div class="login-title">CheckResto</div>
+    <div class="login-sub">Selecciona tu punto de venta<br>para iniciar el turno</div>
+    <div class="punto-grid">
+      <div class="punto-card" id="pc-soacha" onclick="selectPunto('soacha')">
+        <div class="pc-icon">🏠</div>
+        <div class="pc-name">Soacha</div>
+        <div class="pc-sub">Taquería Hernández</div>
+      </div>
+      <div class="punto-card" id="pc-plaza" onclick="selectPunto('plaza')">
+        <div class="pc-icon">🏬</div>
+        <div class="pc-name">Mi Plaza</div>
+        <div class="pc-sub">Cabaña Jekemi</div>
+      </div>
+    </div>
+    <div class="login-name-wrap">
+      <label>Tu nombre</label>
+      <input type="text" id="login-nombre" placeholder="Ej: Carlos Martínez">
+    </div>
+    <button class="login-btn" onclick="entrar()">Entrar al turno →</button>
+    <div class="admin-link" onclick="entrarAdmin()">Acceso administrador</div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: APP ════════════════════════════════════════════ -->
+<div class="screen" id="screen-app">
+  <div class="app-header">
+    <div class="hdr-left">
+      <div class="hdr-logo"><svg viewBox="0 0 24 24"><path d="M12 3C7 3 3 7 3 12h2c0-3.9 3.1-7 7-7s7 3.1 7 7h2c0-5-4-9-9-9zm-1 5v5l4.3 2.5.7-1.2-3.5-2.1V8H11z"/></svg></div>
+      <div>
+        <div class="hdr-title" id="hdr-punto">—</div>
+        <div class="hdr-sub" id="hdr-user">—</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="punto-badge" id="hdr-badge">—</div>
+      <div class="hdr-btn" onclick="goBack()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="area-scroll" id="area-nav"></div>
+  <div class="turno-bar" id="turno-bar"></div>
+  <div class="page-content" id="main-content"></div>
+  <div class="bottom-nav">
+    <div class="bn-item active" id="bn-checklist" onclick="switchTab('checklist')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span class="bn-label">Checklist</span>
+    </div>
+    <div class="bn-item" id="bn-alertas" onclick="switchTab('alertas')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="bn-label">Alertas</span>
+    </div>
+    <div class="bn-item" id="bn-historial" onclick="switchTab('historial')">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span class="bn-label">Historial</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: ADMIN ══════════════════════════════════════════ -->
+<div class="screen" id="screen-admin">
+  <div class="app-header">
+    <div class="hdr-left">
+      <div class="hdr-logo"><svg viewBox="0 0 24 24"><path d="M12 3C7 3 3 7 3 12h2c0-3.9 3.1-7 7-7s7 3.1 7 7h2c0-5-4-9-9-9zm-1 5v5l4.3 2.5.7-1.2-3.5-2.1V8H11z"/></svg></div>
+      <div>
+        <div class="hdr-title">Dashboard Admin</div>
+        <div class="hdr-sub" id="admin-fecha">—</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-btn" onclick="goBack()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="page-content" id="admin-content"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════
+const PUNTOS = {
+  soacha: {name:'Soacha', sub:'Taquería Hernández', icon:'🏠'},
+  plaza:  {name:'Mi Plaza', sub:'Cabaña Jekemi', icon:'🏬'},
+};
+
+const AREAS_LIST = [
+  {id:'admin',   name:'Admin / Cajero apertura', color:'#534AB7'},
+  {id:'cocina',  name:'Cocina / Parrillador',    color:'#D85A30'},
+  {id:'caja',    name:'Cajero',                  color:'#534AB7'},
+  {id:'domi',    name:'Domiciliarios',            color:'#1D9E75'},
+  {id:'neveras', name:'Neveras / Frío',           color:'#185FA5'},
+  {id:'bodega',  name:'Bodega',                   color:'#888780'},
+];
+
+const TURNOS_LIST = [
+  {id:'apertura', name:'☀️ Apertura'},
+  {id:'medio',    name:'🌤️ Turno medio'},
+  {id:'cierre',   name:'🌙 Cierre'},
+  {id:'hora',     name:'⏱ C/hora'},
+];
+
+const CL = {
+  admin:{
+    apertura:[
+      {t:'Verificar base de caja y efectivo del turno anterior',tipo:'check',crit:true},
+      {t:'Primera temperatura: plancha taquería',tipo:'temp',rango:[180,230],crit:true,unit:'°C'},
+      {t:'Primera temperatura: plancha carnes',tipo:'temp',rango:[180,230],crit:true,unit:'°C'},
+      {t:'Primera temperatura: plancha panes',tipo:'temp',rango:[150,200],crit:true,unit:'°C'},
+      {t:'Primera temperatura: freidora 1',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Primera temperatura: freidora 2',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Primera temperatura: freidora 3',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Primera temperatura: nevera refrigeración',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
+      {t:'Primera temperatura: nevera congelación',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
+      {t:'Verificar personal presente por área',tipo:'check',crit:true},
+      {t:'Verificar aseo del personal',tipo:'check',crit:true},
+      {t:'Supervisar mise en place cocina — calidad general',tipo:'aseo',label:'Mise en place cocina',crit:true},
+      {t:'Inventario apertura: panadería, abarrotes, verduras, salsas',tipo:'inventario',crit:true},
+      {t:'Validar orden de neveras',tipo:'aseo',label:'Orden neveras',crit:true},
+      {t:'Calidad de producto: caldo y carne',tipo:'aseo',label:'Calidad caldo y carne',crit:true},
+      {t:'Calidad de papa 80/20 — riguroso',tipo:'aseo',label:'Calidad papa 80/20',crit:true},
+      {t:'Prueba de papa final: freír 150g, probar y compartir con el personal en reunión diaria antes de abrir',tipo:'aseo',label:'Prueba papa final (150g)',crit:true},
+      {t:'Aseo general del punto',tipo:'aseo',label:'Aseo general',crit:true},
+      {t:'Verificar baños',tipo:'aseo',label:'Baños',crit:true},
+    ],
+    medio:[
+      {t:'Ronda supervisión todas las áreas',tipo:'check',crit:true},
+      {t:'Segunda temperatura: freidora 1',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Segunda temperatura: freidora 2',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Segunda temperatura: freidora 3',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Segunda temperatura: planchas',tipo:'temp',rango:[180,230],crit:true,unit:'°C'},
+      {t:'Segunda temperatura: nevera refrigeración',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
+      {t:'Segunda temperatura: nevera congelación',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
+      {t:'Mise en place cocina al 80% — calidad general',tipo:'aseo',label:'Mise en place cocina',crit:true},
+      {t:'Calidad verduras turno medio',tipo:'aseo',label:'Calidad verduras',crit:true},
+      {t:'Calidad de producto: caldo y carne',tipo:'aseo',label:'Calidad caldo y carne',crit:true},
+      {t:'Calidad de papa 80/20 — riguroso',tipo:'aseo',label:'Calidad papa 80/20',crit:true},
+      {t:'Prueba de papa: freír 150g y calificar',tipo:'aseo',label:'Prueba papa (150g)',crit:false},
+      {t:'Sin novedades en caja',tipo:'check',crit:false},
+      {t:'Aseo cocina',tipo:'aseo',label:'Aseo cocina',crit:true},
+      {t:'Aseo salón',tipo:'aseo',label:'Aseo salón',crit:true},
+      {t:'Aseo baños',tipo:'aseo',label:'Aseo baños',crit:true},
+      {t:'Cumplimiento general turno',tipo:'aseo',label:'Cumplimiento turno',crit:true},
+    ],
+    cierre:[
+      {t:'Cajero — cierre de caja y bolsas completas',tipo:'cierre_area',area:'Cajero',crit:true},
+      {t:'Cocina — equipos apagados, aseo y mise en place cubierto',tipo:'cierre_area',area:'Cocina',crit:true},
+      {t:'Salón — mesas, sillas, barrido y trapeado',tipo:'cierre_area',area:'Salón',crit:true},
+      {t:'Domiciliarios — baños lavados, canecas limpias, salón de atrás',tipo:'cierre_area',area:'Domiciliarios',crit:true},
+      {t:'Bodega — inventario registrado, acceso asegurado',tipo:'cierre_area',area:'Bodega',crit:true},
+      {t:'Revisar arqueo de caja y bolsas del cajero',tipo:'check',crit:true},
+      {t:'Verificar neveras en funcionamiento al cierre',tipo:'check',crit:true},
+      {t:'Supervisar aseo plancha: barrer y trapear parte inferior',tipo:'check',crit:true},
+      {t:'Tercera temperatura: nevera refrigeración',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
+      {t:'Tercera temperatura: nevera congelación',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
+      {t:'Asegurar bodega, llaves de gas y apagado de extractor',tipo:'check',crit:true},
+      {t:'Aseo final cocina',tipo:'aseo',label:'Aseo cocina',crit:true},
+      {t:'Aseo final salón',tipo:'aseo',label:'Aseo salón',crit:true},
+      {t:'Aseo final baños',tipo:'aseo',label:'Aseo baños',crit:true},
+      {t:'Cumplimiento general cierre',tipo:'aseo',label:'Cumplimiento',crit:true},
+    ],
+    hora:[
+      {t:'Temperatura freidora 1',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Temperatura freidora 2',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Temperatura freidora 3',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Temperatura nevera refrigeración',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
+      {t:'Temperatura nevera congelación',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
+    ],
+  },
+  cocina:{
+    apertura:[
+      {t:'Verificar productos: carnes, papas, tortillas, caldo, pan',tipo:'check',crit:true},
+      {t:'Temperatura plancha taquería',tipo:'temp',rango:[180,230],crit:true,unit:'°C'},
+      {t:'Temperatura plancha carnes',tipo:'temp',rango:[180,230],crit:true,unit:'°C'},
+      {t:'Temperatura plancha panes',tipo:'temp',rango:[150,200],crit:true,unit:'°C'},
+      {t:'Temperatura freidora 1',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Temperatura freidora 2',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Temperatura freidora 3',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Verificar orden de las neveras',tipo:'check',crit:true},
+      {t:'Realizar alistamientos para el turno (mise en place)',tipo:'check',crit:true},
+      {t:'Inventario cárnicos y congelados (rotativo L–V / jefe cocina S–D)',tipo:'check',crit:true,badge:'rot'},
+      {t:'Aseo área cocina',tipo:'aseo',label:'Aseo cocina',crit:true},
+    ],
+    medio:[
+      {t:'Mise en place carnes al 80%',tipo:'check',crit:true},
+      {t:'Mise en place salsas, panes, tortillas al 80%',tipo:'check',crit:true},
+      {t:'Mise en place papas al 80%',tipo:'check',crit:true},
+      {t:'Temperatura freidoras en rango (freidora 1, 2 y 3)',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Sin carnes fuera de temperatura',tipo:'check',crit:true},
+      {t:'Inventario área empacado (solo Vie–Sáb–Dom)',tipo:'check',crit:false,badge:'freq'},
+      {t:'Aseo cocina turno medio',tipo:'aseo',label:'Aseo cocina',crit:true},
+    ],
+    cierre:[
+      {t:'Apagar planchas y freidoras',tipo:'check',crit:true},
+      {t:'Temperatura al apagar freidora 1',tipo:'temp',rango:[0,700],crit:false,unit:'°F'},
+      {t:'Temperatura al apagar freidora 2',tipo:'temp',rango:[0,700],crit:false,unit:'°F'},
+      {t:'Temperatura al apagar freidora 3',tipo:'temp',rango:[0,700],crit:false,unit:'°F'},
+      {t:'Mantenimiento aceite: retirar TODO el residuo de freidoras',tipo:'check',crit:true},
+      {t:'Guardar carnes sobrantes con fecha y hora',tipo:'check',crit:true},
+      {t:'Limpiar rejillas parrilla con cepillo',tipo:'check',crit:true},
+      {t:'Área plancha: barrer y trapear parte inferior (caldos y kit de aseo)',tipo:'check',crit:true},
+      {t:'Lavar teteros (Dom / Mié / Vie)',tipo:'check',crit:false,badge:'freq'},
+      {t:'Aseo final cocina',tipo:'aseo',label:'Aseo cocina',crit:true},
+      {t:'Calidad final: cocción, sellado, frituras crocantes',tipo:'aseo',label:'Calidad producto',crit:true},
+    ],
+    hora:[
+      {t:'Temperatura freidora 1',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Temperatura freidora 2',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Temperatura freidora 3',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Temperatura plancha carnes',tipo:'temp',rango:[180,230],crit:true,unit:'°C'},
+    ],
+  },
+  caja:{
+    apertura:[
+      {t:'Base de caja apertura ($)',tipo:'dinero',campo:'Base apertura',crit:true},
+      {t:'Efectivo recibido turno anterior ($)',tipo:'dinero',campo:'Efectivo recibido',crit:true},
+      {t:'Faltante turno anterior ($)',tipo:'dinero',campo:'Faltante anterior',crit:true},
+      {t:'Inventario datáfonos disponibles',tipo:'datofonos',crit:true},
+      {t:'Sistema POS encendido y funcionando',tipo:'check',crit:true},
+      {t:'Limpiar área: teclado, mouse, impresora, modem, tablet',tipo:'check',crit:true},
+      {t:'Aseo área caja',tipo:'aseo',label:'Aseo caja',crit:true},
+    ],
+    medio:[
+      {t:'Cuadre parcial caja',tipo:'check',crit:true},
+      {t:'Datáfonos funcionando',tipo:'check',crit:true},
+      {t:'Limpiar televisores (diario)',tipo:'check',crit:false},
+    ],
+    cierre:[
+      {t:'Efectivo en caja al cierre ($)',tipo:'dinero',campo:'Efectivo cierre',crit:true},
+      {t:'Ventas en datáfono ($)',tipo:'dinero',campo:'Ventas datáfono',crit:true},
+      {t:'Total ventas sistema ($)',tipo:'dinero',campo:'Ventas sistema',crit:true},
+      {t:'Arqueo (faltante / sobrante)',tipo:'arqueo',crit:true},
+      {t:'Bolsa 1: efectivo sellado con fecha y nombre del punto',tipo:'check',crit:true},
+      {t:'Bolsa 2: facturas del día con fecha, punto y forma de pago',tipo:'check',crit:true},
+      {t:'Paquetes listos para transportar al día siguiente',tipo:'check',crit:true},
+      {t:'Inventario datáfonos al cierre',tipo:'datofonos',crit:true},
+      {t:'Limpiar mesas y sillas para el día siguiente',tipo:'check',crit:true},
+      {t:'Aseo área caja cierre',tipo:'aseo',label:'Aseo caja',crit:true},
+    ],
+    hora:[],
+  },
+  domi:{
+    apertura:[
+      {t:'Realizar apertura del salón',tipo:'check',crit:true},
+      {t:'Poner bolsas de basura en canecas',tipo:'check',crit:true},
+      {t:'Llenar tarros de salsas (rotativo diario)',tipo:'check',crit:true,badge:'rot'},
+      {t:'Dejar alistamientos: jabón, papel higiénico, servilletas',tipo:'check',crit:true},
+      {t:'Inventario bebidas — nevera surtida y limpia',tipo:'check',crit:true},
+      {t:'Mantener bandejas desinfectadas',tipo:'check',crit:true},
+      {t:'Aseo salón apertura',tipo:'aseo',label:'Aseo salón',crit:true},
+      {t:'Aseo baños apertura',tipo:'aseo',label:'Aseo baños',crit:true},
+    ],
+    medio:[
+      {t:'Mesas limpias post-servicio',tipo:'check',crit:true},
+      {t:'Limpiar televisores (diario)',tipo:'check',crit:false},
+      {t:'Nevera gaseosa parte superior: limpiar L/Mié/Sáb',tipo:'check',crit:false,badge:'freq'},
+      {t:'Envasar, sellar y rotular bebidas (rotativo)',tipo:'check',crit:false,badge:'rot'},
+      {t:'Sitio bebidas y utensilios de aseo — limpio y ordenado',tipo:'check',crit:true},
+      {t:'Revisión baños turno medio',tipo:'aseo',label:'Aseo baños',crit:true},
+    ],
+    cierre:[
+      {t:'Aseo salón y salón de atrás: barrer, trapear, limpiar bajo canastas',tipo:'check',crit:true},
+      {t:'Lavado de baños al cierre',tipo:'check',crit:true},
+      {t:'Dejar canecas limpias y shot al servicio',tipo:'check',crit:true},
+      {t:'App delivery cerrada y domicilios liquidados',tipo:'check',crit:true},
+      {t:'Aseo final salón',tipo:'aseo',label:'Aseo salón',crit:true},
+      {t:'Aseo final baños',tipo:'aseo',label:'Aseo baños',crit:true},
+    ],
+    hora:[
+      {t:'Revisión y aseo baños',tipo:'aseo',label:'Aseo baños',crit:true},
+      {t:'Mesas limpias y en orden',tipo:'check',crit:false},
+      {t:'Papel y jabón repuesto',tipo:'check',crit:true},
+    ],
+  },
+  neveras:{
+    apertura:[
+      {t:'Temperatura nevera refrigeración (0–4°C)',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
+      {t:'Temperatura nevera gaseosa',tipo:'temp',rango:[2,8],crit:false,unit:'°C'},
+      {t:'Temperatura nevera congelación (-18 a -20°C)',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
+      {t:'Revisar sellos y puertas herméticas',tipo:'check',crit:true},
+      {t:'Rotación PEPS aplicada',tipo:'check',crit:true},
+      {t:'Verificar fechas de vencimiento',tipo:'check',crit:true},
+    ],
+    medio:[
+      {t:'Temperatura nevera refrigeración',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
+      {t:'Temperatura nevera congelación',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
+      {t:'Puertas cerradas correctamente',tipo:'check',crit:true},
+    ],
+    cierre:[
+      {t:'Temperatura nevera refrigeración al cierre',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
+      {t:'Temperatura nevera congelación al cierre',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
+      {t:'Todo producto tapado y etiquetado con fecha',tipo:'check',crit:true},
+      {t:'DOMINGO: lavado neveras refrigeración',tipo:'check',crit:false,badge:'freq'},
+      {t:'LUNES MAÑANA: lavado nevera congelación (quien abre)',tipo:'check',crit:false,badge:'freq'},
+      {t:'Aseo interior neveras',tipo:'aseo',label:'Aseo neveras',crit:true},
+    ],
+    hora:[
+      {t:'Temperatura nevera refrigeración',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
+      {t:'Temperatura nevera congelación',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
+    ],
+  },
+  bodega:{
+    apertura:[
+      {t:'Conteo inventario seco',tipo:'check',crit:true},
+      {t:'Conteo inventario refrigerado',tipo:'check',crit:true},
+      {t:'Verificar pedidos pendientes',tipo:'check',crit:false},
+      {t:'Rotación PEPS aplicada',tipo:'check',crit:true},
+      {t:'Aseo bodega apertura',tipo:'aseo',label:'Aseo bodega',crit:true},
+    ],
+    medio:[
+      {t:'Stock ok — sin faltantes críticos',tipo:'check',crit:true},
+      {t:'Acceso controlado a bodega',tipo:'check',crit:false},
+    ],
+    cierre:[
+      {t:'Inventario cierre — registrar faltantes',tipo:'check',crit:true},
+      {t:'Preparar pedido para el día siguiente',tipo:'check',crit:true},
+      {t:'Asegurar y cerrar bodega',tipo:'check',crit:true},
+      {t:'Aseo bodega cierre',tipo:'aseo',label:'Aseo bodega',crit:true},
+    ],
+    hora:[],
+  },
+};
+
+// ══════════════════════════════════════════════════════════════
+// PERSISTENT STORAGE (localStorage)
+// ══════════════════════════════════════════════════════════════
+function todayStr(){
+  return new Date().toISOString().slice(0,10);
+}
+function saveData(punto,area,turno,data){
+  const key=`cr_${punto}_${todayStr()}_${area}_${turno}`;
+  localStorage.setItem(key,JSON.stringify(data));
+}
+function loadData(punto,area,turno){
+  const key=`cr_${punto}_${todayStr()}_${area}_${turno}`;
+  const d=localStorage.getItem(key);
+  return d?JSON.parse(d):null;
+}
+function loadDataDate(punto,date,area,turno){
+  const key=`cr_${punto}_${date}_${area}_${turno}`;
+  const d=localStorage.getItem(key);
+  return d?JSON.parse(d):null;
+}
+function getRecentDates(){
+  const dates=new Set();
+  dates.add(todayStr());
+  Object.keys(localStorage).forEach(k=>{
+    if(k.startsWith('cr_')){
+      const p=k.split('_');
+      if(p.length>=3) dates.add(p[2]);
+    }
+  });
+  return [...dates].sort().reverse().slice(0,7);
+}
+
+// ══════════════════════════════════════════════════════════════
+// SESSION STATE
+// ══════════════════════════════════════════════════════════════
+let curPunto=null, curUser='', curArea='admin', curTurno='apertura';
+let curTab='checklist', adminDate=todayStr();
+let selPunto=null;
+
+// Per-task state (in-memory, synced to localStorage on change)
+const TS = {};
+function tsk(a,t,i){return `${a}_${t}_${i}`;}
+function getTS(a,t,i){
+  const k=tsk(a,t,i);
+  if(!TS[k]) TS[k]={done:false,val:'',aseo:0};
+  return TS[k];
+}
+const OBS={}, FIRMA={}, SIGNED={};
+const DATFONOS={};
+// S = extra state for inventario, cierre_area, and other sub-keys
+const S={};
+function sfk(){return `${curArea}_${curTurno}`;}
+
+function persistCurrent(){
+  if(!curPunto) return;
+  const tasks=(CL[curArea]||{})[curTurno]||[];
+  const data={
+    tasks:tasks.map((_,i)=>({...getTS(curArea,curTurno,i)})),
+    obs:OBS[sfk()]||'',
+    signed:SIGNED[sfk()]||null,
+    datfonos:{...DATFONOS},
+    extra:{...S},
+  };
+  saveData(curPunto,curArea,curTurno,data);
+}
+
+function loadCurrent(){
+  if(!curPunto) return;
+  const data=loadData(curPunto,curArea,curTurno);
+  if(!data) return;
+  const tasks=(CL[curArea]||{})[curTurno]||[];
+  (data.tasks||[]).forEach((d,i)=>{
+    if(i<tasks.length){const s=getTS(curArea,curTurno,i);s.done=d.done;s.val=d.val;s.aseo=d.aseo;}
+  });
+  OBS[sfk()]=data.obs||'';
+  SIGNED[sfk()]=data.signed||null;
+  Object.assign(DATFONOS,data.datfonos||{});
+  Object.assign(S,data.extra||{});
+}
+
+// ══════════════════════════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════════════════════════
+function selectPunto(p){
+  selPunto=p;
+  document.querySelectorAll('.punto-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('pc-'+p).classList.add('selected');
+}
+function entrar(){
+  const nombre=document.getElementById('login-nombre').value.trim();
+  if(!selPunto){alert('Selecciona un punto de venta');return;}
+  if(!nombre){alert('Escribe tu nombre');return;}
+  curPunto=selPunto; curUser=nombre;
+  document.getElementById('hdr-punto').textContent=PUNTOS[curPunto].name;
+  document.getElementById('hdr-user').textContent=curUser+' · '+new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'short'});
+  document.getElementById('hdr-badge').textContent=PUNTOS[curPunto].icon+' '+PUNTOS[curPunto].name;
+  loadCurrent();
+  showScreen('app');
+  buildAreaNav(); buildTurnoBar(); switchTab('checklist');
+}
+function entrarAdmin(){
+  showScreen('admin');
+  document.getElementById('admin-fecha').textContent=new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
+  adminDate=todayStr();
+  renderAdmin();
+}
+function goBack(){showScreen('login');}
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════════
+// APP NAV
+// ══════════════════════════════════════════════════════════════
+function buildAreaNav(){
+  document.getElementById('area-nav').innerHTML=AREAS_LIST.map(a=>
+    `<div class="area-tab${a.id===curArea?' active':''}" onclick="setArea('${a.id}')">${a.name}</div>`
+  ).join('');
+}
+function buildTurnoBar(){
+  document.getElementById('turno-bar').innerHTML=TURNOS_LIST.map(t=>
+    `<div class="turno-chip${t.id===curTurno?' active':''}" onclick="setTurno('${t.id}')">${t.name}</div>`
+  ).join('');
+}
+function setArea(id){curArea=id;loadCurrent();buildAreaNav();renderChecklist();}
+function setTurno(id){curTurno=id;loadCurrent();buildTurnoBar();renderChecklist();}
+
+function switchTab(tab){
+  curTab=tab;
+  ['checklist','alertas','historial'].forEach(t=>{
+    document.getElementById('bn-'+t).classList.toggle('active',t===tab);
+  });
+  if(tab==='checklist') renderChecklist();
+  else if(tab==='alertas') renderAlertasTab();
+  else renderHistorialTab();
+}
+
+// ══════════════════════════════════════════════════════════════
+// PROGRESS
+// ══════════════════════════════════════════════════════════════
+function calcProg(a,t){
+  const tasks=(CL[a]||{})[t]||[];
+  if(!tasks.length) return{d:0,total:0};
+  let d=0;
+  tasks.forEach((tk,i)=>{
+    const s=getTS(a,t,i);
+    if(tk.tipo==='check'&&s.done)d++;
+    else if(tk.tipo==='aseo'&&s.aseo>0)d++;
+    else if((tk.tipo==='temp'||tk.tipo==='dinero')&&s.val!=='')d++;
+    else if(tk.tipo==='arqueo')d++;
+    else if(tk.tipo==='datofonos')d++;
+  });
+  return{d,total:tasks.length};
+}
+function pct(a,t){const{d,total}=calcProg(a,t);return total?Math.round(d/total*100):0;}
+function updateProg(){
+  const{d,total}=calcProg(curArea,curTurno);
+  const p=total?Math.round(d/total*100):0;
+  const lbl=document.getElementById('prog-lbl');
+  const pn=document.getElementById('prog-pct');
+  const pf=document.getElementById('prog-fill');
+  if(lbl)lbl.textContent=`${d} de ${total} tareas`;
+  if(pn)pn.textContent=p+'%';
+  if(pf)pf.style.width=p+'%';
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER CHECKLIST
+// ══════════════════════════════════════════════════════════════
+function tempSt(val,rango,unit){
+  unit=unit||'°C';
+  if(val===''||val===null)return'<span class="temp-status ts-nd">—</span>';
+  const v=parseFloat(val);
+  if(isNaN(v))return'<span class="temp-status ts-nd">—</span>';
+  return(v>=rango[0]&&v<=rango[1])
+    ?`<span class="temp-status ts-ok">✓ OK</span>`
+    :`<span class="temp-status ts-warn">⚠ Alerta</span>`;
+}
+function starsHtml(k,val){
+  return[1,2,3,4,5].map(n=>
+    `<div class="star${n<=val?' lit':''}" onclick="setStar('${k}',${n})">
+      <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+    </div>`
+  ).join('');
+}
+function setStar(k,n){
+  const[a,t,i]=k.split('_');
+  getTS(a,t,parseInt(i)).aseo=n;
+  persistCurrent(); renderChecklist();
+}
+function toggle(a,t,i){
+  getTS(a,t,i).done=!getTS(a,t,i).done;
+  persistCurrent(); updateProg();
+  // re-render just that card's checkbox
+  const chk=document.getElementById('chk-'+a+'_'+t+'_'+i);
+  const lbl=document.getElementById('lbl-'+a+'_'+t+'_'+i);
+  const s=getTS(a,t,i);
+  if(chk){chk.className='chk'+(s.done?' done':'');chk.innerHTML=s.done?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':'';}
+  if(lbl){lbl.className='task-name'+(s.done?' done':'');}
+}
+function setVal(k,val){
+  const[a,t,i]=k.split('_');
+  getTS(a,t,i).val=val;
+  persistCurrent(); updateProg();
+  const el=document.getElementById('tst-'+k);
+  if(el){const tk=(CL[a]||{})[t]||[]; if(tk[parseInt(i)]) el.outerHTML=tempSt(val,tk[parseInt(i)].rango||[0,9999],tk[parseInt(i)].unit||'°C');}
+}
+function getArqueo(){
+  const tasks=(CL[curArea]||{})[curTurno]||[];
+  let ci=0,da=0,si=0;
+  tasks.forEach((tk,i)=>{
+    const s=getTS(curArea,curTurno,i);
+    if(tk.campo==='Efectivo cierre')ci=parseFloat(s.val)||0;
+    if(tk.campo==='Ventas datáfono')da=parseFloat(s.val)||0;
+    if(tk.campo==='Ventas sistema')si=parseFloat(s.val)||0;
+  });
+  const tot=ci+da,diff=tot-si;
+  return{ci,da,si,tot,diff};
+}
+function arqueoHtml(){
+  const a=getArqueo();
+  const cls=a.diff<0?'neg':a.diff>0?'pos':'';
+  return`<div class="arqueo-grid">
+    <div class="arq-cell"><div class="arq-lbl">Efectivo caja</div><div class="arq-val">$${a.ci.toLocaleString()}</div></div>
+    <div class="arq-cell"><div class="arq-lbl">Ventas datáfono</div><div class="arq-val">$${a.da.toLocaleString()}</div></div>
+    <div class="arq-cell"><div class="arq-lbl">Total recaudado</div><div class="arq-val">$${a.tot.toLocaleString()}</div></div>
+    <div class="arq-cell"><div class="arq-lbl">Diferencia vs sistema</div><div class="arq-val ${cls}">${a.diff>=0?'+':''}$${a.diff.toLocaleString()}</div></div>
+  </div>`;
+}
+function datHtml(k){
+  const[a,t,iStr]=k.split('_'); const i=parseInt(iStr);
+  const s=getTS(a,t,i); const n=parseInt(s.val)||3;
+  let rows='';
+  for(let j=0;j<n;j++){
+    const dk=`d_${k}_${j}`;
+    if(!DATFONOS[dk])DATFONOS[dk]={est:'ok'};
+    rows+=`<div class="dat-row">
+      <div class="dat-num">${j+1}</div>
+      <div style="flex:1;font-size:13px;">Datáfono ${j+1}</div>
+      <select onchange="DATFONOS['${dk}'].est=this.value;persistCurrent()">
+        <option value="ok"${DATFONOS[dk].est==='ok'?' selected':''}>Funcionando</option>
+        <option value="danado"${DATFONOS[dk].est==='danado'?' selected':''}>Dañado</option>
+        <option value="faltante"${DATFONOS[dk].est==='faltante'?' selected':''}>Faltante</option>
+      </select></div>`;
+  }
+  return`<div class="field-row" style="margin-bottom:6px;">
+    <span class="field-label">Cantidad:</span>
+    <input type="number" min="1" max="10" value="${n}" style="width:55px" oninput="getTS('${a}','${t}',${i}).val=this.value;persistCurrent();renderChecklist();">
+  </div>${rows}`;
+}
+
+function renderChecklist(){
+  const tasks=(CL[curArea]||{})[curTurno]||[];
+  const fkey=sfk();
+  const signed=SIGNED[fkey];
+  const{d,total}=calcProg(curArea,curTurno);
+  const p=total?Math.round(d/total*100):0;
+  let html=`<div class="prog-wrap">
+    <div class="prog-top"><span class="prog-label" id="prog-lbl">${d} de ${total} tareas</span><span class="prog-pct" id="prog-pct">${p}%</span></div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:${p}%"></div></div>
+  </div>`;
+
+  if(signed){
+    html+=`<div class="signed-banner" style="margin:0 16px 8px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B6D11" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      <div><div class="signed-txt">Firmado — ${signed.nombre}</div><div class="signed-sub">${signed.hora}</div></div>
+    </div>`;
+  }
+
+  if(!tasks.length){
+    html+=`<div style="padding:3rem 1rem;text-align:center;color:var(--txt3);font-size:13px;">Sin tareas para este turno.</div>`;
+  } else {
+    const areaName=AREAS_LIST.find(a=>a.id===curArea)?.name||'';
+    const turnoName=TURNOS_LIST.find(t=>t.id===curTurno)?.name||'';
+    html+=`<div class="sec-lbl">${areaName} — ${turnoName}</div>`;
+
+    tasks.forEach((tk,i)=>{
+      const k=tsk(curArea,curTurno,i);
+      const s=getTS(curArea,curTurno,i);
+      let inner='';
+
+      if(tk.tipo==='check'){
+        inner=`<div class="task-main">
+          <div class="chk${s.done?' done':''}" id="chk-${k}" onclick="toggle('${curArea}','${curTurno}',${i})">
+            ${s.done?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':''}
+          </div>
+          <div class="task-body">
+            <div class="task-name${s.done?' done':''}" id="lbl-${k}">${tk.t}</div>
+            <div class="task-badges">
+              ${tk.crit?'<span class="badge b-crit">Obligatoria</span>':''}
+              ${tk.badge==='rot'?'<span class="badge b-rot">Rotativo</span>':''}
+              ${tk.badge==='freq'?'<span class="badge b-freq">Día específico</span>':''}
+            </div>
+          </div>
+        </div>`;
+      } else if(tk.tipo==='aseo'){
+        const isPapa = tk.label && tk.label.includes('papa');
+        const isPapaFinal = tk.label && tk.label.includes('150g');
+        inner=`<div class="task-extra"${isPapaFinal?' style="background:#FAEEDA22;border-left:3px solid #EF9F27;border-radius:0 var(--rsm) var(--rsm) 0;"':''}>
+          ${isPapaFinal?`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+            <span style="font-size:16px;">🍟</span>
+            <span style="font-size:11px;font-weight:600;color:#854F0B;text-transform:uppercase;letter-spacing:.04em;">${tk.crit?'Obligatorio — Apertura':'Opcional'}</span>
+          </div>`:''}
+          <div style="font-size:13px;${isPapaFinal?'font-weight:500;':''}margin-bottom:4px;">${tk.t}</div>
+          <div class="task-badges" style="margin-bottom:5px;"><span class="badge b-aseo">Calificar 1–5</span>${tk.crit?'<span class="badge b-crit">Obligatorio</span>':''}</div>
+          <div class="stars">${starsHtml(k,s.aseo)}</div>
+          ${s.aseo>0?`<div class="star-lbl">${['','Muy malo','Malo','Regular','Bueno','Excelente'][s.aseo]}</div>`:''}
+        </div>`;
+      } else if(tk.tipo==='temp'){
+        const unit=tk.unit||'°C';
+        const isF=unit==='°F';
+        inner=`<div class="task-main">
+          <div class="chk${s.val!==''?' done':''}" style="cursor:default">${s.val!==''?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':''}</div>
+          <div class="task-body">
+            <div style="font-size:13px;">${tk.t}</div>
+            <div class="task-badges">
+              <span class="badge b-temp">${isF?'°F — Fahrenheit':'°C — Celsius'}</span>
+              ${tk.crit?'<span class="badge b-crit">Obligatoria</span>':''}
+            </div>
+            <div class="field-row">
+              <input type="number" step="0.1" placeholder="${isF?'000.0':'00.0'}" value="${s.val}" style="width:88px" oninput="getTS('${curArea}','${curTurno}',${i}).val=this.value;persistCurrent();updateProg();">
+              <span class="field-label" style="font-weight:600;color:${isF?'var(--coral)':'var(--blue)'};">${unit}</span>
+              <span id="tst-${k}">${tempSt(s.val,tk.rango||[0,9999],unit)}</span>
+            </div>
+            <div class="range-note">Rango: ${tk.rango[0]}${unit} a ${tk.rango[1]}${unit}</div>
+          </div>
+        </div>`;
+      } else if(tk.tipo==='dinero'){
+        inner=`<div class="task-main">
+          <div class="chk${s.val!==''?' done':''}" style="cursor:default">${s.val!==''?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':''}</div>
+          <div class="task-body">
+            <div style="font-size:13px;">${tk.t}</div>
+            <div class="task-badges"><span class="badge b-dinero">Valor</span>${tk.crit?'<span class="badge b-crit">Obligatoria</span>':''}</div>
+            <div class="field-row">
+              <span class="field-label">$</span>
+              <input type="number" min="0" step="100" placeholder="0" value="${s.val}" style="width:120px" oninput="getTS('${curArea}','${curTurno}',${i}).val=this.value;persistCurrent();updateProg();refreshArqueo();">
+            </div>
+          </div>
+        </div>`;
+      } else if(tk.tipo==='inventario'){
+        const items=['Panadería','Abarrotes','Verduras','Salsas'];
+        inner=`<div class="task-extra">
+          <div style="font-size:13px;font-weight:500;margin-bottom:4px;">${tk.t}</div>
+          <div class="task-badges" style="margin-bottom:8px;"><span class="badge b-rot">Inventario</span>${tk.crit?'<span class="badge b-crit">Obligatorio</span>':''}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+            ${items.map(item=>{
+              const ik='inv_'+k+'_'+item.replace(/[^a-z]/gi,'');
+              if(!S[ik]) S[ik]={v:''};
+              return`<div style="background:var(--bg2);border-radius:var(--rsm);padding:7px 9px;">
+                <div style="font-size:10px;color:var(--txt3);margin-bottom:4px;">${item}</div>
+                <input type="text" placeholder="Cantidad" value="${S[ik].v}" style="width:100%;font-size:12px;" oninput="if(!S['${ik}'])S['${ik}']={v:''};S['${ik}'].v=this.value;persistCurrent();">
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+
+      } else if(tk.tipo==='cierre_area'){
+        const ck=k+'_ca';
+        if(!S[ck]) S[ck]={done:false};
+        const nota=S[k+'_n']||'';
+        inner=`<div class="task-main">
+          <div class="chk${S[ck].done?' done':''}" onclick="S['${ck}']={done:!S['${ck}'].done};persistCurrent();renderChecklist();">
+            ${S[ck].done?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':''}
+          </div>
+          <div class="task-body">
+            <div style="font-size:13px;font-weight:500;color:var(--txt);">${tk.area}</div>
+            <div style="font-size:12px;color:var(--txt2);margin-top:1px;line-height:1.4;">${tk.t}</div>
+            <div class="task-badges" style="margin-top:4px;"><span class="badge b-crit">Verificar cierre</span></div>
+            <textarea style="width:100%;margin-top:8px;min-height:50px;font-size:12px;" placeholder="Novedades al cierre (opcional)..." oninput="S['${k}_n']=this.value;persistCurrent();">${nota}</textarea>
+          </div>
+        </div>`;
+      } else if(tk.tipo==='arqueo'){
+        inner=`<div class="task-extra">
+          <div style="font-size:13px;margin-bottom:5px;">${tk.t}</div>
+          <span class="badge b-dinero">Inventario datáfonos</span>
+          <div style="margin-top:8px;">${datHtml(k)}</div>
+        </div>`;
+      }
+      html+=`<div class="task-card">${inner}</div>`;
+    });
+
+    // Resumen calificaciones
+    const cals=tasks.filter(tk=>tk.tipo==='aseo');
+    if(cals.length>1){
+      html+=`<div class="sec-lbl">Calificaciones del turno</div>
+      <div class="task-card" style="padding:12px 14px;">`;
+      cals.forEach(tk=>{
+        const i=tasks.indexOf(tk);
+        const s=getTS(curArea,curTurno,i);
+        const k=tsk(curArea,curTurno,i);
+        html+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:12px;color:var(--txt2);">${tk.label||tk.t}</span>
+          <div style="display:flex;gap:2px;">${[1,2,3,4,5].map(n=>`<div class="star${n<=s.aseo?' lit':''}" style="width:18px;height:18px;" onclick="setStar('${k}',${n})"><svg viewBox="0 0 24 24" style="width:15px;height:15px;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div>`).join('')}</div>
+        </div>`;
+      });
+      html+='</div>';
+    }
+
+    // Observación
+    html+=`<div class="sec-lbl">Observación del turno</div>
+    <div class="obs-card"><textarea style="width:100%" placeholder="Novedades, incidentes o comentarios..." oninput="OBS['${fkey}']=this.value;persistCurrent()">${OBS[fkey]||''}</textarea></div>`;
+
+    // Firma
+    if(!signed){
+      html+=`<div class="sec-lbl">Firmar turno</div>
+      <div class="firma-card">
+        <div style="font-size:12px;color:var(--txt2);margin-bottom:7px;">Nombre del responsable</div>
+        <input type="text" id="firma-inp" value="${curUser}" placeholder="Tu nombre">
+      </div>
+      <button class="cierre-btn" onclick="firmar()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Firmar y cerrar turno
+      </button>`;
+    }
+  }
+  document.getElementById('main-content').innerHTML=html;
+}
+
+function refreshArqueo(){
+  const el=document.getElementById('arqueo-live');
+  if(el)el.innerHTML=arqueoHtml();
+}
+
+function firmar(){
+  const nombre=(document.getElementById('firma-inp')||{}).value||curUser;
+  if(!nombre.trim()){alert('Escribe tu nombre');return;}
+  const ahora=new Date();
+  SIGNED[sfk()]={nombre:nombre.trim(),hora:ahora.toLocaleString('es-CO',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'})};
+  persistCurrent();
+  renderChecklist();
+}
+
+// ══════════════════════════════════════════════════════════════
+// ALERTAS TAB (in-app)
+// ══════════════════════════════════════════════════════════════
+function getAlertas(){
+  const alerts=[];
+  const hora=new Date().getHours();
+  AREAS_LIST.forEach(area=>{
+    TURNOS_LIST.forEach(turno=>{
+      const tasks=(CL[area.id]||{})[turno.id]||[];
+      // Check signed
+      const fkey=`${area.id}_${turno.id}`;
+      // Check temperatures out of range
+      tasks.forEach((tk,i)=>{
+        if(tk.tipo==='temp'&&tk.crit){
+          const s=getTS(area.id,turno.id,i);
+          if(s.val!==''&&s.val!==null){
+            const v=parseFloat(s.val);
+            if(!isNaN(v)&&(v<tk.rango[0]||v>tk.rango[1])){
+              alerts.push({tipo:'crit',txt:`Temperatura fuera de rango: ${tk.t}`,sub:`${area.name} · ${turno.name} · Valor: ${v}${tk.unit||'°C'} (esperado ${tk.rango[0]} a ${tk.rango[1]}${tk.unit||'°C'})`});
+            }
+          }
+        }
+      });
+      // Faltante de caja
+      if(area.id==='caja'&&turno.id==='cierre'){
+        const arq=getArqueoForArea('caja','cierre');
+        if(arq.si>0&&arq.diff<0){
+          alerts.push({tipo:'crit',txt:`Faltante de caja: $${Math.abs(arq.diff).toLocaleString()}`,sub:`Punto: ${PUNTOS[curPunto]?.name||'—'} · Cajero: ${SIGNED[fkey]?.nombre||'Sin firmar'}`});
+        }
+      }
+      // Area sin completar según hora
+      const{d,total}=calcProg(area.id,turno.id);
+      const p=total?Math.round(d/total*100):0;
+      if(total>0&&p<100){
+        let esHora=false;
+        if(turno.id==='apertura'&&hora>=6&&hora<=10)esHora=true;
+        if(turno.id==='medio'&&hora>=11&&hora<=15)esHora=true;
+        if(turno.id==='cierre'&&hora>=20&&hora<=23)esHora=true;
+        if(esHora&&p<50) alerts.push({tipo:'warn',txt:`${area.name} — turno ${turno.name} al ${p}%`,sub:`${d} de ${total} tareas completadas · Hora actual: ${hora}:00`});
+      }
+    });
+  });
+  return alerts;
+}
+
+function getArqueoForArea(a,t){
+  const tasks=(CL[a]||{})[t]||[];
+  let ci=0,da=0,si=0;
+  tasks.forEach((tk,i)=>{
+    const s=getTS(a,t,i);
+    if(tk.campo==='Efectivo cierre')ci=parseFloat(s.val)||0;
+    if(tk.campo==='Ventas datáfono')da=parseFloat(s.val)||0;
+    if(tk.campo==='Ventas sistema')si=parseFloat(s.val)||0;
+  });
+  return{ci,da,si,tot:ci+da,diff:(ci+da)-si};
+}
+
+function buildWspMsg(alerts){
+  if(!alerts.length)return'✅ Todo en orden en '+PUNTOS[curPunto]?.name;
+  let msg=`🚨 *CheckResto — ${PUNTOS[curPunto]?.name}*\n`;
+  msg+=`📅 ${new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}\n\n`;
+  alerts.forEach(a=>{
+    msg+=(a.tipo==='crit'?'🔴':'🟡')+` ${a.txt}\n_${a.sub}_\n\n`;
+  });
+  return msg.trim();
+}
+
+function sendWsp(){
+  const alerts=getAlertas();
+  const msg=buildWspMsg(alerts);
+  const phone='573000000000'; // placeholder
+  const url=`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  window.open(url,'_blank');
+}
+
+function renderAlertasTab(){
+  const alerts=getAlertas();
+  let html='';
+  if(!alerts.length){
+    html+=`<div style="margin:0 16px 8px;background:var(--green-l);border:1px solid #97C459;border-radius:var(--r);padding:14px;">
+      <div style="font-size:13px;color:var(--green);font-weight:500;">✅ Todo en orden</div>
+      <div style="font-size:11px;color:var(--green);margin-top:2px;">Sin alertas activas en este momento</div>
+    </div>`;
+  } else {
+    html+=`<div class="sec-lbl">Alertas activas (${alerts.length})</div>`;
+    alerts.forEach(a=>{
+      html+=`<div class="alert-item alert-${a.tipo}">
+        <div class="alert-txt">${a.tipo==='crit'?'🔴':'🟡'} ${a.txt}</div>
+        <div class="alert-sub">${a.sub}</div>
+      </div>`;
+    });
+  }
+  html+=`<div class="sec-lbl" style="margin-top:12px;">Enviar reporte por WhatsApp</div>
+  <button class="wsp-btn" onclick="sendWsp()">
+    <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    Enviar alertas al administrador
+  </button>
+  <div style="padding:0 16px;font-size:11px;color:var(--txt3);margin-top:-4px;">
+    Abre WhatsApp con el mensaje listo para enviar al admin
+  </div>`;
+
+  // Recordatorios del día
+  const dia=new Date().getDay();
+  const RECS={
+    1:[{t:'Lavado nevera congelación (quien abre)',a:'Neveras'},
+       {t:'Inventario cárnicos — jefe cocina inicia rotativo',a:'Cocina'}],
+    3:[{t:'Lavado teteros (cocina)',a:'Cocina'},
+       {t:'Nevera gaseosa parte superior',a:'Domiciliarios'}],
+    5:[{t:'Actualizar publicidad (cajero)',a:'Cajero'},
+       {t:'Inventario bebidas y empaques al cierre',a:'Cajero'},
+       {t:'Canecas basura (domiciliario)',a:'Domiciliarios'}],
+    6:[{t:'Limpiar estante abarrotes incluyendo tarros',a:'Cajero'},
+       {t:'Nevera gaseosa parte superior',a:'Domiciliarios'},
+       {t:'Canecas basura al cierre',a:'Domiciliarios'}],
+    0:[{t:'Inventario bebidas y empaques en apertura',a:'Cajero'},
+       {t:'Lavado neveras refrigeración (auxiliares)',a:'Neveras'},
+       {t:'Desocupar nevera congelación en la noche',a:'Neveras'}],
+  };
+  const recs=RECS[dia]||[];
+  if(recs.length){
+    html+=`<div class="sec-lbl" style="margin-top:12px;">Recordatorios de hoy</div>`;
+    recs.forEach(r=>{
+      html+=`<div class="alert-item alert-warn">
+        <div class="alert-txt">📋 ${r.t}</div>
+        <div class="alert-sub">Área: ${r.a}</div>
+      </div>`;
+    });
+  }
+  document.getElementById('main-content').innerHTML=html;
+}
+
+// ══════════════════════════════════════════════════════════════
+// HISTORIAL TAB
+// ══════════════════════════════════════════════════════════════
+function renderHistorialTab(){
+  const today=todayStr();
+  let html=`<div class="sec-lbl">Cumplimiento hoy — ${PUNTOS[curPunto]?.name}</div>`;
+  AREAS_LIST.forEach(area=>{
+    let rows='';
+    TURNOS_LIST.forEach(turno=>{
+      if(!((CL[area.id]||{})[turno.id]||[]).length)return;
+      const d=loadData(curPunto,area.id,turno.id);
+      const tasks=(CL[area.id]||{})[turno.id]||[];
+      if(!tasks.length)return;
+      let done=0;
+      (d?.tasks||[]).forEach((t,i)=>{
+        const tk=tasks[i];if(!tk)return;
+        if(tk.tipo==='check'&&t.done)done++;
+        else if(tk.tipo==='aseo'&&t.aseo>0)done++;
+        else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')done++;
+        else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')done++;
+      });
+      const p=tasks.length?Math.round(done/tasks.length*100):0;
+      const col=p>=80?'#639922':p>=50?'#EF9F27':'#E24B4A';
+      const signed=d?.signed;
+      rows+=`<div class="hist-row">
+        <span class="hist-area">${TURNOS_LIST.find(t=>t.id===turno.id)?.name||turno.id}</span>
+        <div class="hist-data">
+          <div class="pct-bar"><div class="pct-fill" style="width:${p}%;background:${col}"></div></div>
+          <span class="hist-pct" style="color:${col}">${p}%</span>
+          ${signed?`<span style="font-size:10px;color:var(--txt3)">${signed.nombre.split(' ')[0]}</span>`:'<span style="font-size:10px;color:var(--txt3)">—</span>'}
+        </div>
+      </div>`;
+    });
+    if(rows){
+      html+=`<div class="hist-card"><div class="hist-header"><span class="hist-title">${area.name}</span></div>${rows}</div>`;
+    }
+  });
+
+  // Faltante de caja hoy
+  const cajaD=loadData(curPunto,'caja','cierre');
+  if(cajaD){
+    const tasks=CL.caja.cierre;
+    let ci=0,da=0,si=0;
+    (cajaD.tasks||[]).forEach((t,i)=>{
+      const tk=tasks[i];if(!tk)return;
+      if(tk.campo==='Efectivo cierre')ci=parseFloat(t.val)||0;
+      if(tk.campo==='Ventas datáfono')da=parseFloat(t.val)||0;
+      if(tk.campo==='Ventas sistema')si=parseFloat(t.val)||0;
+    });
+    const diff=(ci+da)-si;
+    if(si>0){
+      html+=`<div class="sec-lbl">Arqueo de caja — hoy</div>
+      <div class="task-card" style="padding:12px 14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;color:var(--txt2);">Diferencia vs sistema</span>
+          <span style="font-size:18px;font-weight:700;color:${diff<0?'var(--red)':'var(--green)'};">${diff>=0?'+':''}$${diff.toLocaleString()}</span>
+        </div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px;">Efectivo: $${ci.toLocaleString()} · Datáfono: $${da.toLocaleString()} · Sistema: $${si.toLocaleString()}</div>
+      </div>`;
+    }
+  }
+  document.getElementById('main-content').innerHTML=html;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ADMIN DASHBOARD
+// ══════════════════════════════════════════════════════════════
+function renderAdmin(){
+  const dates=getRecentDates();
+  let html=`<div class="dash-header">
+    <div class="dash-title">Comparativo de puntos</div>
+    <div class="dash-sub">Cumplimiento, aseo y caja por punto y área</div>
+  </div>
+  <div class="dash-date-row">
+    ${dates.map(d=>`<div class="date-chip${d===adminDate?' active':''}" onclick="setAdminDate('${d}')">${d===todayStr()?'Hoy':d}</div>`).join('')}
+  </div>`;
+
+  // KPIs per punto
+  html+=`<div class="sec-lbl">Cumplimiento general</div>
+  <div class="kpi-grid">`;
+  Object.entries(PUNTOS).forEach(([pid,p])=>{
+    let total=0,done=0;
+    AREAS_LIST.forEach(area=>{
+      TURNOS_LIST.forEach(turno=>{
+        const tasks=(CL[area.id]||{})[turno.id]||[];
+        if(!tasks.length)return;
+        const d=loadDataDate(pid,adminDate,area.id,turno.id);
+        total+=tasks.length;
+        (d?.tasks||[]).forEach((t,i)=>{
+          const tk=tasks[i];if(!tk)return;
+          if(tk.tipo==='check'&&t.done)done++;
+          else if(tk.tipo==='aseo'&&t.aseo>0)done++;
+          else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')done++;
+          else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')done++;
+        });
+      });
+    });
+    const pct2=total?Math.round(done/total*100):0;
+    const cls=pct2>=80?'good':pct2>=50?'':'bad';
+    html+=`<div class="kpi-card">
+      <div class="kpi-label">${p.icon} ${p.name}</div>
+      <div class="kpi-val ${cls}">${pct2}%</div>
+      <div class="kpi-sub">${done} de ${total} tareas</div>
+    </div>`;
+  });
+  html+='</div>';
+
+  // Comparativo por área
+  html+=`<div class="sec-lbl">Comparativo por área</div>
+  <div class="compare-card">
+    <div class="cmp-legend">
+      ${Object.entries(PUNTOS).map(([pid,p],idx)=>`<div style="display:flex;align-items:center;gap:5px;"><div class="cmp-dot" style="background:${idx===0?'#D85A30':'#534AB7'}"></div><span class="cmp-leg-lbl">${p.icon} ${p.name}</span></div>`).join('')}
+    </div>`;
+  AREAS_LIST.forEach(area=>{
+    html+=`<div class="cmp-row"><div class="cmp-area">${area.name.split('/')[0].trim()}</div><div class="cmp-bars">`;
+    Object.entries(PUNTOS).forEach(([pid,p],idx)=>{
+      let total=0,done=0;
+      TURNOS_LIST.forEach(turno=>{
+        const tasks=(CL[area.id]||{})[turno.id]||[];
+        const d=loadDataDate(pid,adminDate,area.id,turno.id);
+        total+=tasks.length;
+        (d?.tasks||[]).forEach((t,i)=>{
+          const tk=tasks[i];if(!tk)return;
+          if(tk.tipo==='check'&&t.done)done++;
+          else if(tk.tipo==='aseo'&&t.aseo>0)done++;
+          else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')done++;
+          else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')done++;
+        });
+      });
+      const pp=total?Math.round(done/total*100):0;
+      const col=idx===0?'#D85A30':'#534AB7';
+      html+=`<div class="cmp-bar-wrap">
+        <div class="cmp-bar-track"><div class="cmp-bar-fill" style="width:${pp}%;background:${col}"></div></div>
+        <span class="cmp-bar-lbl">${pp}%</span>
+      </div>`;
+    });
+    html+=`</div></div>`;
+  });
+  html+='</div>';
+
+  // Calificaciones aseo por punto
+  html+=`<div class="sec-lbl">Promedio calificaciones (aseo + calidad)</div>
+  <div class="kpi-grid">`;
+  Object.entries(PUNTOS).forEach(([pid,p])=>{
+    let sum=0,cnt=0;
+    AREAS_LIST.forEach(area=>{
+      TURNOS_LIST.forEach(turno=>{
+        const tasks=(CL[area.id]||{})[turno.id]||[];
+        const d=loadDataDate(pid,adminDate,area.id,turno.id);
+        (d?.tasks||[]).forEach((t,i)=>{
+          const tk=tasks[i];if(!tk)return;
+          if(tk.tipo==='aseo'&&t.aseo>0){sum+=t.aseo;cnt++;}
+        });
+      });
+    });
+    const avg=cnt?Math.round(sum/cnt*10)/10:0;
+    const cls=avg>=4?'good':avg>=3?'':'bad';
+    html+=`<div class="kpi-card">
+      <div class="kpi-label">${p.icon} ${p.name} — Aseo</div>
+      <div class="kpi-val ${cls}">${cnt?avg+'/5':'—'}</div>
+      <div class="kpi-sub">${cnt} calificaciones</div>
+    </div>`;
+  });
+  html+='</div>';
+
+  // Faltantes de caja
+  html+=`<div class="sec-lbl">Arqueo de caja</div>`;
+  Object.entries(PUNTOS).forEach(([pid,p])=>{
+    const d=loadDataDate(pid,adminDate,'caja','cierre');
+    const tasks=CL.caja.cierre;
+    let ci=0,da=0,si=0;
+    (d?.tasks||[]).forEach((t,i)=>{
+      const tk=tasks[i];if(!tk)return;
+      if(tk.campo==='Efectivo cierre')ci=parseFloat(t.val)||0;
+      if(tk.campo==='Ventas datáfono')da=parseFloat(t.val)||0;
+      if(tk.campo==='Ventas sistema')si=parseFloat(t.val)||0;
+    });
+    const diff=(ci+da)-si;
+    html+=`<div class="hist-card" style="margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:13px;font-weight:600;">${p.icon} ${p.name}</span>
+        <span style="font-size:16px;font-weight:700;color:${si>0?(diff<0?'var(--red)':'var(--green)'):'var(--txt3)'};">${si>0?(diff>=0?'+':'')+' $'+diff.toLocaleString():'Sin datos'}</span>
+      </div>
+      ${si>0?`<div style="font-size:11px;color:var(--txt3);">Efectivo: $${ci.toLocaleString()} · Datáfono: $${da.toLocaleString()} · Sistema: $${si.toLocaleString()}</div>`:''}
+      ${d?.signed?`<div style="font-size:11px;color:var(--txt3);margin-top:3px;">Cajero: ${d.signed.nombre} · ${d.signed.hora}</div>`:''}
+    </div>`;
+  });
+
+  // WhatsApp resumen admin
+  html+=`<div class="sec-lbl">Enviar reporte admin</div>
+  <button class="wsp-btn" onclick="sendWspAdmin()">
+    <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    Enviar resumen comparativo
+  </button>
+  <div style="padding:0 16px 24px;font-size:11px;color:var(--txt3);margin-top:-4px;">Resumen de ambos puntos listo para WhatsApp</div>`;
+
+  document.getElementById('admin-content').innerHTML=html;
+}
+
+function setAdminDate(d){adminDate=d;renderAdmin();}
+
+function sendWspAdmin(){
+  let msg=`📊 *CheckResto — Reporte Admin*\n`;
+  msg+=`📅 ${adminDate}\n\n`;
+  Object.entries(PUNTOS).forEach(([pid,p])=>{
+    msg+=`${p.icon} *${p.name}*\n`;
+    AREAS_LIST.forEach(area=>{
+      let total=0,done=0;
+      TURNOS_LIST.forEach(turno=>{
+        const tasks=(CL[area.id]||{})[turno.id]||[];
+        const d=loadDataDate(pid,adminDate,area.id,turno.id);
+        total+=tasks.length;
+        (d?.tasks||[]).forEach((t,i)=>{
+          const tk=tasks[i];if(!tk)return;
+          if(tk.tipo==='check'&&t.done)done++;
+          else if(tk.tipo==='aseo'&&t.aseo>0)done++;
+          else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')done++;
+          else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')done++;
+        });
+      });
+      if(total){
+        const pp=Math.round(done/total*100);
+        msg+=`  • ${area.name.split('/')[0].trim()}: ${pp}%\n`;
+      }
+    });
+    // Caja
+    const cj=loadDataDate(pid,adminDate,'caja','cierre');
+    if(cj){
+      let ci=0,da=0,si=0;
+      (cj.tasks||[]).forEach((t,i)=>{
+        const tk=CL.caja.cierre[i];if(!tk)return;
+        if(tk.campo==='Efectivo cierre')ci=parseFloat(t.val)||0;
+        if(tk.campo==='Ventas datáfono')da=parseFloat(t.val)||0;
+        if(tk.campo==='Ventas sistema')si=parseFloat(t.val)||0;
+      });
+      if(si>0){const d=(ci+da)-si;msg+=`  💰 Caja: ${d>=0?'+':''}$${d.toLocaleString()}\n`;}
+    }
+    msg+='\n';
+  });
+  const phone='573000000000';
+  window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,'_blank');
+}
+</script>
+</body>
+</html>
