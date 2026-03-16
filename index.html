@@ -302,7 +302,7 @@ const PUNTOS = {
 
 const AREAS_LIST = [
   {id:'admin',   name:'Admin / Cajero apertura', color:'#534AB7'},
-  {id:'cocina',  name:'Cocina / Parrillador',    color:'#D85A30'},
+  {id:'cocina',  name:'Cocina',                   color:'#D85A30'},
   {id:'caja',    name:'Cajero',                  color:'#534AB7'},
   {id:'domi',    name:'Domiciliarios',            color:'#1D9E75'},
   {id:'neveras', name:'Neveras / Frío',           color:'#185FA5'},
@@ -313,7 +313,7 @@ const TURNOS_LIST = [
   {id:'apertura', name:'☀️ Apertura'},
   {id:'medio',    name:'🌤️ Turno medio'},
   {id:'cierre',   name:'🌙 Cierre'},
-  {id:'hora',     name:'⏱ C/hora'},
+  {id:'hora',     name:'📊 Monitoreo'},
 ];
 
 const CL = {
@@ -331,7 +331,7 @@ const CL = {
       {t:'Verificar personal presente por área',tipo:'check',crit:true},
       {t:'Verificar aseo del personal',tipo:'check',crit:true},
       {t:'Supervisar mise en place cocina — calidad general',tipo:'aseo',label:'Mise en place cocina',crit:true},
-      {t:'Inventario apertura: panadería, abarrotes, verduras, salsas',tipo:'inventario',crit:true},
+
       {t:'Validar orden de neveras',tipo:'aseo',label:'Orden neveras',crit:true},
       {t:'Calidad de producto: caldo y carne',tipo:'aseo',label:'Calidad caldo y carne',crit:true},
       {t:'Calidad de papa 80/20 — riguroso',tipo:'aseo',label:'Calidad papa 80/20',crit:true},
@@ -340,7 +340,11 @@ const CL = {
       {t:'Verificar baños',tipo:'aseo',label:'Baños',crit:true},
     ],
     medio:[
-      {t:'Ronda supervisión todas las áreas',tipo:'check',crit:true},
+      {t:'Ronda cocina — supervisión área',tipo:'check',crit:true},
+      {t:'Ronda salón — supervisión área',tipo:'check',crit:true},
+      {t:'Ronda baños — supervisión área',tipo:'check',crit:true},
+      {t:'Ronda bodega — supervisión área',tipo:'check',crit:true},
+      {t:'Ronda caja — verificar apps Rappi, DiDi, WhatsApp y Meta sin errores',tipo:'check',crit:true},
       {t:'Segunda temperatura: freidora 1',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
       {t:'Segunda temperatura: freidora 2',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
       {t:'Segunda temperatura: freidora 3',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
@@ -370,6 +374,10 @@ const CL = {
       {t:'Tercera temperatura: nevera refrigeración',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
       {t:'Tercera temperatura: nevera congelación',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
       {t:'Asegurar bodega, llaves de gas y apagado de extractor',tipo:'check',crit:true},
+      {t:'Inventario cierre: panadería ✓',tipo:'check',crit:true},
+      {t:'Inventario cierre: abarrotes ✓',tipo:'check',crit:true},
+      {t:'Inventario cierre: verduras ✓',tipo:'check',crit:true},
+      {t:'Inventario cierre: salsas ✓',tipo:'check',crit:true},
       {t:'Aseo final cocina',tipo:'aseo',label:'Aseo cocina',crit:true},
       {t:'Aseo final salón',tipo:'aseo',label:'Aseo salón',crit:true},
       {t:'Aseo final baños',tipo:'aseo',label:'Aseo baños',crit:true},
@@ -379,8 +387,13 @@ const CL = {
       {t:'Temperatura freidora 1',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
       {t:'Temperatura freidora 2',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
       {t:'Temperatura freidora 3',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Temperatura plancha taquería',tipo:'temp',rango:[180,230],crit:true,unit:'°C'},
+      {t:'Temperatura plancha carnes',tipo:'temp',rango:[180,230],crit:true,unit:'°C'},
+      {t:'Temperatura plancha panes',tipo:'temp',rango:[150,200],crit:true,unit:'°C'},
       {t:'Temperatura nevera refrigeración',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
       {t:'Temperatura nevera congelación',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
+      {t:'Calidad de papa 80/20',tipo:'aseo',label:'Calidad papa 80/20',crit:true},
+      {t:'Tiempo de pedidos — velocidad de despacho',tipo:'aseo',label:'Tiempo de pedidos',crit:true},
     ],
   },
   cocina:{
@@ -394,28 +407,34 @@ const CL = {
       {t:'Temperatura freidora 3',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
       {t:'Verificar orden de las neveras',tipo:'check',crit:true},
       {t:'Realizar alistamientos para el turno (mise en place)',tipo:'check',crit:true},
-      {t:'Inventario cárnicos y congelados (rotativo L–V / jefe cocina S–D)',tipo:'check',crit:true,badge:'rot'},
+      {t:'Mise en place cocina — calidad general',tipo:'aseo',label:'Mise en place cocina',crit:true},
+      {t:'Calidad de producto: caldo y carne',tipo:'aseo',label:'Calidad caldo y carne',crit:true},
+      {t:'Calidad de papa 80/20 — riguroso',tipo:'aseo',label:'Calidad papa 80/20',crit:true},
+      {t:'Prueba de papa final: freír 150g, probar y compartir con el personal en reunión diaria antes de abrir',tipo:'aseo',label:'Prueba papa final (150g)',crit:true},
       {t:'Aseo área cocina',tipo:'aseo',label:'Aseo cocina',crit:true},
     ],
     medio:[
       {t:'Mise en place carnes al 80%',tipo:'check',crit:true},
       {t:'Mise en place salsas, panes, tortillas al 80%',tipo:'check',crit:true},
       {t:'Mise en place papas al 80%',tipo:'check',crit:true},
-      {t:'Temperatura freidoras en rango (freidora 1, 2 y 3)',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
-      {t:'Sin carnes fuera de temperatura',tipo:'check',crit:true},
-      {t:'Inventario área empacado (solo Vie–Sáb–Dom)',tipo:'check',crit:false,badge:'freq'},
+      {t:'Temperatura freidora 1',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Temperatura freidora 2',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Temperatura freidora 3',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Temperatura plancha taquería',tipo:'temp',rango:[180,230],crit:true,unit:'°C'},
+      {t:'Temperatura plancha carnes',tipo:'temp',rango:[180,230],crit:true,unit:'°C'},
+      {t:'Temperatura plancha panes',tipo:'temp',rango:[150,200],crit:true,unit:'°C'},
+      {t:'Ningún producto destapado o fuera de nevera (carnes, salsas, caldo, vegetales)',tipo:'check',crit:true},
       {t:'Aseo cocina turno medio',tipo:'aseo',label:'Aseo cocina',crit:true},
     ],
     cierre:[
+      {t:'Inventario cárnicos y congelados (rotativo L–V / jefe cocina S–D)',tipo:'check',crit:true,badge:'rot'},
       {t:'Apagar planchas y freidoras',tipo:'check',crit:true},
-      {t:'Temperatura al apagar freidora 1',tipo:'temp',rango:[0,700],crit:false,unit:'°F'},
-      {t:'Temperatura al apagar freidora 2',tipo:'temp',rango:[0,700],crit:false,unit:'°F'},
-      {t:'Temperatura al apagar freidora 3',tipo:'temp',rango:[0,700],crit:false,unit:'°F'},
       {t:'Mantenimiento aceite: retirar TODO el residuo de freidoras',tipo:'check',crit:true},
       {t:'Guardar carnes sobrantes con fecha y hora',tipo:'check',crit:true},
       {t:'Limpiar rejillas parrilla con cepillo',tipo:'check',crit:true},
       {t:'Área plancha: barrer y trapear parte inferior (caldos y kit de aseo)',tipo:'check',crit:true},
       {t:'Lavar teteros (Dom / Mié / Vie)',tipo:'check',crit:false,badge:'freq'},
+      {t:'Cubrir mise en place sobrante',tipo:'check',crit:false},
       {t:'Aseo final cocina',tipo:'aseo',label:'Aseo cocina',crit:true},
       {t:'Calidad final: cocción, sellado, frituras crocantes',tipo:'aseo',label:'Calidad producto',crit:true},
     ],
@@ -423,7 +442,11 @@ const CL = {
       {t:'Temperatura freidora 1',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
       {t:'Temperatura freidora 2',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
       {t:'Temperatura freidora 3',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Temperatura plancha taquería',tipo:'temp',rango:[180,230],crit:true,unit:'°C'},
       {t:'Temperatura plancha carnes',tipo:'temp',rango:[180,230],crit:true,unit:'°C'},
+      {t:'Temperatura plancha panes',tipo:'temp',rango:[150,200],crit:true,unit:'°C'},
+      {t:'Calidad de papa 80/20',tipo:'aseo',label:'Calidad papa 80/20',crit:true},
+      {t:'Tiempo de pedidos — velocidad de despacho',tipo:'aseo',label:'Tiempo de pedidos',crit:true},
     ],
   },
   caja:{
@@ -434,12 +457,22 @@ const CL = {
       {t:'Inventario datáfonos disponibles',tipo:'datofonos',crit:true},
       {t:'Sistema POS encendido y funcionando',tipo:'check',crit:true},
       {t:'Limpiar área: teclado, mouse, impresora, modem, tablet',tipo:'check',crit:true},
+      {t:'Rappi C — activa, sin errores, últimas conversaciones revisadas',tipo:'check',crit:true},
+      {t:'Rappi T — activa, sin errores, últimas conversaciones revisadas',tipo:'check',crit:true},
+      {t:'DiDi C — activa, sin errores, últimas conversaciones revisadas',tipo:'check',crit:true},
+      {t:'DiDi T — activa, sin errores, últimas conversaciones revisadas',tipo:'check',crit:true},
+      {t:'WhatsApp 1 — activo, revisar últimas conversaciones delivery y escribir novedades',tipo:'plataforma',crit:true},
+      {t:'WhatsApp 2 — activo, revisar últimas conversaciones delivery y escribir novedades',tipo:'plataforma',crit:true},
+      {t:'WhatsApp 3 — activo, revisar últimas conversaciones delivery y escribir novedades',tipo:'plataforma',crit:true},
+      {t:'WhatsApp 4 — activo, revisar últimas conversaciones delivery y escribir novedades',tipo:'plataforma',crit:true},
+      {t:'Meta 1 — activo, sin errores, últimas conversaciones revisadas',tipo:'check',crit:true},
+      {t:'Meta 2 — activo, sin errores, últimas conversaciones revisadas',tipo:'check',crit:true},
       {t:'Aseo área caja',tipo:'aseo',label:'Aseo caja',crit:true},
     ],
     medio:[
       {t:'Cuadre parcial caja',tipo:'check',crit:true},
       {t:'Datáfonos funcionando',tipo:'check',crit:true},
-      {t:'Limpiar televisores (diario)',tipo:'check',crit:false},
+      {t:'Plataformas delivery sin errores o pedidos pendientes',tipo:'check',crit:true},
     ],
     cierre:[
       {t:'Efectivo en caja al cierre ($)',tipo:'dinero',campo:'Efectivo cierre',crit:true},
@@ -450,10 +483,18 @@ const CL = {
       {t:'Bolsa 2: facturas del día con fecha, punto y forma de pago',tipo:'check',crit:true},
       {t:'Paquetes listos para transportar al día siguiente',tipo:'check',crit:true},
       {t:'Inventario datáfonos al cierre',tipo:'datofonos',crit:true},
+      {t:'Limpiar televisores',tipo:'check',crit:true},
       {t:'Limpiar mesas y sillas para el día siguiente',tipo:'check',crit:true},
       {t:'Aseo área caja cierre',tipo:'aseo',label:'Aseo caja',crit:true},
     ],
-    hora:[],
+    hora:[
+      {t:'Rappi C — pedidos activos, sin errores',tipo:'check',crit:true},
+      {t:'Rappi T — pedidos activos, sin errores',tipo:'check',crit:true},
+      {t:'DiDi C — pedidos activos, sin errores',tipo:'check',crit:true},
+      {t:'DiDi T — pedidos activos, sin errores',tipo:'check',crit:true},
+      {t:'WhatsApp 1, 2, 3, 4 — sin conversaciones sin atender',tipo:'check',crit:true},
+      {t:'Meta 1 y 2 — sin mensajes sin atender',tipo:'check',crit:true},
+    ],
   },
   domi:{
     apertura:[
@@ -461,8 +502,7 @@ const CL = {
       {t:'Poner bolsas de basura en canecas',tipo:'check',crit:true},
       {t:'Llenar tarros de salsas (rotativo diario)',tipo:'check',crit:true,badge:'rot'},
       {t:'Dejar alistamientos: jabón, papel higiénico, servilletas',tipo:'check',crit:true},
-      {t:'Inventario bebidas — nevera surtida y limpia',tipo:'check',crit:true},
-      {t:'Mantener bandejas desinfectadas',tipo:'check',crit:true},
+      {t:'Bandejas limpias y desinfectadas',tipo:'check',crit:true},
       {t:'Aseo salón apertura',tipo:'aseo',label:'Aseo salón',crit:true},
       {t:'Aseo baños apertura',tipo:'aseo',label:'Aseo baños',crit:true},
     ],
@@ -472,13 +512,18 @@ const CL = {
       {t:'Nevera gaseosa parte superior: limpiar L/Mié/Sáb',tipo:'check',crit:false,badge:'freq'},
       {t:'Envasar, sellar y rotular bebidas (rotativo)',tipo:'check',crit:false,badge:'rot'},
       {t:'Sitio bebidas y utensilios de aseo — limpio y ordenado',tipo:'check',crit:true},
+      {t:'Bandejas limpias y desinfectadas',tipo:'check',crit:true},
       {t:'Revisión baños turno medio',tipo:'aseo',label:'Aseo baños',crit:true},
     ],
     cierre:[
       {t:'Aseo salón y salón de atrás: barrer, trapear, limpiar bajo canastas',tipo:'check',crit:true},
       {t:'Lavado de baños al cierre',tipo:'check',crit:true},
-      {t:'Dejar canecas limpias y shot al servicio',tipo:'check',crit:true},
-      {t:'App delivery cerrada y domicilios liquidados',tipo:'check',crit:true},
+      {t:'Canecas limpias',tipo:'check',crit:true},
+      {t:'Shut de basuras limpio',tipo:'check',crit:true},
+      {t:'Inventario bebidas — nevera surtida y limpia',tipo:'check',crit:true},
+      {t:'Maletas limpias y desinfectadas',tipo:'check',crit:true},
+      {t:'Bandejas limpias y desinfectadas',tipo:'check',crit:true},
+      {t:'Datáfono funcionando',tipo:'check',crit:true},
       {t:'Aseo final salón',tipo:'aseo',label:'Aseo salón',crit:true},
       {t:'Aseo final baños',tipo:'aseo',label:'Aseo baños',crit:true},
     ],
@@ -877,6 +922,20 @@ function renderChecklist(){
             </div>
           </div>
         </div>`;
+      } else if(tk.tipo==='plataforma'){
+        const nk='plat_'+k;
+        if(!S[nk]) S[nk]={done:false,nov:''};
+        inner=`<div class="task-main">
+          <div class="chk${S[nk].done?' done':''}" onclick="S['${nk}'].done=!S['${nk}'].done;persistCurrent();renderChecklist();">
+            ${S[nk].done?'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':''}
+          </div>
+          <div class="task-body">
+            <div class="task-name${S[nk].done?' done':''}">${tk.t}</div>
+            <div class="task-badges"><span class="badge b-freq">📱 Plataforma</span>${tk.crit?'<span class="badge b-crit">Obligatoria</span>':''}</div>
+            <textarea style="width:100%;margin-top:7px;min-height:46px;font-size:12px;" placeholder="Novedades / última conversación..." oninput="if(!S['${nk}'])S['${nk}']={done:false,nov:''};S['${nk}'].nov=this.value;persistCurrent();">${S[nk].nov||''}</textarea>
+          </div>
+        </div>`;
+
       } else if(tk.tipo==='inventario'){
         const items=['Panadería','Abarrotes','Verduras','Salsas'];
         inner=`<div class="task-extra">
@@ -936,9 +995,20 @@ function renderChecklist(){
       html+='</div>';
     }
 
-    // Observación
+    // Observación con recordatorio especial para caja cierre
+    const esCajaCierre = curArea==='caja' && curTurno==='cierre';
     html+=`<div class="sec-lbl">Observación del turno</div>
-    <div class="obs-card"><textarea style="width:100%" placeholder="Novedades, incidentes o comentarios..." oninput="OBS['${fkey}']=this.value;persistCurrent()">${OBS[fkey]||''}</textarea></div>`;
+    <div class="obs-card">
+      ${esCajaCierre?`<div style="background:#EEEDFE;border:1px solid #AFA9EC;border-radius:var(--rsm);padding:10px 12px;margin-bottom:10px;">
+        <div style="font-size:11px;font-weight:600;color:#3C3489;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">📋 Recuerda incluir en tu observación:</div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div style="font-size:12px;color:#534AB7;">🛵 <strong>Pedidos de apps:</strong> Rappi, DiDi, WhatsApp, Meta — novedades del día</div>
+          <div style="font-size:12px;color:#534AB7;">💳 <strong>Pagos:</strong> datáfonos, efectivo, faltantes o sobrantes</div>
+          <div style="font-size:12px;color:#534AB7;">⚠️ Cualquier incidente, reclamo o irregularidad</div>
+        </div>
+      </div>`:''}
+      <textarea style="width:100%" placeholder="${esCajaCierre?'Ej: Rappi sin novedades. DiDi: 1 pedido cancelado. Faltante $5.000 en efectivo...':'Novedades, incidentes o comentarios...'}" oninput="OBS['${fkey}']=this.value;persistCurrent()">${OBS[fkey]||''}</textarea>
+    </div>`;
 
     // Firma
     if(!signed){
