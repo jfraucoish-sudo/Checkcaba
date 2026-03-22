@@ -1427,7 +1427,7 @@ function mostrarPinModal(nombre, rol){
     <div style="font-size:12px;color:rgba(254,242,223,.45);margin-bottom:18px;">Ingresa el PIN de acceso</div>
     <input id="pin-input" type="password" inputmode="numeric" maxlength="4" placeholder="••••"
       style="width:100%;padding:14px;text-align:center;font-size:22px;letter-spacing:8px;background:rgba(254,242,223,.08);border:1.5px solid rgba(254,242,223,.2);border-radius:12px;color:var(--crema);outline:none;font-family:'Poppins',sans-serif;"
-      oninput="if(this.value.length===4)verificarPin('${nombre}','${rol}')">
+      oninput="this.value=this.value.replace(/[^0-9]/g,'');if(this.value.length===4)verificarPin('${nombre}','${rol}')">
     <div id="pin-error" style="font-size:12px;color:#FF6B55;margin-top:10px;display:none;">PIN incorrecto. Intenta de nuevo.</div>
     <div style="display:flex;gap:10px;margin-top:16px;">
       <button onclick="document.getElementById('pin-modal').remove()" style="flex:1;padding:12px;background:rgba(254,242,223,.08);border:1px solid rgba(254,242,223,.15);border-radius:12px;color:rgba(254,242,223,.6);font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>
@@ -1442,7 +1442,13 @@ function verificarPin(nombre, rol){
   const inp=document.getElementById('pin-input');
   if(!inp) return;
   const PINS={supervisor:'0710'};
-  if(inp.value===PINS[rol]){
+  const val=inp.value.trim();
+  if(!val || val.length<4){
+    inp.style.borderColor='#FF6B55';
+    inp.focus();
+    return;
+  }
+  if(val===PINS[rol]){
     document.getElementById('pin-modal').remove();
     _completarLogin(nombre, rol);
   } else {
