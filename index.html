@@ -2,11 +2,9 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CheckResto</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -564,38 +562,301 @@ select{padding:5px 8px;}
   from{opacity:0;transform:translateY(12px);}
   to{opacity:1;transform:translateY(0);}
 }
+
+/* ══ LA CABAÑA BRAND ══ */
+:root{
+  --crema:#FEF2DF;--cafe:#2D1B15;--cafe-mid:#3D2820;--cafe-light:#5C3D32;
+  --naranja:#FF9100;--naranja-dark:#E07D00;--crema-dim:#F5E4C8;
+}
+.screen{min-height:100vh;}
+/* LOGIN CABANA */
+.login-bg{background:var(--cafe);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.5rem;}
+.cab-logo-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:1.5rem;}
+.cab-logo-icon{width:64px;height:64px;background:var(--naranja);border-radius:18px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.cab-logo-icon svg{width:34px;height:34px;fill:var(--cafe);}
+.cab-logo-name{font-family:'Poppins',sans-serif;font-size:26px;font-weight:900;color:var(--crema);letter-spacing:.5px;}
+.cab-logo-tag{font-size:11px;color:rgba(254,242,223,.45);font-weight:400;letter-spacing:.5px;margin-top:2px;}
+.login-card{background:rgba(254,242,223,.06);border:1px solid rgba(254,242,223,.12);border-radius:20px;padding:1.5rem;width:100%;max-width:380px;}
+.login-card-title{font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--crema);margin-bottom:1rem;text-align:center;}
+.punto-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;}
+.punto-card{background:rgba(254,242,223,.08);border:2px solid rgba(254,242,223,.15);border-radius:14px;padding:16px 12px;text-align:center;cursor:pointer;transition:all .18s;}
+.punto-card:hover{border-color:var(--naranja);background:rgba(255,145,0,.1);}
+.punto-card.selected{border-color:var(--naranja);background:rgba(255,145,0,.15);}
+.pc-icon{font-size:26px;margin-bottom:6px;}
+.pc-name{font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--crema);}
+.pc-sub{font-size:10px;color:rgba(254,242,223,.5);margin-top:2px;}
+.login-field{margin-bottom:12px;}
+.login-field label{font-size:11px;font-weight:600;color:rgba(254,242,223,.55);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px;}
+.login-field input,.login-field select{width:100%;padding:12px 14px;background:rgba(254,242,223,.08);border:1px solid rgba(254,242,223,.2);border-radius:12px;font-size:14px;color:var(--crema);font-family:'Inter',sans-serif;outline:none;}
+.login-field input::placeholder{color:rgba(254,242,223,.3);}
+.login-field input:focus,.login-field select:focus{border-color:var(--naranja);}
+.login-field select option{background:var(--cafe);color:var(--crema);}
+.login-btn{width:100%;padding:15px;background:var(--naranja);color:var(--cafe);font-family:'Poppins',sans-serif;font-size:14px;font-weight:800;border:none;border-radius:14px;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:opacity .15s;margin-top:4px;}
+.login-btn:hover{opacity:.9;}
+/* HOME SCREEN */
+.cab-phone{background:var(--cafe);min-height:100vh;display:flex;flex-direction:column;font-family:'Inter',sans-serif;}
+.cab-status{background:var(--crema);padding:14px 24px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+.cab-status-time{font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;color:var(--cafe);}
+.cab-header{background:var(--crema);padding:6px 20px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.cab-logo-row{display:flex;align-items:center;gap:8px;}
+.cab-hdr-icon{width:34px;height:34px;background:var(--cafe);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.cab-hdr-icon svg{width:18px;height:18px;fill:var(--naranja);}
+.cab-hdr-name{font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;color:var(--cafe);}
+.cab-hdr-sub{font-size:9px;color:var(--cafe-light);letter-spacing:.3px;}
+.cab-user-row{display:flex;align-items:center;gap:8px;}
+.cab-greet{text-align:right;}
+.cab-bienvenido{font-size:9px;color:var(--cafe-light);font-weight:500;text-transform:uppercase;letter-spacing:.3px;}
+.cab-username{font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:var(--cafe);}
+.cab-avatar{width:38px;height:38px;border-radius:50%;background:var(--naranja);display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;color:var(--cafe);border:2px solid var(--cafe);flex-shrink:0;}
+.cab-scroll{flex:1;overflow-y:auto;padding:12px 16px 80px;scrollbar-width:none;}
+.cab-scroll::-webkit-scrollbar{display:none;}
+.cab-dt{background:rgba(254,242,223,.07);border:1px solid rgba(254,242,223,.12);border-radius:14px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.cab-dt-l .cab-dt-date{font-size:10px;color:rgba(254,242,223,.5);text-transform:uppercase;letter-spacing:.3px;}
+.cab-dt-l .cab-dt-time{font-family:'Poppins',sans-serif;font-size:28px;font-weight:800;color:var(--crema);line-height:1.1;letter-spacing:-1px;}
+.cab-dt-r{text-align:right;}
+.cab-dt-r .cab-dt-day{font-size:10px;color:rgba(254,242,223,.5);text-transform:uppercase;letter-spacing:.3px;}
+.cab-dt-r .cab-dt-full{font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--naranja);}
+.cab-hero{background:var(--cafe-mid);border:1px solid rgba(255,145,0,.2);border-radius:18px;padding:16px 18px;margin-bottom:14px;}
+.cab-hero-lbl{font-size:9px;font-weight:600;color:rgba(254,242,223,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;display:flex;align-items:center;gap:5px;}
+.cab-hero-dot{width:5px;height:5px;background:var(--naranja);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.cab-hero-tlbl{font-size:10px;color:rgba(254,242,223,.45);text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px;}
+.cab-hero-time{font-family:'Poppins',sans-serif;font-size:32px;font-weight:900;color:var(--crema);letter-spacing:-1px;line-height:1;margin-bottom:10px;}
+.cab-hero-bot{display:flex;align-items:center;justify-content:space-between;}
+.cab-est-lbl{font-size:9px;color:rgba(254,242,223,.4);}
+.cab-est-val{font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:var(--naranja);}
+.cab-clk{width:30px;height:30px;background:rgba(255,145,0,.15);border:1px solid rgba(255,145,0,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.cab-clk svg{width:14px;height:14px;stroke:var(--naranja);fill:none;stroke-width:2;}
+.cab-sec-lbl{font-size:9px;font-weight:600;color:rgba(254,242,223,.3);text-transform:uppercase;letter-spacing:.7px;margin:0 2px 8px;}
+.cab-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
+.cab-btn{background:var(--crema);border-radius:14px;padding:13px 12px;display:flex;align-items:center;gap:9px;cursor:pointer;transition:transform .12s;min-height:60px;border:1.5px solid transparent;}
+.cab-btn:active{transform:scale(.95);}
+.cab-btn.highlight{border-color:var(--naranja);background:#FFF8EE;}
+.cab-btn-icon{width:34px;height:34px;background:rgba(45,27,21,.08);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cab-btn-icon svg{width:17px;height:17px;fill:var(--cafe);}
+.cab-btn-lbl{font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;color:var(--cafe);line-height:1.2;}
+.cab-cta{background:var(--naranja);border-radius:14px;padding:16px 20px;display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;margin-bottom:10px;border:none;width:100%;transition:opacity .15s;}
+.cab-cta:active{opacity:.85;}
+.cab-cta svg{width:18px;height:18px;stroke:var(--cafe);fill:none;stroke-width:2.5;}
+.cab-cta-txt{font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;color:var(--cafe);text-transform:uppercase;letter-spacing:.5px;}
+.cab-ticker{background:rgba(254,242,223,.05);border:1px solid rgba(254,242,223,.08);border-radius:9px;padding:8px 12px;display:flex;align-items:center;gap:7px;}
+.cab-ticker-dot{width:5px;height:5px;background:var(--naranja);border-radius:50%;flex-shrink:0;}
+.cab-ticker-txt{font-size:11px;color:rgba(254,242,223,.45);line-height:1.4;}
+.cab-ticker-txt strong{color:rgba(254,242,223,.7);}
+/* SHARED BOTTOM NAV */
+.cab-nav{background:var(--crema);padding:8px 0 18px;display:flex;align-items:center;justify-content:space-around;flex-shrink:0;position:sticky;bottom:0;}
+.cab-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:0 8px;transition:transform .1s;}
+.cab-nav-item:active{transform:scale(.88);}
+.cab-nav-item svg{width:21px;height:21px;}
+.cab-nav-item.active svg{stroke:var(--naranja);}
+.cab-nav-item:not(.active) svg{stroke:rgba(45,27,21,.3);}
+.cab-nav-lbl{font-size:9px;font-weight:600;letter-spacing:.2px;}
+.cab-nav-item.active .cab-nav-lbl{color:var(--naranja);}
+.cab-nav-item:not(.active) .cab-nav-lbl{color:rgba(45,27,21,.3);}
+.cab-nav-bar{width:18px;height:3px;background:var(--naranja);border-radius:2px;margin-bottom:1px;}
+/* rol badge in app header */
+.rol-chip{font-size:10px;padding:3px 9px;border-radius:8px;font-weight:600;}
+.rol-empleado{background:var(--green-l,#EAF3DE);color:var(--green,#3B6D11);}
+.rol-jefe{background:#FAEEDA;color:#633806;}
+.rol-admin{background:#FAECE7;color:#712B13;}
+
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
 <!-- ══ SCREEN: LOGIN ══════════════════════════════════════════ -->
 <div class="screen active" id="screen-login">
-  <div class="login-wrap">
+  <div class="login-bg">
     <div class="login-clock">
       <div class="clock-time" id="login-time">--:--</div>
       <div class="clock-date" id="login-date">cargando...</div>
     </div>
-    <div class="login-logo"><svg viewBox="0 0 24 24"><path d="M12 3C7 3 3 7 3 12h2c0-3.9 3.1-7 7-7s7 3.1 7 7h2c0-5-4-9-9-9zm-1 5v5l4.3 2.5.7-1.2-3.5-2.1V8H11z"/></svg></div>
-    <div class="login-title">CheckResto</div>
-    <div class="login-sub">Selecciona tu punto de venta<br>para iniciar el turno</div>
-    <div class="punto-grid">
-      <div class="punto-card" id="pc-soacha" onclick="selectPunto('soacha')">
-        <div class="pc-icon">🏠</div>
-        <div class="pc-name">Soacha</div>
-        <div class="pc-sub">Taquería Hernández</div>
+    <div class="cab-logo-wrap">
+      <div class="cab-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="#2D1B15" stroke-width="1.5"/></svg>
       </div>
-      <div class="punto-card" id="pc-plaza" onclick="selectPunto('plaza')">
-        <div class="pc-icon">🏬</div>
-        <div class="pc-name">Mi Plaza</div>
-        <div class="pc-sub">Cabaña Jekemi</div>
+      <div class="cab-logo-name">LA CABAÑA</div>
+      <div class="cab-logo-tag">Hechas Como En Casa</div>
+    </div>
+    <div class="login-card">
+      <div class="login-card-title">Selecciona tu punto de venta</div>
+      <div class="punto-grid">
+        <div class="punto-card" id="pc-soacha" onclick="selectPunto('soacha')">
+          <div class="pc-icon">🏠</div>
+          <div class="pc-name">Soacha</div>
+          <div class="pc-sub">Taquería Hernández</div>
+        </div>
+        <div class="punto-card" id="pc-plaza" onclick="selectPunto('plaza')">
+          <div class="pc-icon">🏬</div>
+          <div class="pc-name">Mi Plaza</div>
+          <div class="pc-sub">Cabaña Jekemi</div>
+        </div>
+      </div>
+      <div class="login-field">
+        <label>Tu nombre</label>
+        <input type="text" id="login-nombre" placeholder="Ej: Carlos Martínez" autocomplete="name">
+      </div>
+      <div class="login-field">
+        <label>Tu rol</label>
+        <select id="login-rol">
+          <option value="">Selecciona tu rol...</option>
+          <option value="empleado">Cocina</option>
+          <option value="cajero">Cajero / Recepción</option>
+          <option value="domiciliario">Domiciliario</option>
+          <option value="jefe">Jefe de cocina</option>
+          <option value="admin">Administrador / Encargado</option>
+        </select>
+      </div>
+      <button class="login-btn" onclick="entrar()">Ingresar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: HOME (La Cabaña) ══════════════════════════════ -->
+<div class="screen" id="screen-home">
+  <div class="cab-phone">
+    <div class="cab-status">
+      <span class="cab-status-time" id="cab-stime">--:--</span>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2D1B15" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2D1B15" stroke-width="2"><rect x="2" y="7" width="18" height="11" rx="2"/><path d="M22 11v3"/></svg>
       </div>
     </div>
-    <div class="login-name-wrap">
-      <label>Tu nombre</label>
-      <input type="text" id="login-nombre" placeholder="Ej: Carlos Martínez">
+    <div class="cab-header">
+      <div class="cab-logo-row">
+        <div class="cab-hdr-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="#FF9100" stroke-width="1.5"/></svg>
+        </div>
+        <div>
+          <div class="cab-hdr-name">LA CABAÑA</div>
+          <div class="cab-hdr-sub">Hechas Como En Casa</div>
+        </div>
+      </div>
+      <div class="cab-user-row">
+        <div class="cab-greet">
+          <div class="cab-bienvenido">¡Hola!</div>
+          <div class="cab-username" id="cab-username">—</div>
+        </div>
+        <div class="cab-avatar" id="cab-avatar">—</div>
+      </div>
     </div>
-    <button class="login-btn" onclick="entrar()">Entrar al turno →</button>
-    <div class="admin-link" onclick="entrarAdmin()">Acceso administrador</div>
+    <div class="cab-scroll">
+      <div class="cab-dt">
+        <div class="cab-dt-l">
+          <div class="cab-dt-date" id="cab-date">—</div>
+          <div class="cab-dt-time" id="cab-time">--:--</div>
+        </div>
+        <div class="cab-dt-r">
+          <div class="cab-dt-day">HOY</div>
+          <div class="cab-dt-full" id="cab-full">—</div>
+        </div>
+      </div>
+      <div class="cab-hero">
+        <div class="cab-hero-lbl"><div class="cab-hero-dot"></div>Resumen de jornada</div>
+        <div class="cab-hero-tlbl">Turno de hoy</div>
+        <div class="cab-hero-time">Apertura</div>
+        <div class="cab-hero-bot">
+          <div>
+            <div class="cab-est-lbl">Punto asignado</div>
+            <div class="cab-est-val" id="cab-punto-hero">—</div>
+          </div>
+          <div class="cab-clk">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="cab-sec-lbl">Acciones rápidas</div>
+      <div class="cab-grid">
+        <div class="cab-btn" onclick="irAChecklist()">
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--cafe)" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <div class="cab-btn-lbl">Mi checklist del turno</div>
+        </div>
+        <div class="cab-btn" onclick="irAChecklist()">
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--cafe)" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+          <div class="cab-btn-lbl">Alertas activas</div>
+        </div>
+        <div class="cab-btn">
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--cafe)" d="M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2zm0 12c-5.33 0-8 2.67-8 4v2h16v-2c0-1.33-2.67-4-8-4z"/></svg></div>
+          <div class="cab-btn-lbl">Mis turnos</div>
+        </div>
+        <div class="cab-btn">
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--cafe)" d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm1 4v2h8V6H8zm0 4v2h8v-2H8zm0 4v2h5v-2H8z"/></svg></div>
+          <div class="cab-btn-lbl">Mis nóminas</div>
+        </div>
+        <div class="cab-btn">
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--cafe)" d="M19 3H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2v9l5-3 5 3v-9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg></div>
+          <div class="cab-btn-lbl">Solicitar vacaciones</div>
+        </div>
+        <div class="cab-btn">
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--cafe)" d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg></div>
+          <div class="cab-btn-lbl">Capacitación</div>
+        </div>
+        <div class="cab-btn">
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--cafe)" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+          <div class="cab-btn-lbl">Directorio equipo</div>
+        </div>
+        <div class="cab-btn">
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--cafe)" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg></div>
+          <div class="cab-btn-lbl">Beneficios empleado</div>
+        </div>
+        <div class="cab-btn" id="cab-btn-papas" style="display:none;" onclick="irAPapas()">
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--cafe)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="10" ry="6"/><path d="M12 6c2 1 3 3 3 6s-1 5-3 6"/><path d="M12 6c-2 1-3 3-3 6s1 5 3 6"/></svg></div>
+          <div class="cab-btn-lbl">Control de papas</div>
+        </div>
+        <div class="cab-btn" id="cab-btn-admin" style="display:none;" onclick="irAAdmin()">
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--cafe)" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+          <div class="cab-btn-lbl">Dashboard admin</div>
+        </div>
+      </div>
+      <button class="cab-cta" onclick="irAChecklist()">
+        <svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span class="cab-cta-txt">Abrir checklist del turno</span>
+      </button>
+      <div class="cab-ticker">
+        <div class="cab-ticker-dot"></div>
+        <div class="cab-ticker-txt"><strong>Anuncio:</strong> Recuerda registrar temperaturas al inicio del turno.</div>
+      </div>
+
+      <!-- PERFIL CARD -->
+      <div style="background:rgba(254,242,223,.06);border:1px solid rgba(254,242,223,.12);border-radius:16px;padding:14px 16px;margin-top:12px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div class="cab-avatar" id="cab-avatar2" style="width:44px;height:44px;font-size:16px;">—</div>
+          <div>
+            <div style="font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--crema);" id="cab-perfil-nombre">—</div>
+            <div style="font-size:11px;color:rgba(254,242,223,.45);margin-top:2px;" id="cab-perfil-rol">—</div>
+          </div>
+          <div style="margin-left:auto;">
+            <div style="font-size:10px;color:rgba(254,242,223,.35);text-align:right;">Punto</div>
+            <div style="font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;color:var(--naranja);" id="cab-perfil-punto">—</div>
+          </div>
+        </div>
+        <button onclick="showLogout()" style="width:100%;padding:11px;background:rgba(255,80,60,.15);border:1px solid rgba(255,80,60,.3);border-radius:10px;color:#FF6B55;font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.3px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF6B55" stroke-width="2.5" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+    <div class="cab-nav" id="cab-nav-home">
+      <div class="cab-nav-item active" onclick="goHome()">
+        <div class="cab-nav-bar"></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="cab-nav-lbl">Inicio</span>
+      </div>
+      <div class="cab-nav-item" onclick="irAChecklist()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span class="cab-nav-lbl">Checklist</span>
+      </div>
+      <div class="cab-nav-item" onclick="irAChecklist()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="cab-nav-lbl">Alertas</span>
+      </div>
+      <div class="cab-nav-item" onclick="showLogout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span class="cab-nav-lbl">Salir</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -603,14 +864,13 @@ select{padding:5px 8px;}
 <div class="screen" id="screen-app">
   <div class="app-header">
     <div class="hdr-left">
-      <div class="hdr-logo"><svg viewBox="0 0 24 24"><path d="M12 3C7 3 3 7 3 12h2c0-3.9 3.1-7 7-7s7 3.1 7 7h2c0-5-4-9-9-9zm-1 5v5l4.3 2.5.7-1.2-3.5-2.1V8H11z"/></svg></div>
+      <div class="hdr-logo"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="#2D1B15" stroke-width="1.5"/></svg></div>
       <div>
-        <div class="hdr-title" id="hdr-punto">—</div>
+        <div class="hdr-title">LA CABAÑA</div>
         <div class="hdr-sub" id="hdr-user">—</div>
       </div>
     </div>
     <div class="hdr-right">
-      <div class="hdr-clock" id="hdr-clock">--:--</div>
       <div class="punto-badge" id="hdr-badge">—</div>
       <div class="hdr-btn" onclick="goBack()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -621,6 +881,10 @@ select{padding:5px 8px;}
   <div class="turno-bar" id="turno-bar"></div>
   <div class="page-content" id="main-content"></div>
   <div class="bottom-nav">
+    <div class="bn-item" id="bn-home" onclick="goHome()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="bn-label">Inicio</span>
+    </div>
     <div class="bn-item active" id="bn-checklist" onclick="switchTab('checklist')">
       <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       <span class="bn-label">Checklist</span>
@@ -815,6 +1079,8 @@ const CL = {
   },
   caja:{
     apertura:[
+      {t:'Temperatura nevera refrigeración (0–4°C)',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
+      {t:'Temperatura nevera congelación (-18 a -20°C)',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
       {t:'Base de caja apertura ($)',tipo:'dinero',campo:'Base apertura',crit:true},
       {t:'Efectivo recibido turno anterior ($)',tipo:'dinero',campo:'Efectivo recibido',crit:true},
       {t:'Faltante turno anterior ($)',tipo:'dinero',campo:'Faltante anterior',crit:true},
@@ -839,6 +1105,8 @@ const CL = {
       {t:'Plataformas delivery sin errores o pedidos pendientes',tipo:'check',crit:true},
     ],
     cierre:[
+      {t:'Temperatura nevera refrigeración al cierre',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
+      {t:'Temperatura nevera congelación al cierre',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
       {t:'Efectivo en caja al cierre ($)',tipo:'dinero',campo:'Efectivo cierre',crit:true},
       {t:'Ventas en datáfono ($)',tipo:'dinero',campo:'Ventas datáfono',crit:true},
       {t:'Total ventas sistema ($)',tipo:'dinero',campo:'Ventas sistema',crit:true},
@@ -847,6 +1115,7 @@ const CL = {
       {t:'Bolsa 2: facturas del día con fecha, punto y forma de pago',tipo:'check',crit:true},
       {t:'Paquetes listos para transportar al día siguiente',tipo:'check',crit:true},
       {t:'Inventario datáfonos al cierre',tipo:'datofonos',crit:true},
+      {t:'Limpiar televisores',tipo:'check',crit:true},
       {t:'Limpiar mesas y sillas para el día siguiente',tipo:'check',crit:true},
       {t:'Aseo área caja cierre',tipo:'aseo',label:'Aseo caja',crit:true},
     ],
@@ -885,7 +1154,6 @@ const CL = {
       {t:'Inventario bebidas — nevera surtida y limpia',tipo:'check',crit:true},
       {t:'Maletas limpias y desinfectadas',tipo:'check',crit:true},
       {t:'Bandejas limpias y desinfectadas',tipo:'check',crit:true},
-      {t:'Limpiar televisores',tipo:'check',crit:true},
       {t:'Datáfono funcionando',tipo:'check',crit:true},
       {t:'Aseo final salón',tipo:'aseo',label:'Aseo salón',crit:true},
       {t:'Aseo final baños',tipo:'aseo',label:'Aseo baños',crit:true},
@@ -946,22 +1214,92 @@ const CL = {
 };
 
 // ══════════════════════════════════════════════════════════════
-// PERSISTENT STORAGE (localStorage)
+// ══════════════════════════════════════════════════════════════
+// FIREBASE — lacabana-app
+// ══════════════════════════════════════════════════════════════
+const _fbConfig = {
+  apiKey: "AIzaSyChgB2irJrzTuIGHWsyZPEXtZdWXcuEAjo",
+  authDomain: "lacabana-app.firebaseapp.com",
+  projectId: "lacabana-app",
+  storageBucket: "lacabana-app.firebasestorage.app",
+  messagingSenderId: "856696449767",
+  appId: "1:856696449767:web:1d623828d05d5f96c15042"
+};
+// Init solo si no hay otra app Firebase con este nombre
+let _fbApp, _db;
+try {
+  _fbApp = firebase.app('lacabana');
+} catch(e) {
+  _fbApp = firebase.initializeApp(_fbConfig, 'lacabana');
+}
+_db = firebase.firestore(_fbApp);
+let _fbOnline = true;
+_db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+
+// ══════════════════════════════════════════════════════════════
+// PERSISTENT STORAGE (localStorage + Firebase)
 // ══════════════════════════════════════════════════════════════
 function todayStr(){
-  return new Date().toISOString().slice(0,10);
+  const n=new Date();
+  return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');
 }
+function _lsKey(punto,date,area,turno){ return `cr_${punto}_${date}_${area}_${turno}`; }
+function _fbDocId(punto,date,area,turno){ return `${punto}_${date}_${area}_${turno}`; }
+
+// Guardar — escribe en localStorage Y en Firebase
 function saveData(punto,area,turno,data){
-  const key=`cr_${punto}_${todayStr()}_${area}_${turno}`;
+  const key=_lsKey(punto,todayStr(),area,turno);
   localStorage.setItem(key,JSON.stringify(data));
+  // Firebase async (no bloquea UI)
+  if(_fbOnline){
+    const docId=_fbDocId(punto,todayStr(),area,turno);
+    _db.collection('checklists').doc(docId).set({
+      ...data,
+      punto, area, turno,
+      fecha: todayStr(),
+      usuario: typeof curUser!=='undefined'?curUser:'',
+      rol: typeof curRol!=='undefined'?curRol:'',
+      actualizado: new Date().toISOString()
+    }).catch(err=>{ console.warn('Firebase write error:',err); _fbOnline=false; });
+  }
 }
+
+// Guardar firma en Firebase
+async function saveFirmaFB(punto,area,turno,nombre){
+  if(!_fbOnline) return;
+  const docId=_fbDocId(punto,todayStr(),area,turno);
+  try {
+    await _db.collection('firmas').doc(docId).set({
+      punto, area, turno, fecha:todayStr(),
+      nombre, rol: typeof curRol!=='undefined'?curRol:'',
+      hora: new Date().toLocaleString('es-CO',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'}),
+      guardado_en: new Date().toISOString()
+    });
+  } catch(e){ console.warn('Firma FB error:',e); }
+}
+
+// Cargar — intenta localStorage primero, luego Firebase
 function loadData(punto,area,turno){
-  const key=`cr_${punto}_${todayStr()}_${area}_${turno}`;
+  const key=_lsKey(punto,todayStr(),area,turno);
   const d=localStorage.getItem(key);
-  return d?JSON.parse(d):null;
+  if(d) return JSON.parse(d);
+  // Si no hay en localStorage, intentar cargar de Firebase en background
+  if(_fbOnline){
+    const docId=_fbDocId(punto,todayStr(),area,turno);
+    _db.collection('checklists').doc(docId).get().then(doc=>{
+      if(doc.exists){
+        localStorage.setItem(key,JSON.stringify(doc.data()));
+        // Recargar vista si es el turno activo
+        if(typeof curPunto!=='undefined'&&punto===curPunto&&area===curArea&&turno===curTurno){
+          loadCurrent(); renderChecklist();
+        }
+      }
+    }).catch(()=>{});
+  }
+  return null;
 }
 function loadDataDate(punto,date,area,turno){
-  const key=`cr_${punto}_${date}_${area}_${turno}`;
+  const key=_lsKey(punto,date,area,turno);
   const d=localStorage.getItem(key);
   return d?JSON.parse(d):null;
 }
@@ -976,6 +1314,25 @@ function getRecentDates(){
   });
   return [...dates].sort().reverse().slice(0,7);
 }
+
+// Indicador de conexión Firebase
+function showFbStatus(ok){
+  let el=document.getElementById('fb-status');
+  if(!el){
+    el=document.createElement('div');
+    el.id='fb-status';
+    el.style.cssText='position:fixed;bottom:70px;right:12px;font-size:10px;padding:3px 8px;border-radius:8px;z-index:200;font-weight:600;transition:opacity .5s;';
+    document.body.appendChild(el);
+  }
+  el.textContent=ok?'☁️ Sincronizado':'📵 Sin conexión';
+  el.style.background=ok?'rgba(59,109,17,.2)':'rgba(163,45,45,.2)';
+  el.style.color=ok?'#3B6D11':'#A32D2D';
+  el.style.opacity='1';
+  setTimeout(()=>{ if(ok) el.style.opacity='0'; },3000);
+}
+// Monitor conexión
+window.addEventListener('online', ()=>{ _fbOnline=true; showFbStatus(true); });
+window.addEventListener('offline',()=>{ _fbOnline=false; showFbStatus(false); });
 
 // ══════════════════════════════════════════════════════════════
 // SESSION STATE
@@ -1033,25 +1390,184 @@ function selectPunto(p){
   document.querySelectorAll('.punto-card').forEach(c=>c.classList.remove('selected'));
   document.getElementById('pc-'+p).classList.add('selected');
 }
+let curRol='empleado';
+
 function entrar(){
   const nombre=document.getElementById('login-nombre').value.trim();
+  const rol=document.getElementById('login-rol').value;
   if(!selPunto){alert('Selecciona un punto de venta');return;}
   if(!nombre){alert('Escribe tu nombre');return;}
-  curPunto=selPunto; curUser=nombre;
-  document.getElementById('hdr-punto').textContent=PUNTOS[curPunto].name;
-  document.getElementById('hdr-user').textContent=curUser+' · '+new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'short'});
-  document.getElementById('hdr-badge').textContent=PUNTOS[curPunto].icon+' '+PUNTOS[curPunto].name;
+  if(!rol){alert('Selecciona tu rol');return;}
+  curPunto=selPunto; curUser=nombre; curRol=rol;
+  updateHomeUI();
+  startClock();
+  showScreen('home');
+}
+
+function updateHomeUI(){
+  const p=PUNTOS[curPunto];
+  const initials=curUser.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  const rolLabels={empleado:'Cocina',cajero:'Cajero / Recepción',domiciliario:'Domiciliario',jefe:'Jefe de cocina',admin:'Administrador'};
+  const el=(id)=>document.getElementById(id);
+  if(el('cab-username')) el('cab-username').textContent=curUser.split(' ')[0];
+  if(el('cab-avatar'))   el('cab-avatar').textContent=initials;
+  if(el('cab-avatar2'))  el('cab-avatar2').textContent=initials;
+  if(el('cab-punto-hero')) el('cab-punto-hero').textContent=p.icon+' '+p.name;
+  if(el('cab-perfil-nombre')) el('cab-perfil-nombre').textContent=curUser;
+  if(el('cab-perfil-rol'))    el('cab-perfil-rol').textContent=rolLabels[curRol]||curRol;
+  if(el('cab-perfil-punto'))  el('cab-perfil-punto').textContent=p.icon+' '+p.name;
+  const adminBtn=document.getElementById('cab-btn-admin');
+  if(adminBtn) adminBtn.style.display=(curRol==='admin'||curRol==='jefe')?'flex':'none';
+  // Control de papas: admin, jefe, supervisor, cocina
+  const papasBtn=document.getElementById('cab-btn-papas');
+  const rolesConPapas=['admin','jefe','supervisor','cocina','empleado'];
+  if(papasBtn) papasBtn.style.display=rolesConPapas.includes(curRol)?'flex':'none';
+}
+
+function showLogout(){
+  // Show inline confirm inside home screen instead of browser alert
+  const existing=document.getElementById('logout-modal');
+  if(existing){existing.remove();return;}
+  const modal=document.createElement('div');
+  modal.id='logout-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:999;padding:1.5rem;';
+  modal.innerHTML=`<div style="background:var(--cafe);border:1px solid rgba(254,242,223,.15);border-radius:20px;padding:24px;width:100%;max-width:320px;text-align:center;">
+    <div style="font-size:28px;margin-bottom:10px;">👋</div>
+    <div style="font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;color:var(--crema);margin-bottom:6px;">¿Cerrar sesión?</div>
+    <div style="font-size:12px;color:rgba(254,242,223,.45);margin-bottom:20px;">Hola <strong style="color:rgba(254,242,223,.8);">${curUser}</strong>, ¿seguro que quieres salir?</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="document.getElementById('logout-modal').remove()" style="flex:1;padding:12px;background:rgba(254,242,223,.08);border:1px solid rgba(254,242,223,.15);border-radius:12px;color:rgba(254,242,223,.6);font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>
+      <button onclick="confirmarLogout()" style="flex:1;padding:12px;background:rgba(255,80,60,.2);border:1px solid rgba(255,80,60,.4);border-radius:12px;color:#FF6B55;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Sí, salir</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function confirmarLogout(){
+  const modal=document.getElementById('logout-modal');
+  if(modal) modal.remove();
+  curPunto=null; curUser=''; curRol='empleado'; selPunto=null;
+  window._filteredAreas=null;
+  // Clear form
+  const n=document.getElementById('login-nombre');
+  const r=document.getElementById('login-rol');
+  const p1=document.getElementById('pc-soacha');
+  const p2=document.getElementById('pc-plaza');
+  if(n) n.value='';
+  if(r) r.value='';
+  if(p1) p1.classList.remove('selected');
+  if(p2) p2.classList.remove('selected');
+  showScreen('login');
+}
+
+function irAChecklist(){
+  // Set up app header
+  const p=PUNTOS[curPunto];
+  const uh=document.getElementById('hdr-user');
+  const bh=document.getElementById('hdr-badge');
+  if(uh) uh.textContent=curUser+' · '+p.name;
+  if(bh) bh.textContent=p.icon+' '+p.name;
+  // Filter areas by rol
+  filterAreasByRol();
   loadCurrent();
   showScreen('app');
   buildAreaNav(); buildTurnoBar(); switchTab('checklist');
 }
-function entrarAdmin(){
+
+function filterAreasByRol(){
+  // Admin and jefe see all areas
+  // cajero sees only caja
+  // domiciliario sees only domi
+  // cocinero/empleado sees cocina, neveras, bodega
+  const rolAreas={
+    admin:   null, // null = all
+    jefe:    null,
+    cajero:  ['caja','admin'],
+    domiciliario: ['domi','admin'],
+    empleado:['cocina','neveras','bodega','admin'],
+  };
+  const allowed=rolAreas[curRol];
+  if(allowed){
+    // filter AREAS_LIST temporarily — we store in window
+    window._filteredAreas=AREAS_LIST.filter(a=>allowed.includes(a.id));
+  } else {
+    window._filteredAreas=null;
+  }
+}
+
+function getVisibleAreas(){
+  return window._filteredAreas||AREAS_LIST;
+}
+
+function irAPapas(){
+  // Map La Cabaña rol to papas app rol
+  const rolMap={admin:'admin',jefe:'admin',supervisor:'supervisor',cocina:'cocina',empleado:'cocina'};
+  const papasRol=rolMap[curRol]||'cocina';
+  window.open('papas.html?cabana_rol='+papasRol,'_blank');
+}
+
+function irAAdmin(){
   showScreen('admin');
   document.getElementById('admin-fecha').textContent=new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
   adminDate=todayStr();
   renderAdmin();
 }
-function goBack(){showScreen('login');}
+
+function goHome(){
+  showScreen('home');
+}
+
+function confirmarLogout2(){} // placeholder
+
+const _dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const _meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const _mesesC=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+let _clockStarted=false;
+function tickClock(){
+  const now=new Date();
+  const hh=String(now.getHours()).padStart(2,'0');
+  const mm=String(now.getMinutes()).padStart(2,'0');
+  const timeStr=`${hh}:${mm}`;
+  const DIAS=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const dateStr=`${DIAS[now.getDay()]} ${now.getDate()} de ${MESES[now.getMonth()]}`;
+  const lt=document.getElementById('login-time');
+  const ld=document.getElementById('login-date');
+  const hc=document.getElementById('hdr-clock');
+  if(lt)lt.textContent=timeStr;
+  if(ld)ld.textContent=dateStr;
+  if(hc)hc.textContent=timeStr;
+}
+
+function startClock(){
+  if(_clockStarted)return;
+  _clockStarted=true;
+  function tick(){
+    const now=new Date();
+    const h=String(now.getHours()).padStart(2,'0');
+    const m=String(now.getMinutes()).padStart(2,'0');
+    const t=h+':'+m;
+    const d=_dias[now.getDay()];
+    const f=now.getDate();
+    const mes=_meses[now.getMonth()];
+    const mc=_mesesC[now.getMonth()];
+    const y=now.getFullYear();
+    const st=document.getElementById('cab-stime');
+    const ct=document.getElementById('cab-time');
+    const cd=document.getElementById('cab-date');
+    const cf=document.getElementById('cab-full');
+    if(st)st.textContent=t;
+    if(ct)ct.textContent=t;
+    if(cd)cd.textContent=d+', '+f+' '+mc;
+    if(cf)cf.textContent=mes+' '+f+', '+y;
+  }
+  tick();
+  setInterval(tick,1000);
+  tickClock();
+  setInterval(tickClock,1000);
+}
+function entrarAdmin(){ irAAdmin(); }
+function goBack(){if(curUser){showScreen('home');}else{showScreen('login');}}
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+id).classList.add('active');
@@ -1061,7 +1577,7 @@ function showScreen(id){
 // APP NAV
 // ══════════════════════════════════════════════════════════════
 function buildAreaNav(){
-  document.getElementById('area-nav').innerHTML=AREAS_LIST.map(a=>
+  document.getElementById('area-nav').innerHTML=getVisibleAreas().map(a=>
     `<div class="area-tab${a.id===curArea?' active':''}" onclick="setArea('${a.id}')">${a.name}</div>`
   ).join('');
 }
@@ -1076,7 +1592,8 @@ function setTurno(id){curTurno=id;loadCurrent();buildTurnoBar();renderChecklist(
 function switchTab(tab){
   curTab=tab;
   ['checklist','alertas','historial'].forEach(t=>{
-    document.getElementById('bn-'+t).classList.toggle('active',t===tab);
+    const el=document.getElementById('bn-'+t);
+    if(el) el.classList.toggle('active',t===tab);
   });
   if(tab==='checklist') renderChecklist();
   else if(tab==='alertas') renderAlertasTab();
@@ -1399,6 +1916,7 @@ function firmar(){
   if(!nombre.trim()){alert('Escribe tu nombre');return;}
   const ahora=new Date();
   SIGNED[sfk()]={nombre:nombre.trim(),hora:ahora.toLocaleString('es-CO',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'})};
+  saveFirmaFB(curPunto,curArea,curTurno,nombre.trim());
   persistCurrent();
   renderChecklist();
 }
@@ -1777,24 +2295,9 @@ function sendWspAdmin(){
   window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,'_blank');
 }
 
-// ── RELOJ EN VIVO ──────────────────────────────────────────────
-function tickClock(){
-  const now=new Date();
-  const hh=String(now.getHours()).padStart(2,'0');
-  const mm=String(now.getMinutes()).padStart(2,'0');
-  const timeStr=`${hh}:${mm}`;
-  const DIAS=['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
-  const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  const dateStr=`${DIAS[now.getDay()]} ${now.getDate()} de ${MESES[now.getMonth()]}`;
-  const lt=document.getElementById('login-time');
-  const ld=document.getElementById('login-date');
-  const hc=document.getElementById('hdr-clock');
-  if(lt)lt.textContent=timeStr;
-  if(ld)ld.textContent=dateStr;
-  if(hc)hc.textContent=timeStr;
-}
+// Iniciar reloj en login desde el primer momento
 tickClock();
-setInterval(tickClock,10000);
+setInterval(tickClock, 1000);
 </script>
 </body>
 </html>
