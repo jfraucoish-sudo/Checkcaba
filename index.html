@@ -1437,11 +1437,12 @@ function mostrarPinModal(nombre, rol){
 
   const inp=document.createElement('input');
   inp.id='pin-input';
-  inp.type='password';
-  inp.inputMode='numeric';
+  inp.type='tel';
   inp.maxLength=4;
-  inp.placeholder='••••';
+  inp.placeholder='0000';
   inp.autocomplete='off';
+  inp.setAttribute('autocomplete','new-password');
+  inp.setAttribute('data-lpignore','true');
   inp.style.cssText='width:100%;padding:14px;text-align:center;font-size:24px;letter-spacing:10px;background:rgba(254,242,223,.08);border:1.5px solid rgba(254,242,223,.2);border-radius:12px;color:#FEF2DF;outline:none;font-family:Poppins,sans-serif;';
 
   const err=document.createElement('div');
@@ -1478,7 +1479,14 @@ function mostrarPinModal(nombre, rol){
 
   btnOk.onclick=intentarPin;
   inp.addEventListener('keydown', e=>{ if(e.key==='Enter') intentarPin(); });
-  inp.addEventListener('input', ()=>{ inp.value=inp.value.replace(/[^0-9]/g,''); if(inp.value.length===4) intentarPin(); });
+  // Delay para evitar que autocompletado del navegador dispare la verificación
+  setTimeout(()=>{
+    inp.value='';
+    inp.addEventListener('input', ()=>{
+      inp.value=inp.value.replace(/[^0-9]/g,'');
+      err.textContent='';
+    });
+  }, 500);
 
   box.appendChild(title);
   box.appendChild(sub);
