@@ -706,6 +706,7 @@ select{padding:5px 8px;}
           <option value="cajero">Cajero / Recepción</option>
           <option value="domiciliario">Domiciliario</option>
           <option value="jefe">Jefe de cocina</option>
+          <option value="supervisor">Supervisor</option>
           <option value="admin">Administrador / Encargado</option>
         </select>
       </div>
@@ -1407,7 +1408,7 @@ function entrar(){
 function updateHomeUI(){
   const p=PUNTOS[curPunto];
   const initials=curUser.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
-  const rolLabels={empleado:'Cocina',cajero:'Cajero / Recepción',domiciliario:'Domiciliario',jefe:'Jefe de cocina',admin:'Administrador'};
+  const rolLabels={empleado:'Cocina',cajero:'Cajero / Recepción',domiciliario:'Domiciliario',jefe:'Jefe de cocina',supervisor:'Supervisor',admin:'Administrador'};
   const el=(id)=>document.getElementById(id);
   if(el('cab-username')) el('cab-username').textContent=curUser.split(' ')[0];
   if(el('cab-avatar'))   el('cab-avatar').textContent=initials;
@@ -1417,10 +1418,10 @@ function updateHomeUI(){
   if(el('cab-perfil-rol'))    el('cab-perfil-rol').textContent=rolLabels[curRol]||curRol;
   if(el('cab-perfil-punto'))  el('cab-perfil-punto').textContent=p.icon+' '+p.name;
   const adminBtn=document.getElementById('cab-btn-admin');
-  if(adminBtn) adminBtn.style.display=(curRol==='admin'||curRol==='jefe')?'flex':'none';
+  if(adminBtn) adminBtn.style.display=(curRol==='admin'||curRol==='jefe'||curRol==='supervisor')?'flex':'none';
   // Control de papas: admin, jefe, supervisor, cocina
   const papasBtn=document.getElementById('cab-btn-papas');
-  const rolesConPapas=['admin','jefe','supervisor','cocina','empleado'];
+  const rolesConPapas=['admin','jefe','supervisor','empleado'];
   if(papasBtn) papasBtn.style.display=rolesConPapas.includes(curRol)?'flex':'none';
 }
 
@@ -1500,9 +1501,17 @@ function getVisibleAreas(){
 }
 
 function irAPapas(){
-  // Map La Cabaña rol to papas app rol
-  const rolMap={admin:'admin',jefe:'admin',supervisor:'supervisor',cocina:'cocina',empleado:'cocina'};
-  const papasRol=rolMap[curRol]||'cocina';
+  // curRol values: admin, jefe, supervisor, cajero, domiciliario, empleado
+  // papas modes: admin, super, 1 (operario)
+  const rolMap={
+    admin:'admin',
+    jefe:'admin',
+    supervisor:'supervisor',
+    cajero:'1',
+    domiciliario:'1',
+    empleado:'1'
+  };
+  const papasRol=rolMap[curRol]||'1';
   window.open('papas.html?cabana_rol='+papasRol,'_blank');
 }
 

@@ -1709,7 +1709,15 @@ function aplicarModoAcceso(modo) {
   const params = new URLSearchParams(window.location.search);
   const fromCabana = params.get('cabana_rol');
   if(fromCabana) {
-    const modoMap = {admin:'admin', jefe:'admin', supervisor:'super', cocina:'1'};
+    const modoMap = {
+      admin:'admin',
+      jefe:'admin',
+      supervisor:'super',
+      cajero:'1',
+      domiciliario:'1',
+      empleado:'1',
+      '1':'1'
+    };
     const modo = modoMap[fromCabana] || '1';
     sessionStorage.setItem('jekemi_ok', modo);
   }
