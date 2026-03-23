@@ -631,13 +631,32 @@ select{padding:5px 8px;}
 .cab-dt-r{text-align:right;}
 .cab-dt-r .cab-dt-day{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;}
 .cab-dt-r .cab-dt-full{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:var(--naranja);}
-.cab-hero{background:var(--cafe-mid);border:1px solid rgba(255,145,0,.2);border-radius:18px;padding:16px 18px;margin-bottom:14px;}
-.cab-hero-lbl{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;display:flex;align-items:center;gap:5px;}
-.cab-hero-dot{width:5px;height:5px;background:var(--naranja);border-radius:50%;animation:pulse 2s infinite;}
+.cab-hero{background:var(--brand);border-radius:18px;padding:0;margin-bottom:14px;overflow:hidden;box-shadow:0 4px 20px rgba(43,24,16,.18);}
+.cab-hero-top{padding:16px 18px 14px;}
+.cab-hero-lbl{font-size:9px;font-weight:700;color:rgba(253,246,238,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
+.cab-hero-dot{width:5px;height:5px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite;}
+/* Progress bar de hoy */
+.hero-prog-wrap{margin-bottom:14px;}
+.hero-prog-lbl{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+.hero-prog-title{font-family:'DM Serif Display',serif;font-size:22px;color:#FDF6EE;line-height:1;}
+.hero-prog-pct{font-size:28px;font-weight:700;color:var(--accent);font-family:'DM Serif Display',serif;}
+.hero-prog-track{height:6px;background:rgba(253,246,238,.12);border-radius:3px;overflow:hidden;}
+.hero-prog-fill{height:100%;border-radius:3px;transition:width .6s ease;background:var(--accent);}
+.hero-prog-fill.good{background:#4CAF50;}
+.hero-prog-fill.mid{background:var(--accent);}
+.hero-prog-fill.low{background:#e53935;}
+/* Card de ayer */
+.hero-ayer{padding:12px 18px;border-top:1px solid rgba(253,246,238,.08);}
+.hero-ayer-title{font-size:9px;font-weight:700;color:rgba(253,246,238,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;}
+.hero-ayer-msg{font-size:13px;color:#FDF6EE;line-height:1.45;font-weight:500;}
+.hero-ayer-msg.alert{color:#FF9A3C;}
+.hero-ayer-msg.good{color:#81C784;}
+.hero-ayer-msg.warn{color:#FFB74D;}
+/* Bot row */
+.cab-hero-bot{display:flex;align-items:center;justify-content:space-between;padding:10px 18px 14px;border-top:1px solid rgba(253,246,238,.08);}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 .cab-hero-tlbl{font-size:10px;color:rgba(253,246,238,.45);text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px;}
-.cab-hero-time{font-family:'DM Serif Display',serif;font-size:30px;font-weight:400;color:#FDF6EE;letter-spacing:-0.5px;line-height:1;margin-bottom:6px;}
-.cab-hero-bot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid rgba(253,246,238,.1);}
+.cab-hero-time{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;color:#FDF6EE;letter-spacing:-0.3px;line-height:1;margin-bottom:2px;}
 .cab-est-lbl{font-size:9px;color:var(--text3);}
 .cab-est-val{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:var(--accent2);}
 .cab-clk{width:30px;height:30px;background:rgba(255,145,0,.15);border:1px solid rgba(255,145,0,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;}
@@ -848,18 +867,34 @@ select{padding:5px 8px;}
         </div>
       </div>
       <div class="cab-hero">
-        <div class="cab-hero-lbl"><div class="cab-hero-dot"></div>Resumen de jornada</div>
-        <div class="cab-hero-tlbl">Turno de hoy</div>
-        <div class="cab-hero-time" id="cab-turno-hero">—</div>
-        <div id="cab-horario-hero" style="font-size:12px;color:var(--text3);margin-bottom:10px;min-height:16px;"></div>
+        <div class="cab-hero-top">
+          <div class="cab-hero-lbl"><div class="cab-hero-dot"></div><span id="hero-lbl-turno">Mi turno de hoy</span></div>
+          <!-- Progress hoy -->
+          <div class="hero-prog-wrap">
+            <div class="hero-prog-lbl">
+              <div class="cab-hero-time" id="cab-turno-hero">—</div>
+              <div class="hero-prog-pct" id="hero-pct-hoy">—</div>
+            </div>
+            <div class="hero-prog-track">
+              <div class="hero-prog-fill" id="hero-prog-fill" style="width:0%"></div>
+            </div>
+          </div>
+          <div id="cab-horario-hero" style="font-size:11px;color:rgba(253,246,238,.4);min-height:14px;margin-bottom:2px;"></div>
+        </div>
+        <!-- Resumen de ayer -->
+        <div class="hero-ayer" id="hero-ayer-block">
+          <div class="hero-ayer-title">Ayer</div>
+          <div class="hero-ayer-msg" id="hero-ayer-msg">Cargando...</div>
+        </div>
+        <!-- Bot row -->
         <div class="cab-hero-bot">
           <div>
-            <div class="cab-est-lbl">Punto asignado</div>
+            <div class="cab-est-lbl">Punto</div>
             <div class="cab-est-val" id="cab-punto-hero">—</div>
           </div>
           <div>
             <div class="cab-est-lbl">Rol</div>
-            <div class="cab-est-val" id="cab-rol-hero" style="color:var(--text);">—</div>
+            <div class="cab-est-val" id="cab-rol-hero">—</div>
           </div>
           <div class="cab-clk">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1700,6 +1735,166 @@ function mostrarPinModal(nombre, rol){
   setTimeout(()=>inp.focus(), 200);
 }
 
+// ── HELPERS para calcular progreso del checklist ──────────────────
+function getAreaPorRol(rol){
+  const map={empleado:'cocina',jefe:'cocina',cajero:'caja',domiciliario:'domi',supervisor:'admin',admin:'admin'};
+  return map[rol]||'cocina';
+}
+function getTurnoActual(){
+  const h=new Date().getHours();
+  if(h>=6&&h<13)  return 'apertura';
+  if(h>=13&&h<19) return 'medio';
+  return 'cierre';
+}
+function calcProgreso(punto, fecha, area, turno){
+  const data=loadDataDate(punto,fecha,area,turno);
+  const tasks=(CL[area]||{})[turno]||[];
+  if(!tasks.length) return {pct:0,done:0,total:0,hasDatos:false};
+  let done=0,total=tasks.length;
+  (data?.tasks||[]).forEach((t,i)=>{
+    const tk=tasks[i];if(!tk)return;
+    if(tk.tipo==='check'&&t.done)done++;
+    else if(tk.tipo==='aseo'&&t.aseo>0)done++;
+    else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')done++;
+    else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')done++;
+    else if(tk.tipo==='cierre_area'&&t.done)done++;
+  });
+  return {pct:Math.round(done/total*100),done,total,hasDatos:!!(data?.tasks?.length)};
+}
+
+// ── MENSAJE de ayer según rol ─────────────────────────────────────
+function getMensajeAyer(punto, fechaAyer, rol){
+  const area=getAreaPorRol(rol);
+
+  // ── COCINA / JEFE: resumen papas ──
+  if(rol==='empleado'||rol==='jefe'){
+    // Intentar leer producción papa desde la colección produccion_real si hay cache
+    // Por ahora calculamos desde el checklist
+    const apts=calcProgreso(punto,fechaAyer,'cocina','apertura');
+    const meds=calcProgreso(punto,fechaAyer,'cocina','medio');
+    const cie=calcProgreso(punto,fechaAyer,'cocina','cierre');
+    const totalTurnos=[apts,meds,cie].filter(t=>t.hasDatos);
+    if(!totalTurnos.length){
+      return {msg:'Ayer no registraste ningún turno. ¡Hoy es un día nuevo, aprovéchalo! 💪', cls:'warn'};
+    }
+    const pctProm=Math.round(totalTurnos.reduce((a,b)=>a+b.pct,0)/totalTurnos.length);
+    // Buscar si dejó datos de papa (campo aseo en cocina apertura)
+    const dataCocina=loadDataDate(punto,fechaAyer,'cocina','apertura');
+    const tasksCocina=(CL['cocina']||{})['apertura']||[];
+    let papaTarea=null;
+    tasksCocina.forEach((tk,i)=>{
+      if(tk.label&&tk.label.toLowerCase().includes('papa')){
+        const t=dataCocina?.tasks?.[i];
+        papaTarea={task:tk,dato:t};
+      }
+    });
+    if(pctProm===100){
+      return {msg:`🌟 ¡Excelente turno ayer! Completaste el 100% de tus tareas de cocina. ¡Así se lleva La Cabaña!`, cls:'good'};
+    } else if(pctProm>=70){
+      return {msg:`✅ Ayer completaste el ${pctProm}% en cocina. ¡Buen trabajo! Hoy podemos llegar al 100% juntos. 🔥`, cls:'good'};
+    } else if(pctProm>=40){
+      return {msg:`⚡ Ayer lograste el ${pctProm}% en cocina. Tus tareas pendientes afectan al equipo — hoy sin excusas. ¡Vamos!`, cls:'warn'};
+    } else {
+      return {msg:`⚠️ Ayer solo registraste el ${pctProm}% en cocina. Recuerda que el checklist nos protege a todos. Hoy: completo.`, cls:'alert'};
+    }
+  }
+
+  // ── CAJERO: arqueo de caja ──
+  if(rol==='cajero'){
+    const dataCaja=loadDataDate(punto,fechaAyer,'caja','cierre');
+    const tasksCaja=(CL['caja']||{})['cierre']||[];
+    let ci=0,da=0,si=0,tieneArqueo=false;
+    (dataCaja?.tasks||[]).forEach((t,i)=>{
+      const tk=tasksCaja[i];if(!tk)return;
+      if(tk.campo==='Efectivo cierre'&&t.val){ci=parseFloat(t.val)||0;tieneArqueo=true;}
+      if(tk.campo==='Ventas datáfono'&&t.val){da=parseFloat(t.val)||0;}
+      if(tk.campo==='Ventas sistema'&&t.val){si=parseFloat(t.val)||0;}
+    });
+    if(!tieneArqueo){
+      const prog=calcProgreso(punto,fechaAyer,'caja','cierre');
+      if(!prog.hasDatos){
+        return {msg:'⚠️ Ayer no registraste el cierre de caja. Sin arqueo no podemos cuadrar. ¡Hoy no lo olvides!', cls:'alert'};
+      }
+    }
+    if(si>0){
+      const diff=(ci+da)-si;
+      const fmt=(n)=>new Intl.NumberFormat('es-CO').format(Math.abs(n));
+      if(diff===0){
+        return {msg:`✅ ¡Caja cuadrada ayer! Todo en orden. Así se trabaja 💚`, cls:'good'};
+      } else if(diff>0){
+        return {msg:`💰 Ayer hubo un sobrante de $${fmt(diff)}. Repórtalo al supervisor hoy.`, cls:'warn'};
+      } else {
+        return {msg:`🚨 Ayer faltaron $${fmt(diff)} en caja. El supervisor debe revisarlo hoy con urgencia.`, cls:'alert'};
+      }
+    }
+    return {msg:'📋 Registra el arqueo de cierre hoy para poder ver el comparativo mañana.', cls:'warn'};
+  }
+
+  // ── DOMICILIARIO ──
+  if(rol==='domiciliario'){
+    const prog=calcProgreso(punto,fechaAyer,'domi','apertura');
+    const progC=calcProgreso(punto,fechaAyer,'domi','cierre');
+    const pcts=[prog,progC].filter(t=>t.hasDatos);
+    if(!pcts.length){
+      return {msg:'Ayer no registraste tus tareas. Baños, canecas y zona de domicilios cuentan. ¡Hoy sí!', cls:'warn'};
+    }
+    const prom=Math.round(pcts.reduce((a,b)=>a+b.pct,0)/pcts.length);
+    if(prom>=80) return {msg:`🛵 ¡Buen trabajo ayer! ${prom}% completado. La zona de domicilios quedó bien atendida. ¡Hoy igual!`, cls:'good'};
+    return {msg:`🛵 Ayer completaste el ${prom}% de tus tareas. Recuerda: baños limpios y canecas vacías desde el arranque.`, cls:'warn'};
+  }
+
+  // ── ADMIN / SUPERVISOR: visión completa ──
+  if(rol==='admin'||rol==='supervisor'){
+    const areas=['admin','cocina','caja','domi','neveras','bodega'];
+    const turnos=['apertura','medio','cierre'];
+    let totalPct=0,cnt=0;
+    areas.forEach(ar=>{
+      turnos.forEach(tur=>{
+        const p=calcProgreso(punto,fechaAyer,ar,tur);
+        if(p.hasDatos){totalPct+=p.pct;cnt++;}
+      });
+    });
+    // Arqueo
+    const dataCaja=loadDataDate(punto,fechaAyer,'caja','cierre');
+    const tasksCaja=(CL['caja']||{})['cierre']||[];
+    let ci=0,da=0,si=0;
+    (dataCaja?.tasks||[]).forEach((t,i)=>{
+      const tk=tasksCaja[i];if(!tk)return;
+      if(tk.campo==='Efectivo cierre'&&t.val) ci=parseFloat(t.val)||0;
+      if(tk.campo==='Ventas datáfono'&&t.val)  da=parseFloat(t.val)||0;
+      if(tk.campo==='Ventas sistema'&&t.val)    si=parseFloat(t.val)||0;
+    });
+    const promGen=cnt?Math.round(totalPct/cnt):0;
+    const fmt=(n)=>new Intl.NumberFormat('es-CO').format(Math.abs(n));
+    let msg='';let cls='good';
+    if(!cnt){
+      return {msg:'Sin datos del turno de ayer. Verifica que el equipo esté usando el checklist correctamente.', cls:'warn'};
+    }
+    if(si>0){
+      const diff=(ci+da)-si;
+      if(diff<0){
+        msg=`🚨 Faltante de $${fmt(diff)} en caja ayer. Cumplimiento general: ${promGen}%.`;
+        cls='alert';
+      } else if(diff>0){
+        msg=`💰 Sobrante de $${fmt(diff)} en caja ayer. Cumplimiento: ${promGen}%.`;
+        cls='warn';
+      } else {
+        msg=`✅ Caja cuadrada ayer. Cumplimiento general del punto: ${promGen}%.`;
+        cls=promGen>=80?'good':'warn';
+      }
+    } else {
+      if(promGen>=80) msg=`🌟 Punto con ${promGen}% de cumplimiento ayer. ¡Equipo en forma!`;
+      else if(promGen>=50) msg=`📊 Cumplimiento ayer: ${promGen}%. Hay áreas que necesitan más atención hoy.`;
+      else msg=`⚠️ Cumplimiento ayer: ${promGen}%. Habla con el equipo — los checklists no se están completando.`;
+      cls=promGen>=80?'good':promGen>=50?'warn':'alert';
+    }
+    return {msg, cls};
+  }
+
+  // Fallback
+  return {msg:'¡Buen día! Revisa tu checklist del turno.', cls:'good'};
+}
+
 function updateHomeUI(){
   const p=PUNTOS[curPunto];
   const initials=curUser.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
@@ -1715,17 +1910,14 @@ function updateHomeUI(){
   if(el('cab-rol-hero')) el('cab-rol-hero').textContent=rolLabels[curRol]||curRol;
 
   // Turno detectado por hora actual
-  const hora = new Date().getHours();
-  let turnoNombre = '—';
-  if(hora>=6&&hora<=11)  turnoNombre='☀️ Apertura';
-  else if(hora>=12&&hora<=17) turnoNombre='🌤️ Turno medio';
-  else if(hora>=18&&hora<=23) turnoNombre='🌙 Cierre';
-  else turnoNombre='🌙 Cierre';
-  if(el('cab-turno-hero')) el('cab-turno-hero').textContent=turnoNombre;
+  const hora=new Date().getHours();
+  const turnoActual=getTurnoActual();
+  const turnoNames={apertura:'☀️ Apertura',medio:'🌤️ Turno medio',cierre:'🌙 Cierre'};
+  if(el('cab-turno-hero')) el('cab-turno-hero').textContent=turnoNames[turnoActual]||'—';
 
-  // Horario del empleado hoy desde Firebase horarios
+  // Horario del empleado
   try {
-    const wk = (()=>{
+    const wk=(()=>{
       const now=new Date();
       const day=now.getDay();
       const diff=day===0?-6:1-day;
@@ -1733,9 +1925,8 @@ function updateHomeUI(){
       mon.setDate(now.getDate()+diff);
       return mon.toISOString().slice(0,10);
     })();
-    const horSem = window._horariosCache?.[wk];
+    const horSem=window._horariosCache?.[wk];
     if(horSem&&horSem[curUser]){
-      const dias=['dom','lun','mar','mie','jue','vie','sab'];
       const diaIdx=new Date().getDay();
       const monIdx=diaIdx===0?6:diaIdx-1;
       const diaHoy=horSem[curUser][monIdx];
@@ -1749,6 +1940,36 @@ function updateHomeUI(){
       }
     }
   } catch(e){}
+
+  // ── PROGRESS BAR HOY ──────────────────────────────────────────────
+  const area=getAreaPorRol(curRol);
+  const prog=calcProgreso(curPunto,todayStr(),area,turnoActual);
+  const pct=prog.pct;
+  const fillEl=el('hero-prog-fill');
+  const pctEl=el('hero-pct-hoy');
+  const lblEl=el('hero-lbl-turno');
+  if(fillEl){
+    fillEl.style.width=pct+'%';
+    fillEl.className='hero-prog-fill '+(pct>=80?'good':pct>=40?'mid':'low');
+  }
+  if(pctEl) pctEl.textContent=prog.hasDatos?pct+'%':'—';
+  if(lblEl){
+    if(pct===100) lblEl.textContent='✅ ¡Turno completado!';
+    else if(pct>0) lblEl.textContent='📋 Mi turno de hoy';
+    else lblEl.textContent='📋 Mi turno de hoy';
+  }
+
+  // ── RESUMEN DE AYER ───────────────────────────────────────────────
+  const ayer=new Date();
+  ayer.setDate(ayer.getDate()-1);
+  const fechaAyer=ayer.toISOString().slice(0,10);
+  const {msg,cls}=getMensajeAyer(curPunto,fechaAyer,curRol);
+  const ayerBlock=el('hero-ayer-block');
+  const ayerMsg=el('hero-ayer-msg');
+  if(ayerMsg){ ayerMsg.textContent=msg; ayerMsg.className='hero-ayer-msg '+cls; }
+  // Si no hay datos de ayer y es primer día, ocultar bloque
+  const prog2=calcProgreso(curPunto,fechaAyer,area,'apertura');
+  const prog3=calcProgreso(curPunto,fechaAyer,area,'cierre');
 
   const adminBtn=document.getElementById('cab-btn-admin');
   if(adminBtn) adminBtn.style.display=(curRol==='admin'||curRol==='jefe'||curRol==='supervisor')?'flex':'none';
