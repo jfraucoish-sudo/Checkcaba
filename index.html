@@ -715,6 +715,32 @@ select{padding:5px 8px;}
 .rol-jefe{background:#FAEEDA;color:#633806;}
 .rol-admin{background:#FAECE7;color:#712B13;}
 
+/* ── BANNER ANIMADO DE INFORMACIÓN IMPORTANTE ── */
+.cab-marquee-wrapper {
+  background: var(--brand);
+  color: var(--naranja);
+  padding: 8px 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid rgba(255, 145, 0, 0.2);
+  flex-shrink: 0;
+}
+.cab-marquee-track {
+  display: inline-block;
+  white-space: nowrap;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  animation: marquee-scroll 45s linear infinite;
+  padding-left: 100%;
+}
+@keyframes marquee-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -805,6 +831,13 @@ select{padding:5px 8px;}
         <div class="cab-avatar" id="cab-avatar">—</div>
       </div>
     </div>
+<div class="cab-marquee-wrapper">
+      <div class="cab-marquee-track" id="banner-importante">
+        ⚠️ FOCO DE LA SEMANA: El secreto de nuestro éxito está en el Caldo de Birria. ¡Cuidemos la receta, la temperatura y el sabor en cada turno! 🍲------------                  🚀 Los grandes restaurantes funcionan con grandes procesos. Hacer bien tu checklist es hacer bien tu trabajo. ¡Vamos con toda hoy! ----------------------                                --------------🤝 Entregar tu área limpia, surtida y en orden es respetar el trabajo de tu compañero del siguiente turno.--------------------------                                         ¡Somos un solo equipo! 💪 🌟 Un cliente feliz es el resultado del trabajo bien hecho de todo el equipo. ¡Demos el 100% en este turno!
+      </div>
+    </div>
+    ```
+
     <div class="cab-scroll">
       <div class="cab-dt">
         <div class="cab-dt-l">
@@ -977,6 +1010,11 @@ select{padding:5px 8px;}
   </div>
   <div class="area-scroll" id="area-nav"></div>
   <div class="turno-bar" id="turno-bar"></div>
+<div class="cab-marquee-wrapper" style="border-top: 1px solid rgba(255, 145, 0, 0.2);">
+    <div class="cab-marquee-track" id="banner-checklist">
+      🚀 Los grandes restaurantes funcionan con grandes procesos. Hacer bien tu checklist es hacer bien tu trabajo. ¡Vamos con toda hoy!........................🌟 Un cliente feliz es el resultado del trabajo bien hecho de todo el equipo. ¡Demos el 100% en este turno!
+    </div>
+  </div>
   <div class="page-content" id="main-content"></div>
   <div class="bottom-nav">
     <div class="bn-item" id="bn-home" onclick="goHome()">
