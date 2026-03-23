@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>La Cabaña — Horarios</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --cafe:#2D1B15;--cafe-mid:#3D2820;--cafe-light:#5C3D32;
+  --crema:#FEF2DF;--crema-dim:#F5E4C8;
+  --naranja:#FF9100;--naranja-d:#E07D00;
+  --green:#3B6D11;--green-l:rgba(59,109,17,.2);--green-t:#C0DD97;
+  --red:#A32D2D;--red-l:rgba(163,45,45,.2);--red-t:#F09595;
+  --blue:#185FA5;--blue-l:rgba(24,95,165,.2);--blue-t:#85B7EB;
+  --amber:#BA7517;--amber-l:rgba(186,117,23,.2);--amber-t:#FAC775;
+  --border:rgba(254,242,223,.1);--border2:rgba(254,242,223,.18);
+  --r:12px;--rsm:8px;
+}
+html,body{height:100%;background:var(--cafe);}
+body{font-family:'Inter',sans-serif;color:var(--crema);min-height:100vh;}
+
+/* SCREENS */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:flex;flex-direction:column;}
+
+/* ═══ LOGIN ═══ */
+#sc-login{background:var(--cafe);align-items:center;justify-content:center;padding:2rem 1.5rem;}
+.login-wrap{width:100%;max-width:360px;}
+.login-logo{text-align:center;margin-bottom:2rem;}
+.login-logo-icon{width:60px;height:60px;background:var(--naranja);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.login-logo-icon svg{width:30px;height:30px;fill:var(--cafe);}
+.login-logo-name{font-family:'Poppins',sans-serif;font-size:22px;font-weight:900;color:var(--crema);}
+.login-logo-sub{font-size:11px;color:rgba(254,242,223,.4);letter-spacing:.5px;}
+.login-card{background:rgba(254,242,223,.06);border:1px solid var(--border);border-radius:20px;padding:24px;}
+.login-card h2{font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;color:var(--crema);margin-bottom:16px;text-align:center;}
+.field{margin-bottom:14px;}
+.field label{font-size:10px;font-weight:700;color:rgba(254,242,223,.45);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;}
+.field select,.field input{width:100%;padding:11px 14px;background:rgba(254,242,223,.07);border:1px solid var(--border2);border-radius:10px;font-size:14px;color:var(--crema);font-family:'Inter',sans-serif;outline:none;}
+.field select:focus,.field input:focus{border-color:var(--naranja);}
+.field select option{background:var(--cafe);}
+.btn-primary{width:100%;padding:14px;background:var(--naranja);color:var(--cafe);font-family:'Poppins',sans-serif;font-size:14px;font-weight:800;border:none;border-radius:12px;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:opacity .15s;}
+.btn-primary:hover{opacity:.9;}
+.btn-secondary{width:100%;padding:11px;background:transparent;color:rgba(254,242,223,.5);font-size:12px;font-weight:500;border:1px solid var(--border);border-radius:10px;cursor:pointer;margin-top:8px;transition:all .15s;}
+.btn-secondary:hover{border-color:var(--naranja);color:var(--naranja);}
+
+/* ═══ APP SHELL ═══ */
+.app-header{background:var(--cafe);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:100;}
+.app-hdr-left{display:flex;align-items:center;gap:9px;}
+.app-hdr-icon{width:32px;height:32px;background:var(--naranja);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.app-hdr-icon svg{width:16px;height:16px;fill:var(--cafe);}
+.app-hdr-title{font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;color:var(--crema);}
+.app-hdr-sub{font-size:10px;color:rgba(254,242,223,.45);}
+.app-hdr-right{display:flex;align-items:center;gap:8px;}
+.hdr-avatar{width:32px;height:32px;border-radius:50%;background:var(--naranja);display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-size:12px;font-weight:800;color:var(--cafe);}
+.hdr-btn{width:32px;height:32px;border-radius:8px;background:rgba(254,242,223,.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.hdr-btn svg{width:16px;height:16px;stroke:var(--crema);fill:none;stroke-width:2;}
+
+.app-body{flex:1;overflow-y:auto;padding:14px 16px 80px;scrollbar-width:none;}
+.app-body::-webkit-scrollbar{display:none;}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--cafe);border-top:1px solid var(--border);display:flex;padding:8px 0 16px;z-index:100;}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:0 4px;}
+.bn svg{width:20px;height:20px;stroke-width:2;fill:none;stroke-linecap:round;}
+.bn.active svg{stroke:var(--naranja);}
+.bn:not(.active) svg{stroke:rgba(254,242,223,.3);}
+.bn-lbl{font-size:9px;font-weight:600;letter-spacing:.2px;}
+.bn.active .bn-lbl{color:var(--naranja);}
+.bn:not(.active) .bn-lbl{color:rgba(254,242,223,.3);}
+.bn-dot{width:4px;height:4px;border-radius:50%;background:var(--naranja);}
+
+/* ═══ WEEK SCHEDULE ═══ */
+.week-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.week-nav{display:flex;align-items:center;gap:8px;}
+.week-nav-btn{width:32px;height:32px;border-radius:8px;background:rgba(254,242,223,.06);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.week-nav-btn svg{width:14px;height:14px;stroke:var(--crema);fill:none;stroke-width:2.5;stroke-linecap:round;}
+.week-label{font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:var(--crema);}
+.week-pub-btn{padding:7px 14px;background:var(--green-l);border:1px solid rgba(59,109,17,.35);border-radius:10px;color:var(--green-t);font-size:11px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;}
+.week-pub-btn.published{background:rgba(254,242,223,.06);border-color:var(--border);color:rgba(254,242,223,.4);}
+
+/* PUNTO TABS */
+.punto-tabs{display:flex;gap:8px;margin-bottom:14px;}
+.punto-tab{flex:1;padding:10px;border-radius:10px;text-align:center;cursor:pointer;transition:all .15s;}
+.punto-tab.active{background:var(--naranja);color:var(--cafe);}
+.punto-tab:not(.active){background:rgba(254,242,223,.06);border:1px solid var(--border);color:rgba(254,242,223,.5);}
+.punto-tab-name{font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;}
+.punto-tab-sub{font-size:10px;margin-top:1px;opacity:.7;}
+
+/* AREA SECTION */
+.area-section{margin-bottom:16px;}
+.area-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.area-badge{font-size:10px;padding:3px 10px;border-radius:8px;font-weight:700;font-family:'Poppins',sans-serif;}
+.area-cocina{background:var(--amber-l);color:var(--amber-t);}
+.area-recepcion{background:var(--blue-l);color:var(--blue-t);}
+.area-cajero{background:var(--blue-l);color:var(--blue-t);}
+.area-domi{background:var(--green-l);color:var(--green-t);}
+
+/* EMPLOYEE ROW */
+.emp-card{background:rgba(254,242,223,.05);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden;}
+.emp-card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;cursor:pointer;}
+.emp-info{display:flex;align-items:center;gap:10px;}
+.emp-avatar{width:34px;height:34px;border-radius:50%;background:var(--cafe-mid);display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;color:var(--naranja);border:1.5px solid rgba(255,145,0,.3);flex-shrink:0;}
+.emp-name{font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:var(--crema);}
+.emp-meta{font-size:10px;color:rgba(254,242,223,.4);margin-top:1px;}
+.emp-week-dots{display:flex;gap:3px;}
+.day-dot{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;cursor:pointer;transition:all .12s;}
+.day-dot.work{background:rgba(59,109,17,.2);color:var(--green-t);}
+.day-dot.rest{background:rgba(255,145,0,.2);color:var(--naranja);}
+.day-dot.other{background:rgba(24,95,165,.2);color:var(--blue-t);}
+.day-dot.empty{background:rgba(254,242,223,.04);color:rgba(254,242,223,.2);}
+.day-dot:hover{transform:scale(1.15);}
+
+/* SCHEDULE GRID */
+.sched-grid{padding:10px 12px 12px;border-top:1px solid var(--border);}
+.sched-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.sched-day{text-align:center;}
+.sched-day-name{font-size:9px;font-weight:700;color:rgba(254,242,223,.35);text-transform:uppercase;margin-bottom:4px;font-family:'Poppins',sans-serif;}
+.sched-day-cell{background:rgba(254,242,223,.05);border:1px solid var(--border);border-radius:8px;padding:6px 4px;min-height:52px;cursor:pointer;transition:all .12s;position:relative;}
+.sched-day-cell:hover{border-color:var(--naranja);}
+.sched-day-cell.descanso{background:rgba(255,145,0,.12);border-color:rgba(255,145,0,.3);}
+.sched-day-cell.otro-punto{background:rgba(24,95,165,.12);border-color:rgba(24,95,165,.3);}
+.cell-start{font-family:'Poppins',sans-serif;font-size:10px;font-weight:700;color:var(--crema);display:block;}
+.cell-pico{font-size:9px;color:var(--naranja);display:block;margin-top:1px;}
+.cell-end{font-size:9px;color:rgba(254,242,223,.4);display:block;}
+.cell-tag{font-size:8px;font-weight:700;color:var(--naranja);}
+.cell-otro{font-size:9px;color:var(--blue-t);font-weight:700;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:500;display:flex;align-items:flex-end;justify-content:center;padding:0;}
+.modal-overlay.hidden{display:none;}
+.modal-box{background:var(--cafe);border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;}
+.modal-title{font-family:'Poppins',sans-serif;font-size:15px;font-weight:800;color:var(--crema);margin-bottom:4px;}
+.modal-sub{font-size:12px;color:rgba(254,242,223,.45);margin-bottom:18px;}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
+.modal-opt{padding:11px 12px;border-radius:10px;background:rgba(254,242,223,.06);border:1.5px solid transparent;cursor:pointer;transition:all .15s;}
+.modal-opt:hover{border-color:var(--naranja);}
+.modal-opt.selected{border-color:var(--naranja);background:rgba(255,145,0,.12);}
+.modal-opt-title{font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;color:var(--crema);}
+.modal-opt-sub{font-size:10px;color:rgba(254,242,223,.4);margin-top:2px;}
+.modal-row{margin-bottom:12px;}
+.modal-row label{font-size:10px;font-weight:700;color:rgba(254,242,223,.45);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;}
+.modal-row input,.modal-row select{width:100%;padding:10px 12px;background:rgba(254,242,223,.07);border:1px solid var(--border2);border-radius:10px;font-size:13px;color:var(--crema);font-family:'Inter',sans-serif;outline:none;}
+.modal-row input:focus,.modal-row select:focus{border-color:var(--naranja);}
+.modal-row select option{background:var(--cafe);}
+.modal-btns{display:flex;gap:8px;margin-top:16px;}
+.mbtn-ok{flex:1;padding:12px;background:var(--naranja);color:var(--cafe);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;border:none;border-radius:10px;cursor:pointer;}
+.mbtn-cancel{flex:1;padding:12px;background:rgba(254,242,223,.06);color:rgba(254,242,223,.5);font-size:13px;border:1px solid var(--border);border-radius:10px;cursor:pointer;}
+
+/* SOLICITUDES */
+.sol-card{background:rgba(254,242,223,.05);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:8px;}
+.sol-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.sol-name{font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:var(--crema);}
+.sol-date{font-size:11px;color:rgba(254,242,223,.45);}
+.sol-msg{font-size:12px;color:rgba(254,242,223,.65);margin-bottom:10px;line-height:1.4;}
+.sol-btns{display:flex;gap:6px;}
+.sol-btn-ok{flex:1;padding:8px;background:var(--green-l);color:var(--green-t);border:1px solid rgba(59,109,17,.3);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;}
+.sol-btn-no{flex:1;padding:8px;background:var(--red-l);color:var(--red-t);border:1px solid rgba(163,45,45,.3);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;}
+.sol-status{font-size:10px;padding:3px 9px;border-radius:8px;font-weight:700;}
+.sol-ok{background:var(--green-l);color:var(--green-t);}
+.sol-no{background:var(--red-l);color:var(--red-t);}
+.sol-pend{background:var(--amber-l);color:var(--amber-t);}
+
+/* MI HORARIO */
+.my-week{background:rgba(254,242,223,.05);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;}
+.my-week-head{background:var(--cafe-mid);padding:12px 14px;display:flex;align-items:center;justify-content:space-between;}
+.my-week-title{font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:var(--crema);}
+.my-week-pub{font-size:10px;padding:2px 8px;border-radius:6px;}
+.my-days{display:grid;grid-template-columns:repeat(7,1fr);}
+.my-day{padding:8px 4px;text-align:center;border-right:1px solid var(--border);}
+.my-day:last-child{border-right:none;}
+.my-day-name{font-size:9px;color:rgba(254,242,223,.35);font-weight:700;text-transform:uppercase;margin-bottom:4px;}
+.my-day-content{font-size:10px;}
+.my-day.descanso{background:rgba(255,145,0,.08);}
+.my-day.today{background:rgba(255,145,0,.06);border-bottom:2px solid var(--naranja);}
+.my-time{font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;color:var(--crema);}
+.my-pico{font-size:9px;color:var(--naranja);}
+.my-end{font-size:9px;color:rgba(254,242,223,.35);}
+.my-rest{font-size:10px;font-weight:700;color:var(--naranja);}
+.my-otro{font-size:9px;color:var(--blue-t);font-weight:700;}
+
+/* SOLICITAR DESCANSO */
+.sol-form{background:rgba(254,242,223,.05);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px;}
+.sol-form h3{font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--crema);margin-bottom:14px;}
+
+/* NOTIF BADGE */
+.notif-badge{background:var(--naranja);color:var(--cafe);font-size:9px;font-weight:800;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;top:-4px;right:-4px;}
+
+/* SECTION LABEL */
+.sec-lbl{font-size:10px;font-weight:700;color:rgba(254,242,223,.35);text-transform:uppercase;letter-spacing:.6px;font-family:'Poppins',sans-serif;margin-bottom:10px;}
+
+/* ALERTS */
+.alert-box{background:rgba(255,145,0,.08);border:1px solid rgba(255,145,0,.2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--crema);line-height:1.5;margin-bottom:12px;}
+.alert-box strong{color:var(--naranja);}
+
+/* SUGERIR */
+.suggest-btn{width:100%;padding:13px;background:rgba(255,145,0,.1);border:1px solid rgba(255,145,0,.25);border-radius:12px;color:var(--naranja);font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:14px;transition:all .15s;}
+.suggest-btn:hover{background:rgba(255,145,0,.18);}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.fade-up{animation:fadeUp .3s ease both;}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div class="screen active" id="sc-login">
+  <div class="login-wrap">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="#2D1B15" stroke-width="1.5"/></svg>
+      </div>
+      <div class="login-logo-name">LA CABAÑA</div>
+      <div class="login-logo-sub">Gestión de Horarios</div>
+    </div>
+    <div class="login-card">
+      <h2>¿Quién eres?</h2>
+      <div class="field">
+        <label>Tu nombre</label>
+        <select id="login-nombre">
+          <option value="">Selecciona...</option>
+        </select>
+      </div>
+      <div class="field" id="pin-field" style="display:none">
+        <label>PIN de encargada</label>
+        <input type="tel" id="login-pin" maxlength="4" placeholder="••••" autocomplete="off">
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Entrar →</button>
+      <div id="login-err" style="font-size:12px;color:#F09595;text-align:center;margin-top:8px;min-height:16px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP: ENCARGADA ═══ -->
+<div class="screen" id="sc-encargada">
+  <div class="app-header">
+    <div class="app-hdr-left">
+      <div class="app-hdr-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="#2D1B15" stroke-width="1.5"/></svg></div>
+      <div>
+        <div class="app-hdr-title">LA CABAÑA</div>
+        <div class="app-hdr-sub" id="enc-hdr-sub">Horarios</div>
+      </div>
+    </div>
+    <div class="app-hdr-right">
+      <div class="hdr-avatar" id="enc-avatar">E</div>
+      <div class="hdr-btn" onclick="doLogout()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+    </div>
+  </div>
+
+  <div class="app-body" id="enc-body"></div>
+
+  <div class="bottom-nav">
+    <div class="bn active" id="enc-bn-horario" onclick="encTab('horario')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span class="bn-lbl">Horario</span>
+    </div>
+    <div class="bn" id="enc-bn-solicitudes" onclick="encTab('solicitudes')" style="position:relative;">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="bn-lbl">Solicitudes</span>
+      <div class="notif-badge" id="enc-notif" style="display:none;">0</div>
+    </div>
+    <div class="bn" id="enc-bn-personal" onclick="encTab('personal')">
+      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span class="bn-lbl">Personal</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP: EMPLEADO ═══ -->
+<div class="screen" id="sc-empleado">
+  <div class="app-header">
+    <div class="app-hdr-left">
+      <div class="app-hdr-icon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22" fill="none" stroke="#2D1B15" stroke-width="1.5"/></svg></div>
+      <div>
+        <div class="app-hdr-title">MI HORARIO</div>
+        <div class="app-hdr-sub" id="emp-hdr-sub">La Cabaña</div>
+      </div>
+    </div>
+    <div class="app-hdr-right">
+      <div class="hdr-avatar" id="emp-avatar">E</div>
+      <div class="hdr-btn" onclick="doLogout()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+    </div>
+  </div>
+
+  <div class="app-body" id="emp-body"></div>
+
+  <div class="bottom-nav">
+    <div class="bn active" id="emp-bn-horario" onclick="empTab('horario')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span class="bn-lbl">Mi horario</span>
+    </div>
+    <div class="bn" id="emp-bn-pedir" onclick="empTab('pedir')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span class="bn-lbl">Pedir descanso</span>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR DÍA -->
+<div class="modal-overlay hidden" id="modal-dia">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-dia-title">Editar turno</div>
+    <div class="modal-sub" id="modal-dia-sub">Selecciona el tipo de día</div>
+    <div class="modal-grid">
+      <div class="modal-opt" id="opt-trabajo" onclick="selectTipo('trabajo')">
+        <div class="modal-opt-title">🟢 Trabaja</div>
+        <div class="modal-opt-sub">Turno normal</div>
+      </div>
+      <div class="modal-opt" id="opt-descanso" onclick="selectTipo('descanso')">
+        <div class="modal-opt-title">🟡 Descanso</div>
+        <div class="modal-opt-sub">Día libre</div>
+      </div>
+      <div class="modal-opt" id="opt-hogares" onclick="selectTipo('hogares')">
+        <div class="modal-opt-title">🏠 Hogares</div>
+        <div class="modal-opt-sub">Rota a Hogares</div>
+      </div>
+      <div class="modal-opt" id="opt-soacha" onclick="selectTipo('soacha')">
+        <div class="modal-opt-title">🏬 Soacha</div>
+        <div class="modal-opt-sub">Rota a Soacha</div>
+      </div>
+    </div>
+    <div id="modal-horario-fields">
+      <div class="modal-row">
+        <label>Hora entrada</label>
+        <input type="time" id="modal-entrada" value="13:00">
+      </div>
+      <div class="modal-row">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label style="margin-bottom:0;">Hora pico (refuerzo)</label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:12px;color:rgba(254,242,223,.6);">
+            <input type="checkbox" id="modal-pico-check" onchange="togglePicoFields(this.checked)" style="width:16px;height:16px;accent-color:var(--naranja);">
+            Activar
+          </label>
+        </div>
+        <div id="modal-pico-fields" style="display:none;gap:8px;display:none;">
+          <div style="display:flex;gap:8px;">
+            <input type="time" id="modal-pico-ini" placeholder="inicio">
+            <input type="time" id="modal-pico-fin" placeholder="fin">
+          </div>
+        </div>
+      </div>
+      <div class="modal-row">
+        <label>Hora cierre</label>
+        <input type="time" id="modal-cierre" value="22:00">
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="mbtn-cancel" onclick="closeModal('modal-dia')">Cancelar</button>
+      <button class="mbtn-ok" onclick="guardarDia()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// FIREBASE
+// ═══════════════════════════════════════════════════
+const fbCfg={apiKey:"AIzaSyChgB2irJrzTuIGHWsyZPEXtZdWXcuEAjo",authDomain:"lacabana-app.firebaseapp.com",projectId:"lacabana-app",storageBucket:"lacabana-app.firebasestorage.app",messagingSenderId:"856696449767",appId:"1:856696449767:web:1d623828d05d5f96c15042"};
+let _app,_db;
+try{_app=firebase.app('hor');}catch(e){_app=firebase.initializeApp(fbCfg,'hor');}
+_db=firebase.firestore(_app);
+_db.enablePersistence().catch(()=>{});
+
+// ═══════════════════════════════════════════════════
+// DATOS DEL PERSONAL
+// ═══════════════════════════════════════════════════
+const ENCARGADA_PIN = '1234'; // PIN encargada — cambiar
+
+const PERSONAL = {
+  // HOGARES
+  'Alberto':    {punto:'hogares',area:'cocina',rota:false},
+  'Darío':      {punto:'hogares',area:'cocina',rota:false},
+  'Yuli':       {punto:'hogares',area:'cocina',rota:false},
+  'Kevin':      {punto:'hogares',area:'recepcion',rota:false},
+  'Juan David': {punto:'hogares',area:'domiciliarios',rota:false},
+  // SOACHA
+  'Yesenia':    {punto:'soacha',area:'cocina',rota:false},
+  'Ender':      {punto:'soacha',area:'cocina',rota:false},
+  'David':      {punto:'soacha',area:'cocina',rota:false},
+  'Carolina':   {punto:'soacha',area:'cocina',rota:false},
+  'Kimberly':   {punto:'soacha',area:'cajeros',rota:false},
+  'Sergio':     {punto:'soacha',area:'domiciliarios',rota:false},
+  // ROTAN
+  'Maria':      {punto:'hogares',area:'cocina',rota:true},
+  'Mario':      {punto:'hogares',area:'cocina',rota:true},
+  'Alexander':  {punto:'hogares',area:'cocina',rota:true},
+  'Angela':     {punto:'hogares',area:'recepcion',rota:true},
+  'Valentina':  {punto:'hogares',area:'recepcion',rota:true},
+  'Jhoan':      {punto:'hogares',area:'recepcion',rota:true},
+  'Alexandra':  {punto:'hogares',area:'recepcion',rota:true},
+  'Juliza':     {punto:'hogares',area:'recepcion',rota:true},
+  'Cristian':   {punto:'hogares',area:'domiciliarios',rota:true},
+  'Daniel':     {punto:'hogares',area:'domiciliarios',rota:true},
+  'Camilo':     {punto:'hogares',area:'domiciliarios',rota:true},
+  'Felipe':     {punto:'hogares',area:'domiciliarios',rota:true},
+};
+
+const ENCARGADA = 'Encargada';
+const DIAS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+const DIAS_FULL = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+
+// ═══════════════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════════════
+let curUser = null;
+let curRole = null; // 'encargada' | 'empleado'
+let curWeekOffset = 0;
+let curPunto = 'hogares';
+let horarios = {}; // {semana: {nombre: [{tipo,entrada,pico_ini,pico_fin,cierre}x7]}}
+let solicitudes = [];
+let editContext = null; // {nombre, diaIdx}
+let curEmpTab = 'horario';
+let curEncTab = 'horario';
+
+// ═══════════════════════════════════════════════════
+// SEMANA
+// ═══════════════════════════════════════════════════
+function getWeekStart(offset=0){
+  const now = new Date();
+  const day = now.getDay();
+  const diff = (day===0?-6:1-day); // lunes
+  const mon = new Date(now);
+  mon.setDate(now.getDate()+diff+(offset*7));
+  mon.setHours(0,0,0,0);
+  return mon;
+}
+
+function weekKey(offset=0){
+  const d = getWeekStart(offset);
+  return d.toISOString().slice(0,10);
+}
+
+function weekLabel(offset=0){
+  const mon = getWeekStart(offset);
+  const sun = new Date(mon); sun.setDate(mon.getDate()+6);
+  const fmt=(d)=>`${d.getDate()} ${['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()]}`;
+  const labels=['Esta semana','Semana pasada','Hace 2 semanas'];
+  if(offset===0) return `${fmt(mon)} – ${fmt(sun)} · Esta semana`;
+  if(offset===-1) return `${fmt(mon)} – ${fmt(sun)} · Semana pasada`;
+  return `${fmt(mon)} – ${fmt(sun)}`;
+}
+
+function getDayDates(offset=0){
+  const mon = getWeekStart(offset);
+  return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;});
+}
+
+function isToday(date){
+  const now=new Date();
+  return date.getDate()===now.getDate()&&date.getMonth()===now.getMonth()&&date.getFullYear()===now.getFullYear();
+}
+
+// ═══════════════════════════════════════════════════
+// FIREBASE HELPERS
+// ═══════════════════════════════════════════════════
+async function loadHorario(wk){
+  try{
+    const doc = await _db.collection('horarios').doc(wk).get();
+    if(doc.exists) horarios[wk]=doc.data();
+    else horarios[wk]={};
+  }catch(e){ horarios[wk]=horarios[wk]||{}; }
+}
+
+async function saveHorario(wk){
+  try{ await _db.collection('horarios').doc(wk).set(horarios[wk]||{}); }
+  catch(e){ console.warn('save error',e); }
+}
+
+async function loadSolicitudes(){
+  try{
+    const snap = await _db.collection('solicitudes_descanso').orderBy('ts','desc').limit(50).get();
+    solicitudes=[];
+    snap.forEach(d=>solicitudes.push({id:d.id,...d.data()}));
+  }catch(e){ solicitudes=[]; }
+}
+
+async function saveSolicitud(data){
+  try{ await _db.collection('solicitudes_descanso').add({...data,ts:new Date().toISOString()}); }
+  catch(e){ alert('Error guardando solicitud'); }
+}
+
+async function updateSolicitud(id,estado){
+  try{ await _db.collection('solicitudes_descanso').doc(id).update({estado}); }
+  catch(e){ console.warn(e); }
+}
+
+// ═══════════════════════════════════════════════════
+// LOGIN
+// ═══════════════════════════════════════════════════
+function initLogin(){
+  const sel = document.getElementById('login-nombre');
+  sel.innerHTML = '<option value="">Selecciona...</option>';
+  sel.innerHTML += `<option value="${ENCARGADA}">👩‍💼 Encargada (Horarios)</option>`;
+  const names = Object.keys(PERSONAL).sort();
+  names.forEach(n=>sel.innerHTML+=`<option value="${n}">${n}</option>`);
+
+  sel.onchange = ()=>{
+    const v = sel.value;
+    document.getElementById('pin-field').style.display = v===ENCARGADA?'block':'none';
+    document.getElementById('login-err').textContent='';
+  };
+}
+
+async function doLogin(){
+  const nombre = document.getElementById('login-nombre').value;
+  const pin = document.getElementById('login-pin').value;
+  const err = document.getElementById('login-err');
+
+  if(!nombre){ err.textContent='Selecciona tu nombre'; return; }
+
+  if(nombre==='__encargada__'){
+    if(pin!==ENCARGADA_PIN){ err.textContent='PIN incorrecto'; return; }
+    curUser=ENCARGADA; curRole='encargada';
+    await loadPersonalDB();
+    await loadHorario(weekKey(0));
+    await loadSolicitudes();
+    showScreen('sc-encargada');
+    document.getElementById('enc-avatar').textContent='E';
+    document.getElementById('enc-hdr-sub').textContent='Encargada';
+    encTab('horario');
+  } else {
+    curUser=nombre; curRole='empleado';
+    await loadHorario(weekKey(0));
+    await loadHorario(weekKey(1));
+    showScreen('sc-empleado');
+    const ini=nombre.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    document.getElementById('emp-avatar').textContent=ini;
+    document.getElementById('emp-hdr-sub').textContent=nombre;
+    empTab('horario');
+  }
+}
+
+function doLogout(){
+  curUser=null; curRole=null; curWeekOffset=0;
+  document.getElementById('login-pin').value='';
+  document.getElementById('login-err').textContent='';
+  showScreen('sc-login');
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════
+// ENCARGADA — TABS
+// ═══════════════════════════════════════════════════
+function encTab(tab){
+  curEncTab=tab;
+  ['horario','solicitudes','personal'].forEach(t=>{
+    const bn=document.getElementById('enc-bn-'+t);
+    if(bn) bn.classList.toggle('active',t===tab);
+  });
+  if(tab==='horario') renderEncHorario();
+  else if(tab==='solicitudes') renderEncSolicitudes();
+  else if(tab==='personal') renderEncPersonal();
+}
+
+// ═══════════════════════════════════════════════════
+// ENCARGADA — HORARIO
+// ═══════════════════════════════════════════════════
+async function renderEncHorario(){
+  const wk = weekKey(curWeekOffset);
+  await loadHorario(wk);
+  const body = document.getElementById('enc-body');
+  const dias = getDayDates(curWeekOffset);
+  const h = horarios[wk]||{};
+  const isPublished = h._published===true;
+
+  // Conflictos
+  const conflictos = detectarConflictos(wk);
+
+  let html = `
+  <div class="week-header fade-up">
+    <div class="week-nav">
+      <div class="week-nav-btn" onclick="changeWeek(-1)"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+      <div class="week-label">${weekLabel(curWeekOffset)}</div>
+      <div class="week-nav-btn" onclick="changeWeek(1)"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+    <button class="week-pub-btn ${isPublished?'published':''}" onclick="togglePublish('${wk}')">
+      ${isPublished?'✓ Publicado':'Publicar'}
+    </button>
+  </div>`;
+
+  if(conflictos.length>0){
+    html+=`<div class="alert-box fade-up"><strong>⚠️ Conflictos:</strong><br>${conflictos.map(c=>`· ${c}`).join('<br>')}</div>`;
+  }
+
+  html+=`<button class="suggest-btn fade-up" onclick="sugerirHorario('${wk}')">✨ Sugerir horario automático</button>`;
+
+  html+=`<div class="punto-tabs fade-up">
+    <div class="punto-tab ${curPunto==='hogares'?'active':''}" onclick="setPunto('hogares')">
+      <div class="punto-tab-name">🏠 Hogares</div>
+      <div class="punto-tab-sub">Cocina · Recepción · Domi</div>
+    </div>
+    <div class="punto-tab ${curPunto==='soacha'?'active':''}" onclick="setPunto('soacha')">
+      <div class="punto-tab-name">🏬 Soacha</div>
+      <div class="punto-tab-sub">Cocina · Cajeros · Domi</div>
+    </div>
+  </div>`;
+
+  // Por área
+  const areas = curPunto==='hogares'
+    ? [{id:'cocina',label:'Cocina'},{id:'recepcion',label:'Recepción'},{id:'domiciliarios',label:'Domiciliarios'}]
+    : [{id:'cocina',label:'Cocina'},{id:'cajeros',label:'Cajeros'},{id:'domiciliarios',label:'Domiciliarios'}];
+
+  areas.forEach(area=>{
+    const emps = Object.entries(PERSONAL).filter(([n,p])=>{
+      // Excluir retirados e inactivos del horario
+      if(p.estado==='retirado'||p.estado==='inactivo') return false;
+      if(area.id==='recepcion'&&p.area==='recepcion') return true;
+      if(area.id==='cajeros'&&p.area==='recepcion') return true;
+      if(area.id!=='recepcion'&&area.id!=='cajeros') return p.area===area.id;
+      return false;
+    });
+
+    if(emps.length===0) return;
+
+    html+=`<div class="area-section fade-up">
+      <div class="area-hdr"><span class="area-badge area-${area.id}">${area.label}</span></div>`;
+
+    emps.forEach(([nombre,info])=>{
+      const turno = h[nombre]||defaultTurno(nombre);
+      const ini=nombre.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+      const solPend = solicitudes.filter(s=>s.nombre===nombre&&s.estado==='pendiente').length;
+
+      html+=`<div class="emp-card fade-up">
+        <div class="emp-card-head" onclick="toggleEmp('emp-sched-${nombre.replace(/ /g,'-')}')">
+          <div class="emp-info">
+            <div class="emp-avatar">${ini}</div>
+            <div>
+              <div class="emp-name">${nombre}${solPend>0?` <span style="font-size:10px;background:rgba(255,145,0,.2);color:var(--naranja);padding:1px 6px;border-radius:6px;">solicitud</span>`:''}</div>
+              <div class="emp-meta">${info.rota?'Rota entre puntos':'Fijo'} · ${area.label}</div>
+            </div>
+          </div>
+          <div class="emp-week-dots">`;
+
+      turno.forEach((dia,i)=>{
+        const cls = dia.tipo==='descanso'?'rest':dia.tipo==='hogares'||dia.tipo==='soacha'?'other':'work';
+        const lbl = dia.tipo==='descanso'?'D':dia.tipo==='hogares'?'H':dia.tipo==='soacha'?'S':DIAS[i][0];
+        html+=`<div class="day-dot ${cls}">${lbl}</div>`;
+      });
+
+      html+=`</div></div>
+        <div class="sched-grid" id="emp-sched-${nombre.replace(/ /g,'-')}" style="display:none;">
+          <div class="sched-days">`;
+
+      DIAS.forEach((d,i)=>{
+        const dia = turno[i]||{tipo:'trabajo',entrada:'13:00',cierre:'22:00'};
+        const date = dias[i];
+        const hoy = isToday(date)?'style="border-color:var(--naranja);"':'';
+        html+=`<div class="sched-day">
+          <div class="sched-day-name">${d}</div>
+          <div class="sched-day-cell ${dia.tipo==='descanso'?'descanso':dia.tipo==='hogares'||dia.tipo==='soacha'?'otro-punto':''}" ${hoy}
+            onclick="openEditDia('${wk}','${nombre}',${i})">`;
+        if(dia.tipo==='descanso'){
+          html+=`<span class="cell-tag">DESC</span>`;
+        } else if(dia.tipo==='hogares'){
+          html+=`<span class="cell-otro">HOGA</span>`;
+        } else if(dia.tipo==='soacha'){
+          html+=`<span class="cell-otro">SOAC</span>`;
+        } else {
+          html+=`<span class="cell-start">${dia.entrada||'—'}</span>`;
+          if(dia.pico_ini) html+=`<span class="cell-pico">(${dia.pico_ini}–${dia.pico_fin})</span>`;
+          html+=`<span class="cell-end">${dia.cierre||''}</span>`;
+        }
+        html+=`</div></div>`;
+      });
+
+      html+=`</div></div></div></div>`;
+    });
+
+    html+=`</div>`;
+  });
+
+  body.innerHTML=html;
+}
+
+function toggleEmp(id){
+  const el=document.getElementById(id);
+  if(el) el.style.display=el.style.display==='none'?'block':'none';
+}
+
+function defaultTurno(nombre){
+  // Genera turno default: 6 días trabajo + 1 descanso rotativo
+  const arr=[];
+  for(let i=0;i<7;i++){
+    arr.push({tipo:'trabajo',entrada:'13:00',pico_ini:'',pico_fin:'',cierre:'22:00'});
+  }
+  return arr;
+}
+
+function changeWeek(dir){
+  curWeekOffset+=dir;
+  encTab('horario');
+}
+
+function setPunto(p){
+  curPunto=p;
+  renderEncHorario();
+}
+
+function togglePicoFields(checked){
+  const fields = document.getElementById('modal-pico-fields');
+  if(fields) fields.style.display = checked ? 'block' : 'none';
+  if(!checked){
+    const ini = document.getElementById('modal-pico-ini');
+    const fin = document.getElementById('modal-pico-fin');
+    if(ini) ini.value='';
+    if(fin) fin.value='';
+  }
+}
+
+function openEditDia(wk,nombre,diaIdx){
+  editContext={wk,nombre,diaIdx};
+  const h=horarios[wk]||{};
+  const turno=h[nombre]||defaultTurno(nombre);
+  const dia=turno[diaIdx]||{tipo:'trabajo',entrada:'13:00',cierre:'22:00'};
+
+  document.getElementById('modal-dia-title').textContent=`${nombre} — ${DIAS_FULL[diaIdx]}`;
+  document.getElementById('modal-dia-sub').textContent=weekLabel(curWeekOffset);
+
+  ['trabajo','descanso','hogares','soacha'].forEach(t=>{
+    document.getElementById('opt-'+t)?.classList.toggle('selected',dia.tipo===t);
+  });
+
+  document.getElementById('modal-entrada').value=dia.entrada||'13:00';
+  document.getElementById('modal-pico-ini').value=dia.pico_ini||'';
+  document.getElementById('modal-pico-fin').value=dia.pico_fin||'';
+  document.getElementById('modal-cierre').value=dia.cierre||'22:00';
+
+  // Set pico checkbox
+  const tienePico = !!(dia.pico_ini && dia.pico_ini.length>0);
+  const picoCheck = document.getElementById('modal-pico-check');
+  if(picoCheck) picoCheck.checked = tienePico;
+  togglePicoFields(tienePico);
+
+  const showFields = dia.tipo==='trabajo';
+  document.getElementById('modal-horario-fields').style.display=showFields?'block':'none';
+
+  document.getElementById('modal-dia').classList.remove('hidden');
+}
+
+function selectTipo(tipo){
+  ['trabajo','descanso','hogares','soacha'].forEach(t=>{
+    document.getElementById('opt-'+t)?.classList.toggle('selected',t===tipo);
+  });
+  document.getElementById('modal-horario-fields').style.display=tipo==='trabajo'?'block':'none';
+}
+
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+
+async function guardarDia(){
+  if(!editContext) return;
+  const {wk,nombre,diaIdx}=editContext;
+  const tipo=['trabajo','descanso','hogares','soacha'].find(t=>document.getElementById('opt-'+t)?.classList.contains('selected'))||'trabajo';
+
+  if(!horarios[wk]) horarios[wk]={};
+  if(!horarios[wk][nombre]) horarios[wk][nombre]=defaultTurno(nombre);
+
+  horarios[wk][nombre][diaIdx]={
+    tipo,
+    entrada: document.getElementById('modal-entrada').value,
+    pico_ini: document.getElementById('modal-pico-ini').value,
+    pico_fin: document.getElementById('modal-pico-fin').value,
+    cierre: document.getElementById('modal-cierre').value,
+  };
+
+  await saveHorario(wk);
+  closeModal('modal-dia');
+  renderEncHorario();
+}
+
+async function togglePublish(wk){
+  if(!horarios[wk]) horarios[wk]={};
+  horarios[wk]._published = !horarios[wk]._published;
+  await saveHorario(wk);
+  renderEncHorario();
+}
+
+// ═══════════════════════════════════════════════════
+// SUGERENCIA AUTOMÁTICA
+// ═══════════════════════════════════════════════════
+async function sugerirHorario(wk){
+  if(!confirm('¿Generar horario sugerido para esta semana?\n\nSe respetarán las solicitudes de descanso aprobadas. Podrás ajustar todo antes de publicar.')) return;
+
+  await loadSolicitudes();
+  if(!horarios[wk]) horarios[wk]={};
+
+  const sol_aprobadas = solicitudes.filter(s=>s.estado==='aprobada'&&s.semana===wk);
+
+  // Para cada empleado generar turno
+  Object.entries(PERSONAL).forEach(([nombre,info])=>{
+    const turno = defaultTurno(nombre);
+
+    // Ver si tiene solicitud aprobada esta semana
+    const sol = sol_aprobadas.find(s=>s.nombre===nombre);
+    let diaDescanso = -1;
+
+    if(sol){
+      // Usar el día solicitado
+      diaDescanso = parseInt(sol.dia_idx);
+    } else {
+      // Rotar descanso: usar semana anterior como referencia
+      const prevWk = weekKey(curWeekOffset-1);
+      const prev = horarios[prevWk]?.[nombre];
+      if(prev){
+        const prevDesc = prev.findIndex(d=>d.tipo==='descanso');
+        diaDescanso = prevDesc>=0 ? (prevDesc+1)%7 : 0;
+      } else {
+        // Asignar lunes por defecto
+        diaDescanso = 0;
+      }
+    }
+
+    // Aplicar descanso
+    if(diaDescanso>=0) turno[diaDescanso]={tipo:'descanso',entrada:'',pico_ini:'',pico_fin:'',cierre:''};
+
+    // Horarios según día
+    turno.forEach((d,i)=>{
+      if(d.tipo==='descanso') return;
+      const esFinDeSemana = i>=4; // Vie, Sáb, Dom
+      const esSab = i===5;
+      const esDom = i===6;
+      d.entrada = esSab||esDom?'13:00':'13:00';
+      d.cierre = esFinDeSemana?'23:00':'22:00';
+      d.pico_ini = esFinDeSemana?'17:00':'16:00';
+      d.pico_fin = esFinDeSemana?'20:00':'19:00';
+    });
+
+    horarios[wk][nombre]=turno;
+  });
+
+  await saveHorario(wk);
+  alert('✅ Horario sugerido generado.\n\nRevisa y ajusta lo que necesites antes de publicar.');
+  renderEncHorario();
+}
+
+// ═══════════════════════════════════════════════════
+// DETECTAR CONFLICTOS
+// ═══════════════════════════════════════════════════
+function detectarConflictos(wk){
+  const h=horarios[wk]||{};
+  const conflicts=[];
+
+  // Por área y punto, no más de 1 descanso el mismo día
+  const areas=['cocina','recepcion','domiciliarios'];
+  const puntos=['hogares','soacha'];
+
+  puntos.forEach(punto=>{
+    areas.forEach(area=>{
+      const emps=Object.entries(PERSONAL).filter(([n,p])=>p.area===area);
+      DIAS.forEach((d,i)=>{
+        const enDescanso=emps.filter(([n])=>{
+          const turno=h[n]||defaultTurno(n);
+          return turno[i]?.tipo==='descanso';
+        });
+        if(enDescanso.length>1){
+          conflicts.push(`${d}: ${enDescanso.map(([n])=>n).join(' y ')} descansan al mismo tiempo (${area})`);
+        }
+      });
+    });
+  });
+
+  return conflicts;
+}
+
+// ═══════════════════════════════════════════════════
+// ENCARGADA — SOLICITUDES
+// ═══════════════════════════════════════════════════
+async function renderEncSolicitudes(){
+  await loadSolicitudes();
+  const body=document.getElementById('enc-body');
+  const pendientes=solicitudes.filter(s=>s.estado==='pendiente');
+  const resueltas=solicitudes.filter(s=>s.estado!=='pendiente');
+
+  // Notif badge
+  const notif=document.getElementById('enc-notif');
+  notif.style.display=pendientes.length>0?'flex':'none';
+  notif.textContent=pendientes.length;
+
+  let html=`<div class="sec-lbl fade-up">Solicitudes pendientes (${pendientes.length})</div>`;
+
+  if(pendientes.length===0){
+    html+=`<div style="text-align:center;padding:2rem;color:rgba(254,242,223,.35);font-size:13px;">Sin solicitudes pendientes</div>`;
+  }
+
+  pendientes.forEach(s=>{
+    const diasNombre=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+    html+=`<div class="sol-card fade-up">
+      <div class="sol-head">
+        <div class="sol-name">${s.nombre}</div>
+        <div class="sol-date">${s.semana} · ${diasNombre[s.dia_idx]}</div>
+      </div>
+      <div class="sol-msg">${s.motivo||'Sin motivo especificado'}</div>
+      <div class="sol-btns">
+        <button class="sol-btn-ok" onclick="resolverSolicitud('${s.id}','aprobada')">✓ Aprobar</button>
+        <button class="sol-btn-no" onclick="resolverSolicitud('${s.id}','rechazada')">✗ Rechazar</button>
+      </div>
+    </div>`;
+  });
+
+  if(resueltas.length>0){
+    html+=`<div class="sec-lbl fade-up" style="margin-top:16px;">Historial</div>`;
+    resueltas.slice(0,10).forEach(s=>{
+      const diasNombre=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+      html+=`<div class="sol-card fade-up">
+        <div class="sol-head">
+          <div class="sol-name">${s.nombre}</div>
+          <span class="sol-status ${s.estado==='aprobada'?'sol-ok':'sol-no'}">${s.estado==='aprobada'?'✓ Aprobada':'✗ Rechazada'}</span>
+        </div>
+        <div class="sol-date">${s.semana} · ${diasNombre[s.dia_idx]||''}</div>
+      </div>`;
+    });
+  }
+
+  body.innerHTML=html;
+}
+
+async function resolverSolicitud(id, estado){
+  await updateSolicitud(id, estado);
+  await loadSolicitudes();
+  renderEncSolicitudes();
+}
+
+// ═══════════════════════════════════════════════════
+// ENCARGADA — PERSONAL
+// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// PERSONAL — CRUD (Firebase + memoria)
+// ═══════════════════════════════════════════════════
+async function loadPersonalDB(){
+  try {
+    const snap = await _db.collection('personal').get();
+    if(!snap.empty){
+      snap.forEach(doc=>{
+        PERSONAL[doc.id] = doc.data();
+      });
+    } else {
+      // Primera vez — guardar los hardcodeados en Firebase
+      const batch = _db.batch();
+      Object.entries(PERSONAL).forEach(([nombre,info])=>{
+        batch.set(_db.collection('personal').doc(nombre), info);
+      });
+      await batch.commit();
+    }
+  } catch(e){ console.warn('loadPersonal error',e); }
+}
+
+async function savePersonaDB(nombre, data){
+  try { await _db.collection('personal').doc(nombre).set(data); }
+  catch(e){ console.warn('savePersona error',e); }
+}
+
+async function deletePersonaDB(nombre){
+  try { await _db.collection('personal').doc(nombre).delete(); }
+  catch(e){ console.warn('deletePersona error',e); }
+}
+
+// Helper functions para botones de editar/borrar personal
+function editarPersonaClick(btn){
+  const nombre = btn.getAttribute('data-edit');
+  if(nombre) abrirModalPersona(nombre);
+}
+function borrarPersonaClick(btn){
+  const nombre = btn.getAttribute('data-del');
+  if(nombre) confirmarEliminar(nombre);
+}
+
+function renderEncPersonal(){
+  const body=document.getElementById('enc-body');
+  const areas=[
+    {id:'cocina',        label:'Cocina',              cls:'area-cocina'},
+    {id:'recepcion',     label:'Recepción / Cajeros',  cls:'area-recepcion'},
+    {id:'domiciliarios', label:'Domiciliarios',         cls:'area-domi'},
+    {id:'supervisor',    label:'Supervisores',          cls:'area-recepcion'},
+    {id:'administrador', label:'Administradores',       cls:'area-cocina'},
+  ];
+
+  const estadoBadge = (info) => {
+    const e = info.estado||'activo';
+    const map = {
+      activo:      {txt:'Activo',       bg:'rgba(59,109,17,.2)',   color:'#C0DD97'},
+      vacaciones:  {txt:'Vacaciones',   bg:'rgba(24,95,165,.2)',   color:'#85B7EB'},
+      incapacitado:{txt:'Incapacitado', bg:'rgba(163,45,45,.2)',   color:'#F09595'},
+      retirado:    {txt:'Retirado',     bg:'rgba(254,242,223,.07))',color:'rgba(254,242,223,.3)'},
+      inactivo:    {txt:'Inactivo',     bg:'rgba(254,242,223,.05))',color:'rgba(254,242,223,.25)'},
+    };
+    const s = map[e]||map.activo;
+    return `<span style="font-size:9px;padding:2px 7px;border-radius:6px;font-weight:700;background:${s.bg};color:${s.color};">${s.txt}</span>`;
+  };
+
+  let html=`
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;" class="fade-up">
+    <div class="sec-lbl" style="margin-bottom:0;">Personal — ${Object.keys(PERSONAL).length} personas</div>
+    <button onclick="abrirModalPersona()" style="padding:8px 14px;background:var(--naranja);color:var(--cafe);border:none;border-radius:10px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:800;cursor:pointer;">+ Agregar</button>
+  </div>`;
+
+  areas.forEach(area=>{
+    const emps = Object.entries(PERSONAL).filter(([n,p])=>p.area===area.id);
+    html+=`<div class="area-section fade-up">
+      <div class="area-hdr"><span class="area-badge ${area.cls}">${area.label} — ${emps.length}</span></div>`;
+
+    if(emps.length===0){
+      html+=`<div style="font-size:12px;color:rgba(254,242,223,.3);padding:8px 0;">Sin personal en esta área</div>`;
+    }
+
+    emps.forEach(([nombre,info])=>{
+      const ini=nombre.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+      const activo = info.estado !== 'retirado' && info.estado !== 'inactivo';
+      html+=`<div style="background:rgba(254,242,223,.05);border:1px solid var(--border);border-radius:12px;padding:11px 13px;margin-bottom:8px;display:flex;align-items:center;gap:10px;opacity:${activo?1:.5};">
+        <div class="emp-avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0;">${ini}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:var(--crema);">${nombre}</div>
+          <div style="font-size:10px;color:rgba(254,242,223,.4);margin-top:2px;display:flex;align-items:center;gap:5px;">
+            <span>${info.rota?'🔄':'📍'} ${info.punto==='hogares'?'Hogares':info.punto==='soacha'?'Soacha':'Ambos'}</span>
+            ${estadoBadge(info)}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <button data-edit="${nombre}" onclick="editarPersonaClick(this)"
+            style="width:30px;height:30px;border-radius:8px;background:rgba(255,145,0,.12);border:1px solid rgba(255,145,0,.25);color:var(--naranja);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✏️</button>
+          <button data-del="${nombre}" onclick="borrarPersonaClick(this)"
+            style="width:30px;height:30px;border-radius:8px;background:rgba(163,45,45,.15);border:1px solid rgba(163,45,45,.25);color:#F09595;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">🗑️</button>
+        </div>
+      </div>`;
+    });
+
+    html+=`</div>`;
+  });
+
+  body.innerHTML=html;
+}
+
+function abrirModalPersona(nombre=null){
+  const editing = nombre !== null;
+  const info = editing ? PERSONAL[nombre] : null;
+
+  // Crear modal dinámico
+  const existing = document.getElementById('modal-persona');
+  if(existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'modal-persona';
+  overlay.className = 'modal-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:flex-end;justify-content:center;';
+
+  overlay.innerHTML = `
+  <div style="background:var(--cafe);border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;">
+    <div class="modal-title">${editing?'Editar':'Agregar'} persona</div>
+    <div class="modal-sub">${editing?nombre:'Nuevo integrante del equipo'}</div>
+
+    <div class="modal-row">
+      <label>Nombre completo</label>
+      <input type="text" id="mp-nombre" value="${editing?nombre:''}" placeholder="Ej: Juan Pérez">
+      ${editing?`<div style="font-size:10px;color:rgba(254,242,223,.35);margin-top:4px;">⚠️ Si cambias el nombre se crea como nuevo empleado</div>`:''}
+    </div>
+    <div class="modal-row">
+      <label>Área / Cargo</label>
+      <select id="mp-area">
+        <option value="cocina" ${info?.area==='cocina'?'selected':''}>🍳 Cocina</option>
+        <option value="recepcion" ${info?.area==='recepcion'?'selected':''}>💻 Recepción / Cajero</option>
+        <option value="domiciliarios" ${info?.area==='domiciliarios'?'selected':''}>🛵 Domiciliarios</option>
+        <option value="supervisor" ${info?.area==='supervisor'?'selected':''}>👁️ Supervisor</option>
+        <option value="administrador" ${info?.area==='administrador'?'selected':''}>👩‍💼 Administrador</option>
+      </select>
+    </div>
+    <div class="modal-row">
+      <label>Punto base</label>
+      <select id="mp-punto">
+        <option value="hogares" ${info?.punto==='hogares'?'selected':''}>🏠 Hogares</option>
+        <option value="soacha" ${info?.punto==='soacha'?'selected':''}>🏬 Soacha</option>
+        <option value="ambos" ${info?.punto==='ambos'?'selected':''}>🏠🏬 Ambos puntos</option>
+      </select>
+    </div>
+    <div class="modal-row">
+      <label>¿Rota entre puntos?</label>
+      <select id="mp-rota">
+        <option value="false" ${!info?.rota?'selected':''}>📍 No — Fijo en su punto</option>
+        <option value="true" ${info?.rota?'selected':''}>🔄 Sí — Rota entre Hogares y Soacha</option>
+      </select>
+    </div>
+    <div class="modal-row">
+      <label>Estado</label>
+      <select id="mp-activo">
+        <option value="activo" ${(info?.estado||'activo')==='activo'?'selected':''}>✅ Activo</option>
+        <option value="vacaciones" ${info?.estado==='vacaciones'?'selected':''}>🏖️ Vacaciones</option>
+        <option value="incapacitado" ${info?.estado==='incapacitado'?'selected':''}>🏥 Incapacitado</option>
+        <option value="retirado" ${info?.estado==='retirado'?'selected':''}>🚪 Retirado</option>
+        <option value="inactivo" ${info?.estado==='inactivo'?'selected':''}>⏸️ Inactivo</option>
+      </select>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button onclick="document.getElementById('modal-persona').remove()"
+        style="flex:1;padding:12px;background:rgba(254,242,223,.06);color:rgba(254,242,223,.5);font-size:13px;border:1px solid var(--border);border-radius:10px;cursor:pointer;">
+        Cancelar
+      </button>
+      <button onclick="guardarPersona(${editing?`'${nombre.replace(/'/g,"\\'")}'`:'null'})"
+        style="flex:1;padding:12px;background:var(--naranja);color:var(--cafe);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;border:none;border-radius:10px;cursor:pointer;">
+        ${editing?'Guardar cambios':'Agregar'}
+      </button>
+    </div>
+  </div>`;
+
+  document.body.appendChild(overlay);
+}
+
+async function guardarPersona(nombreOriginal){
+  const nombre = document.getElementById('mp-nombre').value.trim();
+  const area   = document.getElementById('mp-area').value;
+  const punto  = document.getElementById('mp-punto').value;
+  const rota   = document.getElementById('mp-rota').value === 'true';
+  const estado = document.getElementById('mp-activo').value;
+
+  if(!nombre){ alert('Escribe el nombre'); return; }
+
+  const data = {area, punto, rota, activo: estado==='activo', estado};
+
+  // Si el nombre cambió (nuevo), usar el nuevo nombre como key
+  const key = nombreOriginal || nombre;
+  PERSONAL[key] = data;
+
+  await savePersonaDB(key, data);
+
+  // Actualizar select del login
+  initLogin();
+
+  document.getElementById('modal-persona')?.remove();
+  renderEncPersonal();
+}
+
+async function confirmarEliminar(nombre){
+  const modal = document.createElement('div');
+  modal.id = 'modal-confirmar';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:600;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
+  modal.innerHTML = `
+  <div style="background:var(--cafe);border:1px solid rgba(254,242,223,.15);border-radius:20px;padding:24px;width:100%;max-width:300px;text-align:center;">
+    <div style="font-size:28px;margin-bottom:10px;">⚠️</div>
+    <div style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;color:var(--crema);margin-bottom:6px;">¿Eliminar a ${nombre}?</div>
+    <div style="font-size:12px;color:rgba(254,242,223,.45);margin-bottom:20px;">Se eliminará del sistema y no aparecerá en horarios futuros. Los horarios pasados no se afectan.</div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="document.getElementById('modal-confirmar').remove()"
+        style="flex:1;padding:11px;background:rgba(254,242,223,.06);border:1px solid var(--border);border-radius:10px;color:rgba(254,242,223,.5);font-size:13px;cursor:pointer;">Cancelar</button>
+      <button onclick="eliminarPersona('${nombre.replace(/'/g,"\\'")}')"
+        style="flex:1;padding:11px;background:rgba(163,45,45,.25);border:1px solid rgba(163,45,45,.4);border-radius:10px;color:#F09595;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Eliminar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+async function eliminarPersona(nombre){
+  delete PERSONAL[nombre];
+  await deletePersonaDB(nombre);
+  initLogin();
+  document.getElementById('modal-confirmar')?.remove();
+  renderEncPersonal();
+}
+
+
+// ═══════════════════════════════════════════════════
+// EMPLEADO — TABS
+// ═══════════════════════════════════════════════════
+function empTab(tab){
+  curEmpTab=tab;
+  ['horario','pedir'].forEach(t=>{
+    document.getElementById('emp-bn-'+t)?.classList.toggle('active',t===tab);
+  });
+  if(tab==='horario') renderEmpHorario();
+  else if(tab==='pedir') renderEmpPedir();
+}
+
+// ═══════════════════════════════════════════════════
+// EMPLEADO — MI HORARIO
+// ═══════════════════════════════════════════════════
+async function renderEmpHorario(){
+  const body=document.getElementById('emp-body');
+  const wkCurr=weekKey(0);
+  const wkNext=weekKey(1);
+  await loadHorario(wkCurr);
+  await loadHorario(wkNext);
+
+  const info=PERSONAL[curUser];
+  let html='';
+
+  // Semana actual
+  const hCurr=horarios[wkCurr]||{};
+  const isPublished=hCurr._published===true;
+  const turnoCurr=hCurr[curUser]||null;
+  const diasCurr=getDayDates(0);
+
+  html+=`<div class="sec-lbl fade-up">Semana actual — ${weekLabel(0)}</div>`;
+
+  if(!isPublished||!turnoCurr){
+    html+=`<div style="background:rgba(254,242,223,.05);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center;margin-bottom:14px;">
+      <div style="font-size:24px;margin-bottom:8px;">⏳</div>
+      <div style="font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--crema);margin-bottom:4px;">Horario pendiente</div>
+      <div style="font-size:12px;color:rgba(254,242,223,.45);">La encargada aún no ha publicado el horario de esta semana</div>
+    </div>`;
+  } else {
+    html+=`<div class="my-week fade-up">
+      <div class="my-week-head">
+        <div class="my-week-title">${curUser}</div>
+        <span class="my-week-pub sol-ok" style="font-size:10px;padding:2px 8px;border-radius:6px;">✓ Publicado</span>
+      </div>
+      <div class="my-days">`;
+
+    turnoCurr.forEach((dia,i)=>{
+      const date=diasCurr[i];
+      const hoy=isToday(date);
+      html+=`<div class="my-day ${dia.tipo==='descanso'?'descanso':''} ${hoy?'today':''}">
+        <div class="my-day-name">${DIAS[i]}</div>
+        <div class="my-day-content">`;
+      if(dia.tipo==='descanso'){
+        html+=`<div class="my-rest">🟡<br>DESC</div>`;
+      } else if(dia.tipo==='hogares'){
+        html+=`<div class="my-otro">🏠<br>HOG</div>`;
+      } else if(dia.tipo==='soacha'){
+        html+=`<div class="my-otro">🏬<br>SOA</div>`;
+      } else {
+        html+=`<div class="my-time">${dia.entrada||'—'}</div>`;
+        if(dia.pico_ini) html+=`<div class="my-pico">${dia.pico_ini}</div>`;
+        html+=`<div class="my-end">${dia.cierre||''}</div>`;
+      }
+      html+=`</div></div>`;
+    });
+
+    html+=`</div></div>`;
+
+    // Turno de hoy destacado
+    const todayIdx=new Date().getDay();
+    const monIdx=(todayIdx===0?6:todayIdx-1);
+    const hoy=turnoCurr[monIdx];
+    if(hoy){
+      html+=`<div style="background:rgba(255,145,0,.08);border:1px solid rgba(255,145,0,.2);border-radius:14px;padding:14px 16px;margin-bottom:14px;" class="fade-up">
+        <div style="font-size:10px;font-weight:700;color:var(--naranja);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Hoy — ${DIAS_FULL[monIdx]}</div>`;
+      if(hoy.tipo==='descanso'){
+        html+=`<div style="font-family:'Poppins',sans-serif;font-size:20px;font-weight:800;color:var(--naranja);">🟡 Día de descanso</div>`;
+      } else if(hoy.tipo==='hogares'||hoy.tipo==='soacha'){
+        html+=`<div style="font-family:'Poppins',sans-serif;font-size:16px;font-weight:800;color:var(--blue-t);">${hoy.tipo==='hogares'?'🏠 Trabajas en Hogares':'🏬 Trabajas en Soacha'}</div>`;
+        html+=`<div style="font-size:13px;color:rgba(254,242,223,.6);margin-top:4px;">${hoy.entrada||''} — ${hoy.cierre||''}</div>`;
+      } else {
+        html+=`<div style="font-family:'Poppins',sans-serif;font-size:24px;font-weight:900;color:var(--crema);">${hoy.entrada||'—'} <span style="color:rgba(254,242,223,.3);font-size:16px;">→</span> ${hoy.cierre||''}</div>`;
+        if(hoy.pico_ini) html+=`<div style="font-size:12px;color:var(--naranja);margin-top:4px;">Pico: ${hoy.pico_ini} – ${hoy.pico_fin}</div>`;
+      }
+      html+=`</div>`;
+    }
+  }
+
+  // Semana próxima
+  const hNext=horarios[wkNext]||{};
+  const isNextPublished=hNext._published===true;
+  const turnoNext=hNext[curUser]||null;
+  html+=`<div class="sec-lbl fade-up" style="margin-top:4px;">Próxima semana — ${weekLabel(1)}</div>`;
+  if(!isNextPublished||!turnoNext){
+    html+=`<div style="font-size:12px;color:rgba(254,242,223,.35);padding:12px 0;" class="fade-up">Aún no publicado</div>`;
+  } else {
+    const diasNext=getDayDates(1);
+    html+=`<div class="my-week fade-up">
+      <div class="my-week-head"><div class="my-week-title">${weekLabel(1).split('·')[0].trim()}</div></div>
+      <div class="my-days">`;
+    turnoNext.forEach((dia,i)=>{
+      html+=`<div class="my-day ${dia.tipo==='descanso'?'descanso':''}">
+        <div class="my-day-name">${DIAS[i]}</div><div class="my-day-content">`;
+      if(dia.tipo==='descanso') html+=`<div class="my-rest">DESC</div>`;
+      else if(dia.tipo==='hogares') html+=`<div class="my-otro">HOG</div>`;
+      else if(dia.tipo==='soacha') html+=`<div class="my-otro">SOA</div>`;
+      else{ html+=`<div class="my-time">${dia.entrada||'—'}</div><div class="my-end">${dia.cierre||''}</div>`; }
+      html+=`</div></div>`;
+    });
+    html+=`</div></div>`;
+  }
+
+  body.innerHTML=html;
+}
+
+// ═══════════════════════════════════════════════════
+// EMPLEADO — PEDIR DESCANSO (con calendario)
+// ═══════════════════════════════════════════════════
+let calMes = 0; // offset de mes (0 = este mes, 1 = siguiente)
+let calFechaSeleccionada = null;
+
+async function renderEmpPedir(){
+  await loadSolicitudes();
+  const body = document.getElementById('emp-body');
+  const misSolicitudes = solicitudes.filter(s=>s.nombre===curUser);
+
+  let html = `<div class="sol-form fade-up">
+    <h3>📅 Solicitar día de descanso</h3>
+    <div style="margin-bottom:14px;">${renderCalendario()}</div>
+    <div id="cal-fecha-sel" style="font-size:12px;color:rgba(254,242,223,.45);text-align:center;margin-bottom:12px;">
+      ${calFechaSeleccionada ? `<span style="color:var(--naranja);font-weight:700;">📅 ${formatFechaLarga(calFechaSeleccionada)}</span>` : 'Toca un día para seleccionarlo'}
+    </div>
+    <div class="modal-row">
+      <label>Motivo (opcional)</label>
+      <input type="text" id="sol-motivo" placeholder="Ej: cita médica, compromiso familiar...">
+    </div>
+    <button class="btn-primary" onclick="enviarSolicitud()" style="margin-top:4px;"
+      ${!calFechaSeleccionada?'disabled style="opacity:.4;cursor:not-allowed;"':''}>
+      Enviar solicitud
+    </button>
+  </div>`;
+
+  if(misSolicitudes.length>0){
+    html += `<div class="sec-lbl fade-up">Mis solicitudes</div>`;
+    misSolicitudes.slice(0,10).forEach(s=>{
+      const diasNombre=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+      html += `<div class="sol-card fade-up">
+        <div class="sol-head">
+          <div class="sol-name">${formatFechaLarga(s.fecha)||s.semana}</div>
+          <span class="sol-status ${s.estado==='aprobada'?'sol-ok':s.estado==='rechazada'?'sol-no':'sol-pend'}">
+            ${s.estado==='aprobada'?'✓ Aprobada':s.estado==='rechazada'?'✗ Rechazada':'⏳ Pendiente'}
+          </span>
+        </div>
+        ${s.motivo?`<div class="sol-msg">${s.motivo}</div>`:''}
+      </div>`;
+    });
+  }
+
+  body.innerHTML = html;
+}
+
+function renderCalendario(){
+  const hoy = new Date();
+  hoy.setHours(0,0,0,0);
+  const minFecha = new Date(hoy);
+  minFecha.setDate(hoy.getDate()+1); // mínimo mañana
+  const maxFecha = new Date(hoy);
+  maxFecha.setDate(hoy.getDate()+35); // máximo 35 días
+
+  const mes = new Date(hoy.getFullYear(), hoy.getMonth()+calMes, 1);
+  const mesNombre = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][mes.getMonth()];
+  const diasEnMes = new Date(mes.getFullYear(), mes.getMonth()+1, 0).getDate();
+  const primerDia = mes.getDay(); // 0=dom
+  const primerDiaLun = primerDia===0?6:primerDia-1; // ajustar a lunes=0
+
+  // Fechas con solicitud ya enviada
+  const fechasOcupadas = new Set(solicitudes.filter(s=>s.nombre===curUser&&s.estado!=='rechazada').map(s=>s.fecha));
+
+  let html = `<div style="background:rgba(254,242,223,.05);border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(254,242,223,.06);">
+      <button onclick="cambiarMesCal(-1)" style="width:28px;height:28px;border-radius:8px;background:rgba(254,242,223,.08);border:1px solid var(--border);color:var(--crema);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;"
+        ${calMes<=0?'disabled style="opacity:.3;cursor:default;"':''}>‹</button>
+      <div style="font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:var(--crema);">${mesNombre} ${mes.getFullYear()}</div>
+      <button onclick="cambiarMesCal(1)" style="width:28px;height:28px;border-radius:8px;background:rgba(254,242,223,.08);border:1px solid var(--border);color:var(--crema);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;"
+        ${calMes>=1?'disabled style="opacity:.3;cursor:default;"':''}>›</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);padding:8px;">`;
+
+  // Cabeceras días
+  ['L','M','M','J','V','S','D'].forEach((d,i)=>{
+    html+=`<div style="text-align:center;font-size:9px;font-weight:700;color:rgba(254,242,223,.3);padding:4px 0;font-family:'Poppins',sans-serif;">${d}</div>`;
+  });
+
+  // Celdas vacías inicio
+  for(let i=0;i<primerDiaLun;i++){
+    html+=`<div></div>`;
+  }
+
+  // Días del mes
+  for(let d=1;d<=diasEnMes;d++){
+    const fecha = new Date(mes.getFullYear(), mes.getMonth(), d);
+    fecha.setHours(0,0,0,0);
+    const fechaStr = fecha.toISOString().slice(0,10);
+    const esHoy = fecha.getTime()===hoy.getTime();
+    const esSel = calFechaSeleccionada===fechaStr;
+    const esPasado = fecha < minFecha;
+    const esFuturoLejano = fecha > maxFecha;
+    const tienesSol = fechasOcupadas.has(fechaStr);
+    const bloqueado = esPasado||esFuturoLejano||tienesSol;
+    const esFinSem = fecha.getDay()===0||fecha.getDay()===6;
+
+    let bg, color, border;
+    if(esSel){ bg='var(--naranja)';color='var(--cafe)';border='none'; }
+    else if(tienesSol){ bg='rgba(59,109,17,.2)';color='var(--green-t)';border='1px solid rgba(59,109,17,.3)'; }
+    else if(bloqueado){ bg='transparent';color='rgba(254,242,223,.2)';border='none'; }
+    else if(esHoy){ bg='rgba(254,242,223,.1)';color='var(--crema)';border='1px solid rgba(254,242,223,.3)'; }
+    else if(esFinSem){ bg='rgba(255,145,0,.07)';color='var(--naranja)';border='1px solid transparent'; }
+    else{ bg='rgba(254,242,223,.04)';color='var(--crema)';border='1px solid transparent'; }
+
+    html+=`<div style="text-align:center;padding:3px 2px;">
+      <div onclick="${bloqueado?'':(`selFecha('${fechaStr}')`)}"
+        style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;
+               font-family:'Poppins',sans-serif;font-size:12px;font-weight:${esSel||esHoy?700:500};
+               background:${bg};color:${color};border:${border};
+               cursor:${bloqueado?'default':'pointer'};transition:all .12s;">
+        ${d}${tienesSol?'<span style="position:absolute;font-size:6px;">●</span>':''}
+      </div>
+    </div>`;
+  }
+
+  html+=`</div></div>`;
+  return html;
+}
+
+function cambiarMesCal(dir){
+  calMes = Math.max(0, Math.min(1, calMes+dir));
+  renderEmpPedir();
+}
+
+function selFecha(fechaStr){
+  calFechaSeleccionada = fechaStr;
+  renderEmpPedir();
+}
+
+function formatFechaLarga(fechaStr){
+  if(!fechaStr) return '';
+  try{
+    const d = new Date(fechaStr+'T12:00:00');
+    const dias=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    return `${dias[d.getDay()]} ${d.getDate()} de ${meses[d.getMonth()]}`;
+  }catch(e){ return fechaStr; }
+}
+
+
+async function enviarSolicitud(){
+  if(!calFechaSeleccionada){ alert('Selecciona una fecha en el calendario'); return; }
+  const motivo = document.getElementById('sol-motivo')?.value.trim()||'';
+
+  // Calcular semana y día de la semana
+  const fecha = new Date(calFechaSeleccionada+'T12:00:00');
+  const day = fecha.getDay();
+  const dia_idx = day===0?6:day-1; // lunes=0
+  // Obtener lunes de esa semana
+  const mon = new Date(fecha);
+  mon.setDate(fecha.getDate()-(dia_idx));
+  const semana = mon.toISOString().slice(0,10);
+
+  const yaExiste = solicitudes.find(s=>s.nombre===curUser&&s.fecha===calFechaSeleccionada&&s.estado==='pendiente');
+  if(yaExiste){ alert('Ya tienes una solicitud pendiente para esa fecha'); return; }
+
+  await saveSolicitud({nombre:curUser, fecha:calFechaSeleccionada, semana, dia_idx, motivo, estado:'pendiente'});
+  calFechaSeleccionada = null;
+  alert(`✅ Solicitud enviada para el ${formatFechaLarga(calFechaSeleccionada||semana)}. La encargada la revisará pronto.`);
+  await renderEmpPedir();
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+function initLogin(){
+  const sel = document.getElementById('login-nombre');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">Selecciona tu nombre...</option>';
+  // Encargada primero
+  sel.innerHTML += '<option value="__encargada__">👩‍💼 Encargada / Supervisora</option>';
+  // Todos los empleados ordenados
+  const names = Object.keys(PERSONAL).sort();
+  names.forEach(n => sel.innerHTML += `<option value="${n}">${n}</option>`);
+
+  sel.addEventListener('change', ()=>{
+    const v = sel.value;
+    document.getElementById('pin-field').style.display = v==='__encargada__' ? 'block' : 'none';
+    document.getElementById('login-err').textContent = '';
+  });
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  initLogin();
+  // Auto-login si viene desde La Cabaña App
+  const params = new URLSearchParams(window.location.search);
+  const nombre = params.get('nombre');
+  const rol    = params.get('rol');
+  const punto  = params.get('punto');
+  if(nombre && rol){
+    const esEncargada = rol==='admin'||rol==='supervisor';
+    if(!esEncargada){
+      // Login automático como empleado
+      curUser=nombre; curRole='empleado';
+      loadPersonalDB().then(()=>{
+        loadHorario(weekKey(0)).then(()=>{
+          loadHorario(weekKey(1)).then(()=>{
+            showScreen('sc-empleado');
+            const ini=nombre.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+            document.getElementById('emp-avatar').textContent=ini;
+            document.getElementById('emp-hdr-sub').textContent=nombre;
+            empTab('horario');
+          });
+        });
+      });
+    } else {
+      // Encargada/supervisor — preseleccionar en el select pero pedir PIN
+      const sel=document.getElementById('login-nombre');
+      if(sel) sel.value='__encargada__';
+      document.getElementById('pin-field').style.display='block';
+    }
+  }
+});
+</script>
+</body>
+</html>
