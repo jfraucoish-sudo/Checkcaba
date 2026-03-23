@@ -681,7 +681,7 @@ async function renderEncHorario(){
             <div>
               <div class="emp-name">${nombre}${solPend>0?` <span style="font-size:10px;background:rgba(255,145,0,.2);color:var(--naranja);padding:1px 6px;border-radius:6px;">solicitud</span>`:''}</div>
               <div class="emp-meta">${info.rota?'🔄 Rota':'📍 Fijo'} · ${area.label}</div>
-              ${info.rota?`<div style="display:flex;gap:4px;margin-top:4px;">
+              <div style="display:flex;gap:4px;margin-top:4px;">
                 <button onclick="event.stopPropagation();asignarPunto('${wk}','${nombre}','hogares')"
                   style="font-size:9px;padding:2px 7px;border-radius:6px;border:1px solid;cursor:pointer;font-weight:700;
                   background:${(h[nombre]||[])[0]?.tipo!=='soacha'?'rgba(255,145,0,.2)':'rgba(254,242,223,.05)'};
@@ -694,8 +694,7 @@ async function renderEncHorario(){
                   color:${(h[nombre]||[])[0]?.tipo==='soacha'?'#85B7EB':'rgba(254,242,223,.3)'};
                   border-color:${(h[nombre]||[])[0]?.tipo==='soacha'?'#85B7EB':'rgba(254,242,223,.1)'};">
                   🏬 Soacha</button>
-              </div>`:''}
-
+              </div>
             </div>
           </div>
           <div class="emp-week-dots">`;
