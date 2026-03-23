@@ -209,7 +209,7 @@ body{
   background:var(--bg2);
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;position:relative;
-  color:var(--text2);
+  color:var(--crema);
 }
 .hdr-btn svg{stroke:var(--text2);}
 .hdr-notif{
@@ -631,40 +631,13 @@ select{padding:5px 8px;}
 .cab-dt-r{text-align:right;}
 .cab-dt-r .cab-dt-day{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;}
 .cab-dt-r .cab-dt-full{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:var(--naranja);}
-.cab-hero{background:var(--brand);border-radius:18px;padding:0;margin-bottom:14px;overflow:hidden;box-shadow:0 4px 20px rgba(43,24,16,.18);}
-.cab-hero-top{padding:16px 18px 14px;}
-.cab-hero-lbl{font-size:9px;font-weight:700;color:rgba(253,246,238,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
-.cab-hero-dot{width:5px;height:5px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite;}
-/* Progress bar de hoy */
-.hero-turnos{display:flex;flex-direction:column;gap:10px;margin-bottom:4px;}
-.hero-turno-row{display:flex;align-items:center;gap:10px;}
-.hero-turno-ico{font-size:14px;width:20px;text-align:center;flex-shrink:0;}
-.hero-turno-body{flex:1;}
-.hero-turno-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
-.hero-turno-name{font-size:11px;font-weight:600;color:rgba(253,246,238,.7);}
-.hero-turno-pct{font-size:13px;font-weight:700;color:var(--accent);font-family:'DM Sans',sans-serif;}
-.hero-turno-pct.good{color:#81C784;}
-.hero-turno-pct.mid{color:var(--accent2);}
-.hero-turno-pct.low{color:#EF9A9A;}
-.hero-turno-pct.nd{color:rgba(253,246,238,.25);}
-.hero-prog-track{height:4px;background:rgba(253,246,238,.1);border-radius:2px;overflow:hidden;}
-.hero-prog-fill{height:100%;border-radius:2px;transition:width .7s ease;}
-.hero-prog-fill.good{background:#4CAF50;}
-.hero-prog-fill.mid{background:var(--accent);}
-.hero-prog-fill.low{background:#e53935;}
-.hero-prog-fill.nd{background:rgba(253,246,238,.1);}
-/* Card de ayer */
-.hero-ayer{padding:12px 18px;border-top:1px solid rgba(253,246,238,.08);}
-.hero-ayer-title{font-size:9px;font-weight:700;color:rgba(253,246,238,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;}
-.hero-ayer-msg{font-size:13px;color:#FDF6EE;line-height:1.45;font-weight:500;}
-.hero-ayer-msg.alert{color:#FF9A3C;}
-.hero-ayer-msg.good{color:#81C784;}
-.hero-ayer-msg.warn{color:#FFB74D;}
-/* Bot row */
-.cab-hero-bot{display:flex;align-items:center;justify-content:space-between;padding:10px 18px 14px;border-top:1px solid rgba(253,246,238,.08);}
+.cab-hero{background:var(--cafe-mid);border:1px solid rgba(255,145,0,.2);border-radius:18px;padding:16px 18px;margin-bottom:14px;}
+.cab-hero-lbl{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;display:flex;align-items:center;gap:5px;}
+.cab-hero-dot{width:5px;height:5px;background:var(--naranja);border-radius:50%;animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 .cab-hero-tlbl{font-size:10px;color:rgba(253,246,238,.45);text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px;}
-.cab-hero-time{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;color:#FDF6EE;letter-spacing:-0.3px;line-height:1;margin-bottom:2px;}
+.cab-hero-time{font-family:'DM Serif Display',serif;font-size:30px;font-weight:400;color:#FDF6EE;letter-spacing:-0.5px;line-height:1;margin-bottom:6px;}
+.cab-hero-bot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid rgba(253,246,238,.1);}
 .cab-est-lbl{font-size:9px;color:var(--text3);}
 .cab-est-val{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;color:var(--accent2);}
 .cab-clk{width:30px;height:30px;background:rgba(255,145,0,.15);border:1px solid rgba(255,145,0,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;}
@@ -793,50 +766,39 @@ select{padding:5px 8px;}
       <div class="cab-logo-name">LA CABAÑA</div>
     </div>
     <div class="login-card">
-      <div class="login-card-title">¿Quién eres hoy?</div>
+      <div class="login-card-title">Selecciona tu punto de venta</div>
+      <div class="punto-grid">
+        <div class="punto-card" id="pc-soacha" onclick="selectPunto('soacha')">
+          <div class="pc-icon">🏠</div>
+          <div class="pc-name">Soacha</div>
+          <div class="pc-sub">Taquería Hernández</div>
+        </div>
+        <div class="punto-card" id="pc-plaza" onclick="selectPunto('plaza')">
+          <div class="pc-icon">🏬</div>
+          <div class="pc-name">Mi Plaza</div>
+          <div class="pc-sub">Cabaña Jekemi</div>
+        </div>
+      </div>
       <div class="login-field">
         <label>Tu nombre</label>
-        <select id="login-nombre" onchange="onLoginNombreChange(this.value)">
+        <select id="login-nombre" onchange="autoFillRol(this.value)">
           <option value="">Selecciona tu nombre...</option>
         </select>
-      </div>
-      <!-- Punto asignado (auto desde horarios) -->
-      <div id="login-punto-auto" style="display:none;margin-bottom:14px;">
-        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Punto asignado</div>
-        <div id="login-punto-tag" style="background:var(--bg2);border:1px solid var(--bg3);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;"></div>
-      </div>
-      <!-- Selector de punto manual si no está en horarios -->
-      <div id="login-punto-manual" style="display:none;">
-        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Punto de venta</div>
-        <div class="punto-grid">
-          <div class="punto-card" id="pc-soacha" onclick="selectPunto('soacha')">
-            <div class="pc-icon">🏠</div><div class="pc-name">Soacha</div>
-          </div>
-          <div class="punto-card" id="pc-plaza" onclick="selectPunto('plaza')">
-            <div class="pc-icon">🏬</div><div class="pc-name">Mi Plaza</div>
-          </div>
-        </div>
       </div>
       <div class="login-field">
         <label>Tu rol</label>
         <select id="login-rol">
           <option value="">Selecciona tu rol...</option>
-          <option value="empleado">🍳 Cocina</option>
-          <option value="cajero">💻 Cajero / Recepción</option>
-          <option value="domiciliario">🛵 Domiciliario</option>
-          <option value="jefe">👨‍🍳 Jefe de cocina</option>
+          <option value="empleado">Cocina</option>
+          <option value="cajero">Cajero / Recepción</option>
+          <option value="domiciliario">Domiciliario</option>
+          <option value="jefe">Jefe de cocina</option>
           <option value="supervisor">👁️ Supervisor</option>
           <option value="admin">🔑 Administrador</option>
           <option value="gerente">👔 Gerente</option>
         </select>
       </div>
       <button class="login-btn" onclick="entrar()">Ingresar →</button>
-      <!-- Acceso admin separado -->
-      <div style="margin-top:16px;text-align:center;border-top:1px solid var(--bg3);padding-top:14px;">
-        <button onclick="mostrarLoginAdmin()" style="background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;">
-          👁️ Acceso Supervisor
-        </button>
-      </div>
     </div>
     </div>
   </div>
@@ -887,28 +849,18 @@ select{padding:5px 8px;}
         </div>
       </div>
       <div class="cab-hero">
-        <div class="cab-hero-top">
-          <div class="cab-hero-lbl"><div class="cab-hero-dot"></div>Mi jornada de hoy</div>
-          <!-- 3 turnos -->
-          <div class="hero-turnos" id="hero-turnos-wrap">
-            <!-- renderizado por JS -->
-          </div>
-          <div id="cab-horario-hero" style="font-size:11px;color:rgba(253,246,238,.3);min-height:14px;margin-top:2px;"></div>
-        </div>
-        <!-- Resumen de ayer -->
-        <div class="hero-ayer" id="hero-ayer-block">
-          <div class="hero-ayer-title">Ayer</div>
-          <div class="hero-ayer-msg" id="hero-ayer-msg">Cargando...</div>
-        </div>
-        <!-- Bot row -->
+        <div class="cab-hero-lbl"><div class="cab-hero-dot"></div>Resumen de jornada</div>
+        <div class="cab-hero-tlbl">Turno de hoy</div>
+        <div class="cab-hero-time" id="cab-turno-hero">—</div>
+        <div id="cab-horario-hero" style="font-size:12px;color:var(--text3);margin-bottom:10px;min-height:16px;"></div>
         <div class="cab-hero-bot">
           <div>
-            <div class="cab-est-lbl">Punto</div>
+            <div class="cab-est-lbl">Punto asignado</div>
             <div class="cab-est-val" id="cab-punto-hero">—</div>
           </div>
           <div>
             <div class="cab-est-lbl">Rol</div>
-            <div class="cab-est-val" id="cab-rol-hero">—</div>
+            <div class="cab-est-val" id="cab-rol-hero" style="color:var(--text);">—</div>
           </div>
           <div class="cab-clk">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1057,10 +1009,6 @@ select{padding:5px 8px;}
   </div>
   <div class="area-scroll" id="area-nav"></div>
   <div class="turno-bar" id="turno-bar"></div>
-  <div class="cab-ticker" style="margin:0 12px 0;border-radius:0;border-left:none;border-right:none;border-top:none;background:var(--amber-bg);border-bottom:1px solid rgba(133,106,0,.15);">
-    <div style="width:5px;height:5px;background:var(--amber);border-radius:50%;flex-shrink:0;animation:pulse 2s infinite;"></div>
-    <div class="cab-ticker-txt" style="color:var(--amber);"><strong>Recuerda:</strong> Registra temperaturas al inicio de cada turno. Sin datos no podemos garantizar la calidad del producto.</div>
-  </div>
 <div class="cab-marquee-wrapper" style="border-top: 1px solid rgba(255, 145, 0, 0.2);">
     <div class="cab-marquee-track" id="banner-checklist">
       🚀 Los grandes restaurantes funcionan con grandes procesos. Hacer bien tu checklist es hacer bien tu trabajo. ¡Vamos con toda hoy!........................🌟 Un cliente feliz es el resultado del trabajo bien hecho de todo el equipo. ¡Demos el 100% en este turno!
@@ -1537,7 +1485,7 @@ let selPunto=null;
 // Mapa de rol por defecto según área del personal
 const AREA_ROL = {
   cocina:'empleado', recepcion:'cajero', cajeros:'cajero',
-  domiciliarios:'domiciliario', supervisor:'supervisor', administrador:'admin', gerente:'gerente'
+  domiciliarios:'domiciliario', supervisor:'supervisor', administrador:'admin'
 };
 
 // Cargar personal desde Firebase para el select del login
@@ -1548,12 +1496,9 @@ async function cargarPersonalLogin(){
     const snap = await _db.collection('personal').get();
     const personal = {};
     snap.forEach(d=>{ personal[d.id]=d.data(); });
-    // Mostrar todos excepto retirados e inactivos
+    // Filtrar activos (no retirados ni inactivos)
     const activos = Object.entries(personal)
-      .filter(([n,p])=>{
-        const est=(p.estado||'activo').toLowerCase();
-        return est!=='retirado'&&est!=='inactivo';
-      })
+      .filter(([n,p])=>p.estado!=='retirado'&&p.estado!=='inactivo')
       .sort((a,b)=>a[0].localeCompare(b[0]));
     sel.innerHTML = '<option value="">Selecciona tu nombre...</option>';
     activos.forEach(([nombre,info])=>{
@@ -1567,94 +1512,14 @@ async function cargarPersonalLogin(){
   }
 }
 
-function onLoginNombreChange(nombre){
-  if(!nombre) {
-    document.getElementById('login-punto-auto').style.display='none';
-    document.getElementById('login-punto-manual').style.display='none';
-    selPunto=null;
-    return;
-  }
-  // Sugerir rol
-  if(window._personalData){
-    const info = window._personalData[nombre];
-    if(info){
-      const rolSugerido = AREA_ROL[info.area]||'empleado';
-      const rolSel = document.getElementById('login-rol');
-      if(rolSel) rolSel.value = rolSugerido;
-    }
-  }
-  // Buscar punto en horarios de la semana
-  _detectarPuntoDesdeHorarios(nombre);
+function autoFillRol(nombre){
+  if(!nombre||!window._personalData) return;
+  const info = window._personalData[nombre];
+  if(!info) return;
+  const rolSugerido = AREA_ROL[info.area]||'empleado';
+  const rolSel = document.getElementById('login-rol');
+  if(rolSel) rolSel.value = rolSugerido;
 }
-
-async function _detectarPuntoDesdeHorarios(nombre){
-  const now=new Date();
-  const day=now.getDay();
-  const diff=day===0?-6:1-day;
-  const mon=new Date(now); mon.setDate(now.getDate()+diff);
-  const wk=mon.toISOString().slice(0,10);
-  
-  let horSem = window._horariosCache?.[wk];
-  if(!horSem){
-    try {
-      const doc = await _db.collection('horarios').doc(wk).get();
-      if(doc.exists){ 
-        window._horariosCache=window._horariosCache||{};
-        window._horariosCache[wk]=doc.data();
-        horSem=doc.data();
-      }
-    } catch(e){}
-  }
-  
-  const autoEl = document.getElementById('login-punto-auto');
-  const manualEl = document.getElementById('login-punto-manual');
-  const tagEl = document.getElementById('login-punto-tag');
-  
-  // Normalizar nombre de punto: 'hogares' = 'plaza', variantes → estándar
-  function normalizarPunto(p){
-    if(!p) return null;
-    const s = p.toLowerCase().trim();
-    if(s==='soacha') return 'soacha';
-    if(s==='plaza'||s==='mi plaza'||s==='miplaza'||s==='hogares'||s==='hogar') return 'plaza';
-    return null; // 'ambos' u otros → null = mostrar selector
-  }
-
-  // Buscar en qué punto está hoy
-  let puntoDetectado = null;
-  const diaIdx = now.getDay();
-  const monIdx = diaIdx===0?6:diaIdx-1;
-
-  if(horSem && horSem[nombre]){
-    const diaHoy = horSem[nombre][monIdx];
-    if(diaHoy && diaHoy.tipo!=='descanso'){
-      // Intentar desde campo punto del día
-      puntoDetectado = normalizarPunto(diaHoy.punto);
-    }
-  }
-
-  // Si no está en horarios o no tiene punto en el día, usar punto base de personal
-  if(!puntoDetectado && window._personalData?.[nombre]){
-    const info = window._personalData[nombre];
-    puntoDetectado = normalizarPunto(info.punto);
-  }
-
-  const puntoNombres={soacha:'🏠 Soacha · Taquería Hernández', plaza:'🏬 Mi Plaza · Cabaña Jekemi'};
-
-  if(puntoDetectado){
-    selPunto = puntoDetectado;
-    tagEl.textContent = puntoNombres[puntoDetectado]||puntoDetectado;
-    autoEl.style.display='block';
-    manualEl.style.display='none';
-  } else {
-    // punto='ambos' o sin dato — mostrar selector manual
-    selPunto=null;
-    autoEl.style.display='none';
-    manualEl.style.display='block';
-  }
-}
-
-// Función legacy para compatibilidad
-function autoFillRol(nombre){ onLoginNombreChange(nombre); }
 
 // Inicializar login al cargar
 document.addEventListener('DOMContentLoaded', ()=>{
@@ -1715,101 +1580,14 @@ let curRol='empleado';
 function entrar(){
   const nombre=document.getElementById('login-nombre').value;
   const rol=document.getElementById('login-rol').value;
+  if(!selPunto){alert('Selecciona un punto de venta');return;}
   if(!nombre){alert('Selecciona tu nombre');return;}
   if(!rol){alert('Selecciona tu rol');return;}
-  if(!selPunto){
-    // Mostrar selector manual si no está visible
-    const manualEl=document.getElementById('login-punto-manual');
-    if(manualEl) manualEl.style.display='block';
-    alert('Selecciona tu punto de venta (Soacha o Mi Plaza)');
-    return;
-  }
-  if(rol==='supervisor'){
-    mostrarPinModal(nombre, rol);
-    return;
-  }
-  if(rol==='admin'||rol==='gerente'){
+  if(rol==='supervisor'||rol==='admin'||rol==='gerente'){
     mostrarPinModal(nombre, rol);
     return;
   }
   _completarLogin(nombre, rol);
-}
-
-function mostrarLoginAdmin(){
-  // Modal de acceso admin: elige punto + PIN
-  const existing=document.getElementById('admin-login-modal');
-  if(existing){existing.remove();return;}
-  const overlay=document.createElement('div');
-  overlay.id='admin-login-modal';
-  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1.5rem;';
-  overlay.innerHTML=`
-  <div style="background:var(--surface);border:1px solid var(--bg3);border-radius:20px;padding:26px 22px;width:100%;max-width:320px;text-align:center;">
-    <div style="font-size:26px;margin-bottom:8px;">🔐</div>
-    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Acceso Supervisor</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:18px;">Selecciona el punto a revisar</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
-      <div class="punto-card" id="adm-pc-soacha" onclick="adminSelectPunto('soacha')" style="padding:12px 8px;">
-        <div style="font-size:22px;margin-bottom:4px;">🏠</div>
-        <div style="font-size:12px;font-weight:700;color:var(--text);">Soacha</div>
-      </div>
-      <div class="punto-card" id="adm-pc-plaza" onclick="adminSelectPunto('plaza')" style="padding:12px 8px;">
-        <div style="font-size:22px;margin-bottom:4px;">🏬</div>
-        <div style="font-size:12px;font-weight:700;color:var(--text);">Mi Plaza</div>
-      </div>
-    </div>
-    <div id="adm-punto-sel" style="font-size:11px;color:var(--text3);margin-bottom:10px;min-height:16px;"></div>
-    <input id="admin-pin-inp" type="tel" maxlength="4" placeholder="PIN 4 dígitos" autocomplete="off"
-      style="width:100%;padding:13px;text-align:center;font-size:22px;letter-spacing:8px;background:var(--surface);border:1.5px solid var(--bg3);border-radius:12px;color:var(--text);outline:none;margin-bottom:6px;">
-    <div id="admin-pin-err" style="font-size:12px;color:#FF6B55;margin-bottom:12px;min-height:16px;"></div>
-    <div style="display:flex;gap:8px;">
-      <button onclick="document.getElementById('admin-login-modal').remove()" style="flex:1;padding:12px;background:var(--bg2);border:1px solid var(--bg3);border-radius:12px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>
-      <button onclick="verificarPinAdmin()" style="flex:1;padding:12px;background:var(--brand);border:none;border-radius:12px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Entrar</button>
-    </div>
-  </div>`;
-  document.body.appendChild(overlay);
-  setTimeout(()=>document.getElementById('admin-pin-inp')?.focus(),300);
-  const inp=overlay.querySelector('#admin-pin-inp');
-  inp.addEventListener('input',()=>{inp.value=inp.value.replace(/[^0-9]/g,'');});
-  inp.addEventListener('keydown',e=>{if(e.key==='Enter')verificarPinAdmin();});
-}
-
-let _adminPuntoSel=null;
-function adminSelectPunto(p){
-  _adminPuntoSel=p;
-  document.querySelectorAll('#admin-login-modal .punto-card').forEach(c=>c.classList.remove('selected'));
-  document.getElementById('adm-pc-'+p)?.classList.add('selected');
-  const nombres={soacha:'🏠 Soacha seleccionado',plaza:'🏬 Mi Plaza seleccionado'};
-  const el=document.getElementById('adm-punto-sel');
-  if(el) el.textContent=nombres[p]||p;
-}
-function verificarPinAdmin(){
-  const pin=document.getElementById('admin-pin-inp')?.value;
-  const err=document.getElementById('admin-pin-err');
-  if(!_adminPuntoSel){if(err)err.textContent='Selecciona un punto primero';return;}
-  if(pin==='1234'){
-    document.getElementById('admin-login-modal')?.remove();
-    selPunto=_adminPuntoSel;
-    _completarLoginAdmin(_adminPuntoSel);
-  } else {
-    if(err)err.textContent='PIN incorrecto';
-    const inp=document.getElementById('admin-pin-inp');
-    if(inp){inp.value='';inp.style.borderColor='#FF6B55';setTimeout(()=>{inp.style.borderColor='var(--bg3)';if(err)err.textContent='';},2000);inp.focus();}
-  }
-}
-function _completarLoginAdmin(punto){
-  curPunto=punto; curUser='Administrador'; curRol='admin';
-  localStorage.setItem('cabana_session',JSON.stringify({nombre:'Administrador',rol:'admin',punto,ts:Date.now()}));
-  try{
-    const now=new Date(),day=now.getDay(),diff=day===0?-6:1-day,mon=new Date(now);
-    mon.setDate(now.getDate()+diff);
-    const wk=mon.toISOString().slice(0,10);
-    _db.collection('horarios').doc(wk).get().then(doc=>{
-      if(doc.exists){window._horariosCache=window._horariosCache||{};window._horariosCache[wk]=doc.data();}
-      updateHomeUI();
-    }).catch(()=>{});
-  }catch(e){}
-  updateHomeUI(); startClock();
-  showScreen('home'); // Va al HOME como todos — el dashboard está en el botón
 }
 
 function _completarLogin(nombre, rol){
@@ -1839,299 +1617,94 @@ function _completarLogin(nombre, rol){
 // PIN guardado como hash simple para no exponerlo en el DOM
 const _PINS={supervisor:'0710', admin:'1234', gerente:'1234'};
 
-let _supPuntoSel = null;
-let _pinNombre = '', _pinRol = '';
-
 function mostrarPinModal(nombre, rol){
   const existing=document.getElementById('pin-modal');
   if(existing) existing.remove();
-  _supPuntoSel = selPunto;
-  _pinNombre = nombre;
-  _pinRol = rol;
-
-  const iconos={supervisor:'👁️',admin:'🔑',gerente:'👔'};
-  const titulos={supervisor:'Acceso Supervisor',admin:'Acceso Administrador',gerente:'Acceso Gerente'};
 
   const overlay=document.createElement('div');
   overlay.id='pin-modal';
   overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1.5rem;';
 
   const box=document.createElement('div');
-  box.style.cssText='background:var(--surface);border:1px solid var(--bg3);border-radius:20px;padding:24px 20px;width:100%;max-width:320px;text-align:center;';
+  box.style.cssText='background:var(--surface);border:1px solid var(--bg3);border-radius:20px;padding:26px 22px;width:100%;max-width:300px;text-align:center;';
 
-  box.innerHTML=
-    '<div style="font-size:26px;margin-bottom:6px;">'+(iconos[rol]||'🔑')+'</div>'+
-    '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">'+(titulos[rol]||'Acceso')+'</div>'+
-    '<div style="font-size:12px;color:var(--text3);margin-bottom:14px;">¿Qué punto vas a supervisar hoy?</div>'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">'+
-      '<div class="punto-card" id="sup-pc-soacha" onclick="supSelectPunto(&quot;soacha&quot;)" style="padding:12px 8px;cursor:pointer;">'+
-        '<div style="font-size:22px;margin-bottom:4px;">🏠</div>'+
-        '<div style="font-size:12px;font-weight:700;color:var(--text);">Soacha</div>'+
-      '</div>'+
-      '<div class="punto-card" id="sup-pc-plaza" onclick="supSelectPunto(&quot;plaza&quot;)" style="padding:12px 8px;cursor:pointer;">'+
-        '<div style="font-size:22px;margin-bottom:4px;">🏬</div>'+
-        '<div style="font-size:12px;font-weight:700;color:var(--text);">Mi Plaza</div>'+
-      '</div>'+
-    '</div>'+
-    '<div style="font-size:12px;color:var(--text3);margin-bottom:8px;">PIN de acceso</div>'+
-    '<input id="pin-input" type="tel" maxlength="4" placeholder="0000" autocomplete="off" '+
-      'style="width:100%;padding:13px;text-align:center;font-size:22px;letter-spacing:8px;background:var(--surface);border:1.5px solid var(--bg3);border-radius:12px;color:var(--text);outline:none;">'+
-    '<div id="pin-error" style="font-size:12px;color:#FF6B55;margin-top:6px;min-height:16px;"></div>'+
-    '<div style="display:flex;gap:8px;margin-top:12px;">'+
-      '<button onclick="document.getElementById(&quot;pin-modal&quot;).remove()" '+
-        'style="flex:1;padding:12px;background:var(--bg2);border:1px solid var(--bg3);border-radius:12px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>'+
-      '<button id="pin-btn-ok" '+
-        'style="flex:1;padding:12px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Entrar</button>'+
-    '</div>';
+  const title=document.createElement('div');
+  title.style.cssText='font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;';
+  title.textContent='🔐 Acceso Supervisor';
 
+  const sub=document.createElement('div');
+  sub.style.cssText='font-size:12px;color:var(--text3);margin-bottom:18px;';
+  sub.textContent='Ingresa el PIN de 4 dígitos';
+
+  const inp=document.createElement('input');
+  inp.id='pin-input';
+  inp.type='tel';
+  inp.maxLength=4;
+  inp.placeholder='0000';
+  inp.autocomplete='off';
+  inp.setAttribute('autocomplete','new-password');
+  inp.setAttribute('data-lpignore','true');
+  inp.style.cssText='width:100%;padding:14px;text-align:center;font-size:24px;letter-spacing:10px;background:var(--surface);border:1.5px solid var(--bg3);border-radius:12px;color:var(--text);outline:none;';
+
+  const err=document.createElement('div');
+  err.id='pin-error';
+  err.style.cssText='font-size:12px;color:#FF6B55;margin-top:8px;min-height:18px;';
+  err.textContent='';
+
+  const btnRow=document.createElement('div');
+  btnRow.style.cssText='display:flex;gap:10px;margin-top:14px;';
+
+  const btnCancel=document.createElement('button');
+  btnCancel.textContent='Cancelar';
+  btnCancel.style.cssText='flex:1;padding:12px;background:var(--bg2);border:1px solid var(--bg3);border-radius:12px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;';
+  btnCancel.onclick=()=>overlay.remove();
+
+  const btnOk=document.createElement('button');
+  btnOk.textContent='Entrar';
+  btnOk.style.cssText='flex:1;padding:12px;background:#FF9100;border:none;border-radius:12px;color:#2D1B15;font-family:Poppins,sans-serif;font-size:13px;font-weight:800;cursor:pointer;';
+
+  function intentarPin(){
+    const val=inp.value;
+    if(val.length<4){ err.textContent='Ingresa los 4 dígitos'; return; }
+    if(val===_PINS[rol]){
+      overlay.remove();
+      _completarLogin(nombre, rol);
+    } else {
+      inp.value='';
+      err.textContent='PIN incorrecto. Intenta de nuevo.';
+      inp.style.borderColor='#FF6B55';
+      setTimeout(()=>{ inp.style.borderColor='var(--bg3)'; err.textContent=''; },2000);
+      inp.focus();
+    }
+  }
+
+  btnOk.onclick=intentarPin;
+  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') intentarPin(); });
+  // Delay para evitar que autocompletado del navegador dispare la verificación
+  setTimeout(()=>{
+    inp.value='';
+    inp.addEventListener('input', ()=>{
+      inp.value=inp.value.replace(/[^0-9]/g,'');
+      err.textContent='';
+    });
+  }, 500);
+
+  box.appendChild(title);
+  box.appendChild(sub);
+  box.appendChild(inp);
+  box.appendChild(err);
+  btnRow.appendChild(btnCancel);
+  btnRow.appendChild(btnOk);
+  box.appendChild(btnRow);
   overlay.appendChild(box);
   document.body.appendChild(overlay);
-
-  const inp=document.getElementById('pin-input');
-  const btnOk=document.getElementById('pin-btn-ok');
-  inp.addEventListener('input',()=>{ inp.value=inp.value.replace(/[^0-9]/g,''); });
-  inp.addEventListener('keydown',e=>{ if(e.key==='Enter') intentarPinSup(); });
-  btnOk.addEventListener('click', intentarPinSup);
-  setTimeout(()=>{ inp.value=''; inp.focus(); }, 300);
-  if(_supPuntoSel) supSelectPunto(_supPuntoSel);
-}
-
-function supSelectPunto(p){
-  _supPuntoSel=p;
-  ['soacha','plaza'].forEach(id=>{
-    document.getElementById('sup-pc-'+id)?.classList.toggle('selected',id===p);
-  });
-}
-
-function intentarPinSup(){
-  const val=document.getElementById('pin-input')?.value;
-  const err=document.getElementById('pin-error');
-  const nombre=_pinNombre, rol=_pinRol;
-  if(!_supPuntoSel){ if(err) err.textContent='Selecciona un punto'; return; }
-  if((val||'').length<4){ if(err) err.textContent='Ingresa los 4 dígitos'; return; }
-  if(val===_PINS[rol]){
-    selPunto=_supPuntoSel;
-    document.getElementById('pin-modal')?.remove();
-    _completarLogin(nombre, rol);
-  } else {
-    const inp=document.getElementById('pin-input');
-    if(inp){ inp.value=''; inp.style.borderColor='#FF6B55'; inp.focus(); }
-    if(err){ err.textContent='PIN incorrecto. Intenta de nuevo.';
-      setTimeout(()=>{ if(inp) inp.style.borderColor='var(--bg3)'; err.textContent=''; },2000); }
-  }
-}
-
-// LEGACY — mantenido por compatibilidad, ya no se usa directamente
-function _legacyIntentarPin(nombre,rol,val,inp,err,overlay){
-  if(val===_PINS[rol]){
-    overlay.remove();
-    _completarLogin(nombre, rol);
-  } else {
-    inp.value='';
-    err.textContent='PIN incorrecto. Intenta de nuevo.';
-    inp.style.borderColor='#FF6B55';
-    setTimeout(()=>{ inp.style.borderColor='var(--bg3)'; err.textContent=''; },2000);
-    inp.focus();
-  }
-}
-// (modal limpiado)
-
-// ── HELPERS para calcular progreso del checklist ──────────────────
-function getAreaPorRol(rol){
-  const map={empleado:'cocina',jefe:'cocina',cajero:'caja',domiciliario:'domi',supervisor:'admin',admin:'admin',gerente:'admin'};
-  return map[rol]||'cocina';
-}
-function getTurnoActual(){
-  const h=new Date().getHours();
-  if(h>=6&&h<13)  return 'apertura';
-  if(h>=13&&h<19) return 'medio';
-  return 'cierre';
-}
-function calcProgreso(punto, fecha, area, turno){
-  const data=loadDataDate(punto,fecha,area,turno);
-  const tasks=(CL[area]||{})[turno]||[];
-  if(!tasks.length) return {pct:0,done:0,total:0,hasDatos:false};
-  let done=0,total=tasks.length;
-  (data?.tasks||[]).forEach((t,i)=>{
-    const tk=tasks[i];if(!tk)return;
-    if(tk.tipo==='check'&&t.done)done++;
-    else if(tk.tipo==='aseo'&&t.aseo>0)done++;
-    else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')done++;
-    else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')done++;
-    else if(tk.tipo==='cierre_area'&&t.done)done++;
-  });
-  return {pct:Math.round(done/total*100),done,total,hasDatos:!!(data?.tasks?.length)};
-}
-
-// Cargar resumen de papas del punto para el hero del supervisor
-async function _cargarResumenPapa(){
-  try {
-    const hoy=todayStr();
-    const snap=await _db.collection('produccion_real')
-      .where('fecha','==',hoy)
-      .where('punto','==',curPunto)
-      .get();
-    let totalReg=0, totalEsperado=0;
-    snap.forEach(doc=>{
-      const d=doc.data();
-      if(d.kg_real!==undefined) totalReg++;
-      if(d.kg_proyectado!==undefined) totalEsperado++;
-    });
-    // Estimamos cumplimiento como: registros del día vs turnos esperados (3)
-    const pct=totalEsperado>0?Math.min(100,Math.round(totalReg/3*100)):
-              snap.size>0?100:0;
-    const pctEl=document.getElementById('hero-papa-pct');
-    const fillEl=document.getElementById('hero-papa-fill');
-    if(pctEl&&fillEl){
-      if(snap.size===0){
-        pctEl.textContent='Sin datos'; pctEl.className='hero-turno-pct nd';
-        fillEl.style.width='0%'; fillEl.className='hero-prog-fill nd';
-      } else {
-        const cls=pct>=80?'good':pct>=40?'mid':'low';
-        pctEl.textContent=pct+'%'; pctEl.className='hero-turno-pct '+cls;
-        fillEl.style.width=pct+'%'; fillEl.className='hero-prog-fill '+cls;
-      }
-    }
-  } catch(e){}
-}
-
-// ── MENSAJE de ayer según rol ─────────────────────────────────────
-function getMensajeAyer(punto, fechaAyer, rol){
-  const area=getAreaPorRol(rol);
-
-  // ── COCINA / JEFE: resumen papas ──
-  if(rol==='empleado'||rol==='jefe'){
-    // Intentar leer producción papa desde la colección produccion_real si hay cache
-    // Por ahora calculamos desde el checklist
-    const apts=calcProgreso(punto,fechaAyer,'cocina','apertura');
-    const meds=calcProgreso(punto,fechaAyer,'cocina','medio');
-    const cie=calcProgreso(punto,fechaAyer,'cocina','cierre');
-    const totalTurnos=[apts,meds,cie].filter(t=>t.hasDatos);
-    if(!totalTurnos.length){
-      return {msg:'Ayer no registraste ningún turno. ¡Hoy es un día nuevo, aprovéchalo! 💪', cls:'warn'};
-    }
-    const pctProm=Math.round(totalTurnos.reduce((a,b)=>a+b.pct,0)/totalTurnos.length);
-    // Buscar si dejó datos de papa (campo aseo en cocina apertura)
-    const dataCocina=loadDataDate(punto,fechaAyer,'cocina','apertura');
-    const tasksCocina=(CL['cocina']||{})['apertura']||[];
-    let papaTarea=null;
-    tasksCocina.forEach((tk,i)=>{
-      if(tk.label&&tk.label.toLowerCase().includes('papa')){
-        const t=dataCocina?.tasks?.[i];
-        papaTarea={task:tk,dato:t};
-      }
-    });
-    if(pctProm===100){
-      return {msg:`🌟 ¡Excelente turno ayer! Completaste el 100% de tus tareas de cocina. ¡Así se lleva La Cabaña!`, cls:'good'};
-    } else if(pctProm>=70){
-      return {msg:`✅ Ayer completaste el ${pctProm}% en cocina. ¡Buen trabajo! Hoy podemos llegar al 100% juntos. 🔥`, cls:'good'};
-    } else if(pctProm>=40){
-      return {msg:`⚡ Ayer lograste el ${pctProm}% en cocina. Tus tareas pendientes afectan al equipo — hoy sin excusas. ¡Vamos!`, cls:'warn'};
-    } else {
-      return {msg:`⚠️ Ayer solo registraste el ${pctProm}% en cocina. Recuerda que el checklist nos protege a todos. Hoy: completo.`, cls:'alert'};
-    }
-  }
-
-  // ── CAJERO: arqueo de caja ──
-  if(rol==='cajero'){
-    const dataCaja=loadDataDate(punto,fechaAyer,'caja','cierre');
-    const tasksCaja=(CL['caja']||{})['cierre']||[];
-    let ci=0,da=0,si=0,tieneArqueo=false;
-    (dataCaja?.tasks||[]).forEach((t,i)=>{
-      const tk=tasksCaja[i];if(!tk)return;
-      if(tk.campo==='Efectivo cierre'&&t.val){ci=parseFloat(t.val)||0;tieneArqueo=true;}
-      if(tk.campo==='Ventas datáfono'&&t.val){da=parseFloat(t.val)||0;}
-      if(tk.campo==='Ventas sistema'&&t.val){si=parseFloat(t.val)||0;}
-    });
-    if(!tieneArqueo){
-      const prog=calcProgreso(punto,fechaAyer,'caja','cierre');
-      if(!prog.hasDatos){
-        return {msg:'⚠️ Ayer no registraste el cierre de caja. Sin arqueo no podemos cuadrar. ¡Hoy no lo olvides!', cls:'alert'};
-      }
-    }
-    if(si>0){
-      const diff=(ci+da)-si;
-      const fmt=(n)=>new Intl.NumberFormat('es-CO').format(Math.abs(n));
-      if(diff===0){
-        return {msg:`✅ ¡Caja cuadrada ayer! Todo en orden. Así se trabaja 💚`, cls:'good'};
-      } else if(diff>0){
-        return {msg:`💰 Ayer hubo un sobrante de $${fmt(diff)}. Repórtalo al supervisor hoy.`, cls:'warn'};
-      } else {
-        return {msg:`🚨 Ayer faltaron $${fmt(diff)} en caja. El supervisor debe revisarlo hoy con urgencia.`, cls:'alert'};
-      }
-    }
-    return {msg:'📋 Registra el arqueo de cierre hoy para poder ver el comparativo mañana.', cls:'warn'};
-  }
-
-  // ── DOMICILIARIO ──
-  if(rol==='domiciliario'){
-    const prog=calcProgreso(punto,fechaAyer,'domi','apertura');
-    const progC=calcProgreso(punto,fechaAyer,'domi','cierre');
-    const pcts=[prog,progC].filter(t=>t.hasDatos);
-    if(!pcts.length){
-      return {msg:'Ayer no registraste tus tareas. Baños, canecas y zona de domicilios cuentan. ¡Hoy sí!', cls:'warn'};
-    }
-    const prom=Math.round(pcts.reduce((a,b)=>a+b.pct,0)/pcts.length);
-    if(prom>=80) return {msg:`🛵 ¡Buen trabajo ayer! ${prom}% completado. La zona de domicilios quedó bien atendida. ¡Hoy igual!`, cls:'good'};
-    return {msg:`🛵 Ayer completaste el ${prom}% de tus tareas. Recuerda: baños limpios y canecas vacías desde el arranque.`, cls:'warn'};
-  }
-
-  // ── ADMIN / SUPERVISOR: visión completa ──
-  if(rol==='admin'||rol==='supervisor'||rol==='gerente'){
-    const areas=['admin','cocina','caja','domi','neveras','bodega'];
-    const turnos=['apertura','medio','cierre'];
-    let totalPct=0,cnt=0;
-    areas.forEach(ar=>{
-      turnos.forEach(tur=>{
-        const p=calcProgreso(punto,fechaAyer,ar,tur);
-        if(p.hasDatos){totalPct+=p.pct;cnt++;}
-      });
-    });
-    // Arqueo
-    const dataCaja=loadDataDate(punto,fechaAyer,'caja','cierre');
-    const tasksCaja=(CL['caja']||{})['cierre']||[];
-    let ci=0,da=0,si=0;
-    (dataCaja?.tasks||[]).forEach((t,i)=>{
-      const tk=tasksCaja[i];if(!tk)return;
-      if(tk.campo==='Efectivo cierre'&&t.val) ci=parseFloat(t.val)||0;
-      if(tk.campo==='Ventas datáfono'&&t.val)  da=parseFloat(t.val)||0;
-      if(tk.campo==='Ventas sistema'&&t.val)    si=parseFloat(t.val)||0;
-    });
-    const promGen=cnt?Math.round(totalPct/cnt):0;
-    const fmt=(n)=>new Intl.NumberFormat('es-CO').format(Math.abs(n));
-    let msg='';let cls='good';
-    if(!cnt){
-      return {msg:'Sin datos del turno de ayer. Verifica que el equipo esté usando el checklist correctamente.', cls:'warn'};
-    }
-    if(si>0){
-      const diff=(ci+da)-si;
-      if(diff<0){
-        msg=`🚨 Faltante de $${fmt(diff)} en caja ayer. Cumplimiento general: ${promGen}%.`;
-        cls='alert';
-      } else if(diff>0){
-        msg=`💰 Sobrante de $${fmt(diff)} en caja ayer. Cumplimiento: ${promGen}%.`;
-        cls='warn';
-      } else {
-        msg=`✅ Caja cuadrada ayer. Cumplimiento general del punto: ${promGen}%.`;
-        cls=promGen>=80?'good':'warn';
-      }
-    } else {
-      if(promGen>=80) msg=`🌟 Punto con ${promGen}% de cumplimiento ayer. ¡Equipo en forma!`;
-      else if(promGen>=50) msg=`📊 Cumplimiento ayer: ${promGen}%. Hay áreas que necesitan más atención hoy.`;
-      else msg=`⚠️ Cumplimiento ayer: ${promGen}%. Habla con el equipo — los checklists no se están completando.`;
-      cls=promGen>=80?'good':promGen>=50?'warn':'alert';
-    }
-    return {msg, cls};
-  }
-
-  // Fallback
-  return {msg:'¡Buen día! Revisa tu checklist del turno.', cls:'good'};
+  setTimeout(()=>inp.focus(), 200);
 }
 
 function updateHomeUI(){
   const p=PUNTOS[curPunto];
   const initials=curUser.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
-  const rolLabels={empleado:'Cocina',cajero:'Cajero / Recepción',domiciliario:'Domiciliario',jefe:'Jefe de cocina',supervisor:'Supervisor',admin:'Administrador'};
+  const rolLabels={empleado:'Cocina',cajero:'Cajero / Recepción',domiciliario:'Domiciliario',jefe:'Jefe de cocina',supervisor:'Supervisor',admin:'Administrador',gerente:'Gerente'};
   const el=(id)=>document.getElementById(id);
   if(el('cab-username')) el('cab-username').textContent=curUser.split(' ')[0];
   if(el('cab-avatar'))   el('cab-avatar').textContent=initials;
@@ -2143,12 +1716,17 @@ function updateHomeUI(){
   if(el('cab-rol-hero')) el('cab-rol-hero').textContent=rolLabels[curRol]||curRol;
 
   // Turno detectado por hora actual
-  const hora=new Date().getHours();
-  const turnoActual=getTurnoActual();
+  const hora = new Date().getHours();
+  let turnoNombre = '—';
+  if(hora>=6&&hora<=11)  turnoNombre='☀️ Apertura';
+  else if(hora>=12&&hora<=17) turnoNombre='🌤️ Turno medio';
+  else if(hora>=18&&hora<=23) turnoNombre='🌙 Cierre';
+  else turnoNombre='🌙 Cierre';
+  if(el('cab-turno-hero')) el('cab-turno-hero').textContent=turnoNombre;
 
-  // Horario del empleado
+  // Horario del empleado hoy desde Firebase horarios
   try {
-    const wk=(()=>{
+    const wk = (()=>{
       const now=new Date();
       const day=now.getDay();
       const diff=day===0?-6:1-day;
@@ -2156,8 +1734,9 @@ function updateHomeUI(){
       mon.setDate(now.getDate()+diff);
       return mon.toISOString().slice(0,10);
     })();
-    const horSem=window._horariosCache?.[wk];
+    const horSem = window._horariosCache?.[wk];
     if(horSem&&horSem[curUser]){
+      const dias=['dom','lun','mar','mie','jue','vie','sab'];
       const diaIdx=new Date().getDay();
       const monIdx=diaIdx===0?6:diaIdx-1;
       const diaHoy=horSem[curUser][monIdx];
@@ -2172,92 +1751,7 @@ function updateHomeUI(){
     }
   } catch(e){}
 
-  // ── 3 TURNOS HOY ──────────────────────────────────────────────────
-  const area=getAreaPorRol(curRol);
-  const turnos3=[
-    {id:'apertura', icon:'☀️', name:'Apertura'},
-    {id:'medio',    icon:'🌤️', name:'Turno medio'},
-    {id:'cierre',   icon:'🌙', name:'Cierre'},
-  ];
-  const wrap=el('hero-turnos-wrap');
-  if(wrap){
-    let turnosHTML = turnos3.map(t=>{
-      const prog=calcProgreso(curPunto,todayStr(),area,t.id);
-      const pct=prog.pct;
-      const cls=!prog.hasDatos?'nd':pct>=80?'good':pct>=40?'mid':'low';
-      const pctTxt=prog.hasDatos?pct+'%':'—';
-      const fillW=prog.hasDatos?pct:0;
-      return `<div class="hero-turno-row">
-        <div class="hero-turno-ico">${t.icon}</div>
-        <div class="hero-turno-body">
-          <div class="hero-turno-top">
-            <div class="hero-turno-name">${t.name}</div>
-            <div class="hero-turno-pct ${cls}">${pctTxt}</div>
-          </div>
-          <div class="hero-prog-track">
-            <div class="hero-prog-fill ${cls}" style="width:${fillW}%"></div>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-
-    // Barras de grupo para admin/supervisor/gerente/jefe
-    if(ROLES_ALTOS.includes(curRol)){
-      // Barra general checklist del punto (todas las áreas/turnos)
-      let totalDone=0, totalTasks=0;
-      AREAS_LIST.forEach(ar=>{
-        turnos3.forEach(t=>{
-          const p=calcProgreso(curPunto,todayStr(),ar.id,t.id);
-          totalDone+=p.done; totalTasks+=p.total;
-        });
-      });
-      const pctGrupo=totalTasks?Math.round(totalDone/totalTasks*100):0;
-      const clsG=pctGrupo>=80?'good':pctGrupo>=40?'mid':'low';
-      turnosHTML+=`<div style="margin-top:10px;border-top:1px solid rgba(253,246,238,.08);padding-top:10px;">
-        <div style="font-size:9px;font-weight:700;color:rgba(253,246,238,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;">📊 Resumen del punto hoy</div>
-        <div class="hero-turno-row">
-          <div class="hero-turno-ico">✅</div>
-          <div class="hero-turno-body">
-            <div class="hero-turno-top">
-              <div class="hero-turno-name">Checklist equipo</div>
-              <div class="hero-turno-pct ${clsG}">${totalTasks?pctGrupo+'%':'—'}</div>
-            </div>
-            <div class="hero-prog-track">
-              <div class="hero-prog-fill ${clsG}" style="width:${totalTasks?pctGrupo:0}%"></div>
-            </div>
-          </div>
-        </div>
-        <div id="hero-papa-bar" class="hero-turno-row" style="margin-top:8px;">
-          <div class="hero-turno-ico">🥔</div>
-          <div class="hero-turno-body">
-            <div class="hero-turno-top">
-              <div class="hero-turno-name">App Papas</div>
-              <div class="hero-turno-pct nd" id="hero-papa-pct">—</div>
-            </div>
-            <div class="hero-prog-track">
-              <div class="hero-prog-fill nd" id="hero-papa-fill" style="width:0%"></div>
-            </div>
-          </div>
-        </div>
-      </div>`;
-      // Cargar dato de papa en background
-      _cargarResumenPapa();
-    }
-    wrap.innerHTML=turnosHTML;
-  }
-
-  // ── RESUMEN DE AYER ───────────────────────────────────────────────
-  const ayer=new Date();
-  ayer.setDate(ayer.getDate()-1);
-  const fechaAyer=ayer.toISOString().slice(0,10);
-  const {msg,cls}=getMensajeAyer(curPunto,fechaAyer,curRol);
-  const ayerBlock=el('hero-ayer-block');
-  const ayerMsg=el('hero-ayer-msg');
-  if(ayerMsg){ ayerMsg.textContent=msg; ayerMsg.className='hero-ayer-msg '+cls; }
-
-  const ROLES_ALTOS=['admin','gerente','supervisor','jefe'];
   const adminBtn=document.getElementById('cab-btn-admin');
-  // Solo gerente ve el dashboard admin
   if(adminBtn) adminBtn.style.display=(curRol==='gerente')?'flex':'none';
   const papasBtn=document.getElementById('cab-btn-papas');
   const rolesConPapas=['admin','gerente','jefe','supervisor','empleado'];
@@ -2292,14 +1786,12 @@ function confirmarLogout(){
   // Clear form
   const n=document.getElementById('login-nombre');
   const r=document.getElementById('login-rol');
+  const p1=document.getElementById('pc-soacha');
+  const p2=document.getElementById('pc-plaza');
   if(n) n.value='';
   if(r) r.value='';
-  selPunto=null; _adminPuntoSel=null;
-  document.getElementById('login-punto-auto').style.display='none';
-  document.getElementById('login-punto-manual').style.display='none';
-  ['pc-soacha','pc-plaza','adm-pc-soacha','adm-pc-plaza'].forEach(id=>{
-    document.getElementById(id)?.classList.remove('selected');
-  });
+  if(p1) p1.classList.remove('selected');
+  if(p2) p2.classList.remove('selected');
   showScreen('login');
 }
 
@@ -3142,60 +2634,6 @@ function renderAdmin(){
       ${d?.signed?`<div style="font-size:11px;color:var(--txt3);margin-top:3px;">Cajero: ${d.signed.nombre} · ${d.signed.hora}</div>`:''}
     </div>`;
   });
-
-  // ── AVISOS INTELIGENTES ADMIN ────────────────────────────────
-  html+='<div class="sec-lbl">📢 Avisos del turno</div>';
-  const avisos=[];
-  // Verificar temperaturas fuera de rango
-  Object.entries(PUNTOS).forEach(([pid,p])=>{
-    const pNombre=p.name;
-    AREAS_LIST.forEach(area=>{
-      TURNOS_LIST.forEach(turno=>{
-        const tasks=(CL[area.id]||{})[turno.id]||[];
-        const d=loadDataDateAdmin(pid,adminDate,area.id,turno.id);
-        (d?.tasks||[]).forEach((t,i)=>{
-          const tk=tasks[i];if(!tk)return;
-          if(tk.tipo==='temp'&&t.val!==''){
-            const v=parseFloat(t.val);
-            if(!isNaN(v)&&(v<tk.rango[0]||v>tk.rango[1])){
-              const sensor=tk.t.replace('Primera temperatura: ','').replace('Segunda temperatura: ','').replace('Tercera temperatura: ','');
-              avisos.push({tipo:'error',txt:'⚠️ Temp fuera de rango en '+pNombre+': '+sensor+' → '+v+tk.unit+' (esperado '+tk.rango[0]+'–'+tk.rango[1]+tk.unit+')'});
-            }
-          }
-        });
-      });
-    });
-  });
-  // Verificar turnos sin firma
-  Object.entries(PUNTOS).forEach(([pid,p])=>{
-    TURNOS_LIST.forEach(turno=>{
-      const d=loadDataDateAdmin(pid,adminDate,'admin',turno.id);
-      if(d&&d.tasks&&d.tasks.length>0&&!d.signed){
-        avisos.push({tipo:'warn',txt:'📝 Turno '+turno.name+' en '+p.name+' completado pero sin firma del supervisor'});
-      }
-    });
-  });
-  // Caja sin registrar
-  Object.entries(PUNTOS).forEach(([pid,p])=>{
-    const d=loadDataDateAdmin(pid,adminDate,'caja','cierre');
-    if(!d||!(d.tasks&&d.tasks.length)){
-      if(adminDate===todayStr()){
-        avisos.push({tipo:'info',txt:'💰 '+p.name+': aún no hay cierre de caja registrado'});
-      }
-    }
-  });
-  if(avisos.length){
-    html+='<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:4px;">';
-    avisos.forEach(av=>{
-      const bg=av.tipo==='error'?'var(--red-bg)':av.tipo==='warn'?'var(--amber-bg)':'var(--blue-bg)';
-      const border=av.tipo==='error'?'rgba(192,57,43,.2)':av.tipo==='warn'?'rgba(133,106,0,.2)':'rgba(26,82,118,.2)';
-      const col=av.tipo==='error'?'var(--red)':av.tipo==='warn'?'var(--amber)':'var(--blue)';
-      html+='<div style="background:'+bg+';border:1px solid '+border+';border-radius:10px;padding:10px 12px;font-size:12px;color:'+col+';line-height:1.4;">'+av.txt+'</div>';
-    });
-    html+='</div>';
-  } else {
-    html+='<div style="background:var(--green-bg);border:1px solid rgba(45,106,79,.2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--green);margin-bottom:4px;">✅ Sin alertas críticas en este turno. ¡El punto va bien!</div>';
-  }
 
   // WhatsApp resumen admin
   html+=`<div class="sec-lbl">Enviar reporte admin</div>
