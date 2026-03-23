@@ -644,12 +644,52 @@ select{padding:5px 8px;}
 .cab-clk svg{width:14px;height:14px;stroke:var(--naranja);fill:none;stroke-width:2;}
 .cab-sec-lbl{font-size:9px;font-weight:600;color:rgba(254,242,223,.3);text-transform:uppercase;letter-spacing:.7px;margin:0 2px 8px;}
 .cab-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
-.cab-btn{background:var(--crema);border-radius:14px;padding:13px 12px;display:flex;align-items:center;gap:9px;cursor:pointer;transition:transform .12s;min-height:60px;border:1.5px solid transparent;}
+.cab-btn{background:var(--surface);border-radius:14px;padding:13px 12px;display:flex;align-items:center;gap:9px;cursor:pointer;transition:transform .12s;min-height:60px;border:1.5px solid var(--bg3);box-shadow:var(--shadow);}
 .cab-btn:active{transform:scale(.95);}
-.cab-btn.highlight{border-color:var(--naranja);background:#FFF8EE;}
-.cab-btn-icon{width:34px;height:34px;background:rgba(45,27,21,.08);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.cab-btn-icon svg{width:17px;height:17px;fill:var(--cafe);}
-.cab-btn-lbl{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:var(--cafe);line-height:1.2;}
+.cab-btn.highlight{border-color:var(--accent);background:#FFF8EE;}
+.cab-btn-icon{width:34px;height:34px;background:rgba(43,24,16,.07);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cab-btn-icon svg{width:17px;height:17px;}
+.cab-btn-lbl{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;color:var(--text);line-height:1.2;}
+
+/* ── APPS ACTIVAS ── */
+.cab-grid-apps{display:flex;flex-direction:column;gap:10px;margin-bottom:6px;}
+.cab-btn-active{
+  background:var(--surface);
+  border:2px solid var(--accent) !important;
+  border-radius:14px;
+  padding:14px 14px;
+  display:flex;align-items:center;gap:12px;
+  cursor:pointer;
+  position:relative;
+  overflow:hidden;
+  animation:glow-ring 2.5s ease-in-out infinite;
+  transition:transform .12s;
+}
+.cab-btn-active:active{transform:scale(.97);}
+@keyframes glow-ring{
+  0%,100%{box-shadow:0 0 0 0 rgba(232,114,12,.0);}
+  50%{box-shadow:0 0 0 5px rgba(232,114,12,.2);}
+}
+.cab-btn-active-badge{
+  position:absolute;top:8px;right:10px;
+  font-size:8px;font-weight:800;letter-spacing:.8px;
+  color:var(--accent);
+  background:#FFF0E6;
+  padding:2px 7px;border-radius:20px;
+  border:1px solid rgba(232,114,12,.25);
+}
+.cab-btn-icon-active{
+  width:42px;height:42px;
+  background:var(--accent);
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  box-shadow:0 3px 10px rgba(232,114,12,.35);
+}
+.cab-btn-icon-active svg{width:20px;height:20px;}
+.cab-btn-lbl-active{font-size:13px;font-weight:700;color:var(--text);line-height:1.2;}
+.cab-btn-sub-active{font-size:10px;color:var(--text3);margin-top:2px;}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.7);}}
 .cab-cta{background:var(--naranja);border-radius:14px;padding:16px 20px;display:flex;align-items:center;justify-content:center;gap:9px;cursor:pointer;margin-bottom:10px;border:none;width:100%;transition:opacity .15s;}
 .cab-cta:active{opacity:.85;}
 .cab-cta svg{width:18px;height:18px;stroke:var(--cafe);fill:none;stroke-width:2.5;}
@@ -795,46 +835,76 @@ select{padding:5px 8px;}
           </div>
         </div>
       </div>
-      <div class="cab-sec-lbl">Acciones rápidas</div>
+      <!-- APPS ACTIVAS -->
+      <div class="cab-sec-lbl" style="display:flex;align-items:center;gap:6px;">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;animation:pulse-dot 1.8s ease-in-out infinite;"></span>
+        Apps en uso
+      </div>
+      <div class="cab-grid-apps">
+        <!-- 1. Mi Checklist -->
+        <div class="cab-btn cab-btn-active" onclick="irAChecklist()">
+          <div class="cab-btn-active-badge">EN USO</div>
+          <div class="cab-btn-icon-active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div>
+            <div class="cab-btn-lbl-active">Mi Checklist</div>
+            <div class="cab-btn-sub-active">del turno</div>
+          </div>
+        </div>
+        <!-- 2. Control de papas -->
+        <div class="cab-btn cab-btn-active" id="cab-btn-papas" style="display:none;" onclick="irAPapas()">
+          <div class="cab-btn-active-badge">EN USO</div>
+          <div class="cab-btn-icon-active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="10" ry="6"/><path d="M12 6c2 1 3 3 3 6s-1 5-3 6"/><path d="M12 6c-2 1-3 3-3 6s1 5 3 6"/></svg>
+          </div>
+          <div>
+            <div class="cab-btn-lbl-active">Control Papas</div>
+            <div class="cab-btn-sub-active">Jekemi / producción</div>
+          </div>
+        </div>
+        <!-- 3. Mis turnos -->
+        <div class="cab-btn cab-btn-active" onclick="irAHorarios()">
+          <div class="cab-btn-active-badge">EN USO</div>
+          <div class="cab-btn-icon-active">
+            <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2zm0 12c-5.33 0-8 2.67-8 4v2h16v-2c0-1.33-2.67-4-8-4z"/></svg>
+          </div>
+          <div>
+            <div class="cab-btn-lbl-active">Mis Turnos</div>
+            <div class="cab-btn-sub-active">horarios semana</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OTRAS FUNCIONES -->
+      <div class="cab-sec-lbl" style="margin-top:18px;">Otras funciones</div>
       <div class="cab-grid">
         <div class="cab-btn" onclick="irAChecklist()">
-          <div class="cab-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--cafe)" stroke-width="2" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
-          <div class="cab-btn-lbl">Mi checklist del turno</div>
-        </div>
-        <div class="cab-btn" onclick="irAChecklist()">
-          <div class="cab-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--cafe)" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
           <div class="cab-btn-lbl">Alertas activas</div>
         </div>
-        <div class="cab-btn" onclick="irAHorarios()">
-          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--cafe)" d="M12 2a5 5 0 1 0 0 10A5 5 0 0 0 12 2zm0 12c-5.33 0-8 2.67-8 4v2h16v-2c0-1.33-2.67-4-8-4z"/></svg></div>
-          <div class="cab-btn-lbl">Mis turnos</div>
-        </div>
         <div class="cab-btn">
-          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--cafe)" d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm1 4v2h8V6H8zm0 4v2h8v-2H8zm0 4v2h5v-2H8z"/></svg></div>
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--brand)" d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm1 4v2h8V6H8zm0 4v2h8v-2H8zm0 4v2h5v-2H8z"/></svg></div>
           <div class="cab-btn-lbl">Mis nóminas</div>
         </div>
         <div class="cab-btn">
-          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--cafe)" d="M19 3H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2v9l5-3 5 3v-9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg></div>
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--brand)" d="M19 3H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2v9l5-3 5 3v-9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg></div>
           <div class="cab-btn-lbl">Solicitar vacaciones</div>
         </div>
         <div class="cab-btn">
-          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--cafe)" d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg></div>
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--brand)" d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg></div>
           <div class="cab-btn-lbl">Capacitación</div>
         </div>
         <div class="cab-btn">
-          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--cafe)" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--brand)" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
           <div class="cab-btn-lbl">Directorio equipo</div>
         </div>
         <div class="cab-btn">
-          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--cafe)" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg></div>
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--brand)" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg></div>
           <div class="cab-btn-lbl">Beneficios empleado</div>
         </div>
-        <div class="cab-btn" id="cab-btn-papas" style="display:none;" onclick="irAPapas()">
-          <div class="cab-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--cafe)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="10" ry="6"/><path d="M12 6c2 1 3 3 3 6s-1 5-3 6"/><path d="M12 6c-2 1-3 3-3 6s1 5 3 6"/></svg></div>
-          <div class="cab-btn-lbl">Control de papas</div>
-        </div>
         <div class="cab-btn" id="cab-btn-admin" style="display:none;" onclick="irAAdmin()">
-          <div class="cab-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--cafe)" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
           <div class="cab-btn-lbl">Dashboard admin</div>
         </div>
       </div>
