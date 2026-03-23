@@ -1613,13 +1613,34 @@ function entrar(){
   _completarLogin(nombre, rol);
 }
 
+async function _cargarDatosHero(punto){
+  // Cargar hoy y ayer de Firebase para el hero
+  const hoy = todayStr();
+  const ayerD = new Date(); ayerD.setDate(ayerD.getDate()-1);
+  const ayer = ayerD.toISOString().slice(0,10);
+  try {
+    const snap = await _db.collection('checklists').get();
+    snap.forEach(doc => {
+      const parts = doc.id.split('_');
+      if(parts.length>=4){
+        const [p,f,area,turno] = parts;
+        if(p===punto && (f===hoy||f===ayer)){
+          const key = _lsKey(p,f,area,turno);
+          localStorage.setItem(key, JSON.stringify(doc.data()));
+        }
+      }
+    });
+  } catch(e){}
+  updateHomeUI();
+}
+
 function _completarLogin(nombre, rol){
   curPunto=selPunto; curUser=nombre; curRol=rol;
   // Guardar sesión compartida para horarios y papas
   localStorage.setItem('cabana_session', JSON.stringify({
     nombre, rol, punto:curPunto, ts:Date.now()
   }));
-  // Cargar horario de la semana en background para mostrar en hero
+  // Cargar horario de la semana en background
   try {
     const now=new Date();
     const day=now.getDay();
@@ -1635,6 +1656,8 @@ function _completarLogin(nombre, rol){
   updateHomeUI();
   startClock();
   showScreen('home');
+  // Cargar datos de hoy/ayer desde Firebase para el hero
+  _cargarDatosHero(curPunto);
 }
 
 // PIN guardado como hash simple para no exponerlo en el DOM
