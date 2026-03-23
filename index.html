@@ -209,9 +209,9 @@ body{
   background:var(--bg2);
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;position:relative;
-  color:var(--crema);
+  color:var(--text2);
 }
-.hdr-btn svg{stroke:var(--crema);}
+.hdr-btn svg{stroke:var(--text2);}
 .hdr-notif{
   position:absolute;top:4px;right:4px;
   width:7px;height:7px;background:#FF4545;
@@ -1057,6 +1057,10 @@ select{padding:5px 8px;}
   </div>
   <div class="area-scroll" id="area-nav"></div>
   <div class="turno-bar" id="turno-bar"></div>
+  <div class="cab-ticker" style="margin:0 12px 0;border-radius:0;border-left:none;border-right:none;border-top:none;background:var(--amber-bg);border-bottom:1px solid rgba(133,106,0,.15);">
+    <div style="width:5px;height:5px;background:var(--amber);border-radius:50%;flex-shrink:0;animation:pulse 2s infinite;"></div>
+    <div class="cab-ticker-txt" style="color:var(--amber);"><strong>Recuerda:</strong> Registra temperaturas al inicio de cada turno. Sin datos no podemos garantizar la calidad del producto.</div>
+  </div>
 <div class="cab-marquee-wrapper" style="border-top: 1px solid rgba(255, 145, 0, 0.2);">
     <div class="cab-marquee-track" id="banner-checklist">
       🚀 Los grandes restaurantes funcionan con grandes procesos. Hacer bien tu checklist es hacer bien tu trabajo. ¡Vamos con toda hoy!........................🌟 Un cliente feliz es el resultado del trabajo bien hecho de todo el equipo. ¡Demos el 100% en este turno!
