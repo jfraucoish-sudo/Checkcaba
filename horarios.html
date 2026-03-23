@@ -1230,11 +1230,11 @@ function renderEncPersonal(){
   const estadoBadge = (info) => {
     const e = info.estado||'activo';
     const map = {
-      activo:      {txt:'Activo',       bg:'rgba(59,109,17,.2)',   color:'#C0DD97'},
-      vacaciones:  {txt:'Vacaciones',   bg:'rgba(24,95,165,.2)',   color:'#85B7EB'},
-      incapacitado:{txt:'Incapacitado', bg:'rgba(163,45,45,.2)',   color:'#F09595'},
-      retirado:    {txt:'Retirado',     bg:'rgba(254,242,223,.07))',color:'rgba(254,242,223,.3)'},
-      inactivo:    {txt:'Inactivo',     bg:'rgba(254,242,223,.05))',color:'rgba(254,242,223,.25)'},
+      activo:      {txt:'Activo',       bg:'#E8F5F0',              color:'#2D6A4F'},
+      vacaciones:  {txt:'Vacaciones',   bg:'#EAF2FB',              color:'#1A5276'},
+      incapacitado:{txt:'Incapacitado', bg:'#FDF0EE',              color:'#C0392B'},
+      retirado:    {txt:'Retirado',     bg:'#EDE5D8',              color:'#9C7B6B'},
+      inactivo:    {txt:'Inactivo',     bg:'#EDE5D8',              color:'#9C7B6B'},
     };
     const s = map[e]||map.activo;
     return `<span style="font-size:9px;padding:2px 7px;border-radius:6px;font-weight:700;background:${s.bg};color:${s.color};">${s.txt}</span>`;
@@ -1243,7 +1243,7 @@ function renderEncPersonal(){
   let html=`
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;" class="fade-up">
     <div class="sec-lbl" style="margin-bottom:0;">Personal — ${Object.keys(PERSONAL).length} personas</div>
-    <button onclick="abrirModalPersona()" style="padding:8px 14px;background:var(--naranja);color:var(--cafe);border:none;border-radius:10px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:800;cursor:pointer;">+ Agregar</button>
+    <button onclick="abrirModalPersona()" style="padding:8px 14px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(232,114,12,.3);">+ Agregar</button>
   </div>`;
 
   areas.forEach(area=>{
@@ -1252,26 +1252,26 @@ function renderEncPersonal(){
       <div class="area-hdr"><span class="area-badge ${area.cls}">${area.label} — ${emps.length}</span></div>`;
 
     if(emps.length===0){
-      html+=`<div style="font-size:12px;color:rgba(254,242,223,.3);padding:8px 0;">Sin personal en esta área</div>`;
+      html+=`<div style="font-size:12px;color:var(--text3);padding:8px 0;">Sin personal en esta área</div>`;
     }
 
     emps.forEach(([nombre,info])=>{
       const ini=nombre.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
       const activo = info.estado !== 'retirado' && info.estado !== 'inactivo';
-      html+=`<div style="background:rgba(254,242,223,.05);border:1px solid var(--border);border-radius:12px;padding:11px 13px;margin-bottom:8px;display:flex;align-items:center;gap:10px;opacity:${activo?1:.5};">
+      html+=`<div style="background:var(--surface);border:1px solid var(--bg3);border-radius:12px;padding:11px 13px;margin-bottom:8px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 6px rgba(43,24,16,.06);opacity:${activo?1:.5};">
         <div class="emp-avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0;">${ini}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:var(--crema);">${nombre}</div>
-          <div style="font-size:10px;color:rgba(254,242,223,.4);margin-top:2px;display:flex;align-items:center;gap:5px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text);">${nombre}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;display:flex;align-items:center;gap:5px;">
             <span>${info.rota?'🔄':'📍'} ${info.punto==='hogares'?'Hogares':info.punto==='soacha'?'Soacha':'Ambos'}</span>
             ${estadoBadge(info)}
           </div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;">
           <button data-edit="${nombre}" onclick="editarPersonaClick(this)"
-            style="width:30px;height:30px;border-radius:8px;background:rgba(255,145,0,.12);border:1px solid rgba(255,145,0,.25);color:var(--naranja);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✏️</button>
+            style="width:30px;height:30px;border-radius:8px;background:#FFF0E6;border:1px solid rgba(232,114,12,.25);color:var(--accent);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✏️</button>
           <button data-del="${nombre}" onclick="borrarPersonaClick(this)"
-            style="width:30px;height:30px;border-radius:8px;background:rgba(163,45,45,.15);border:1px solid rgba(163,45,45,.25);color:#F09595;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">🗑️</button>
+            style="width:30px;height:30px;border-radius:8px;background:#FDF0EE;border:1px solid rgba(192,57,43,.2);color:var(--red);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;">🗑️</button>
         </div>
       </div>`;
     });
@@ -1293,17 +1293,17 @@ function abrirModalPersona(nombre=null){
   const overlay = document.createElement('div');
   overlay.id = 'modal-persona';
   overlay.className = 'modal-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:flex-end;justify-content:center;';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(26,15,10,.6);backdrop-filter:blur(4px);z-index:500;display:flex;align-items:flex-end;justify-content:center;';
 
   overlay.innerHTML = `
-  <div style="background:var(--cafe);border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;">
+  <div style="background:var(--surface);border-radius:20px 20px 0 0;padding:24px 20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;">
     <div class="modal-title">${editing?'Editar':'Agregar'} persona</div>
     <div class="modal-sub">${editing?nombre:'Nuevo integrante del equipo'}</div>
 
     <div class="modal-row">
       <label>Nombre completo</label>
       <input type="text" id="mp-nombre" value="${editing?nombre:''}" placeholder="Ej: Juan Pérez">
-      ${editing?`<div style="font-size:10px;color:rgba(254,242,223,.35);margin-top:4px;">⚠️ Si cambias el nombre se crea como nuevo empleado</div>`:''}
+      ${editing?`<div style="font-size:10px;color:var(--text3);margin-top:4px;">⚠️ Si cambias el nombre se crea como nuevo empleado</div>`:''}
     </div>
     <div class="modal-row">
       <label>Área / Cargo</label>
@@ -1343,11 +1343,11 @@ function abrirModalPersona(nombre=null){
 
     <div style="display:flex;gap:8px;margin-top:16px;">
       <button onclick="document.getElementById('modal-persona').remove()"
-        style="flex:1;padding:12px;background:rgba(254,242,223,.06);color:rgba(254,242,223,.5);font-size:13px;border:1px solid var(--border);border-radius:10px;cursor:pointer;">
+        style="flex:1;padding:12px;background:var(--bg2);color:var(--text2);font-size:13px;border:1px solid var(--bg3);border-radius:10px;cursor:pointer;">
         Cancelar
       </button>
       <button onclick="guardarPersona(${editing?`'${nombre.replace(/'/g,"\\'")}'`:'null'})"
-        style="flex:1;padding:12px;background:var(--naranja);color:var(--cafe);font-family:'Poppins',sans-serif;font-size:13px;font-weight:800;border:none;border-radius:10px;cursor:pointer;">
+        style="flex:1;padding:12px;background:var(--accent);color:#fff;font-size:13px;font-weight:700;border:none;border-radius:10px;cursor:pointer;">
         ${editing?'Guardar cambios':'Agregar'}
       </button>
     </div>
@@ -1383,17 +1383,17 @@ async function guardarPersona(nombreOriginal){
 async function confirmarEliminar(nombre){
   const modal = document.createElement('div');
   modal.id = 'modal-confirmar';
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:600;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(26,15,10,.6);backdrop-filter:blur(4px);z-index:600;display:flex;align-items:center;justify-content:center;padding:1.5rem;';
   modal.innerHTML = `
-  <div style="background:var(--cafe);border:1px solid rgba(254,242,223,.15);border-radius:20px;padding:24px;width:100%;max-width:300px;text-align:center;">
+  <div style="background:var(--surface);border:1px solid var(--bg3);border-radius:20px;padding:24px;width:100%;max-width:300px;text-align:center;">
     <div style="font-size:28px;margin-bottom:10px;">⚠️</div>
-    <div style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;color:var(--crema);margin-bottom:6px;">¿Eliminar a ${nombre}?</div>
-    <div style="font-size:12px;color:rgba(254,242,223,.45);margin-bottom:20px;">Se eliminará del sistema y no aparecerá en horarios futuros. Los horarios pasados no se afectan.</div>
+    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">¿Eliminar a ${nombre}?</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">Se eliminará del sistema y no aparecerá en horarios futuros. Los horarios pasados no se afectan.</div>
     <div style="display:flex;gap:8px;">
       <button onclick="document.getElementById('modal-confirmar').remove()"
-        style="flex:1;padding:11px;background:rgba(254,242,223,.06);border:1px solid var(--border);border-radius:10px;color:rgba(254,242,223,.5);font-size:13px;cursor:pointer;">Cancelar</button>
+        style="flex:1;padding:11px;background:var(--bg2);border:1px solid var(--bg3);border-radius:10px;color:var(--text2);font-size:13px;cursor:pointer;">Cancelar</button>
       <button onclick="eliminarPersona('${nombre.replace(/'/g,"\\'")}')"
-        style="flex:1;padding:11px;background:rgba(163,45,45,.25);border:1px solid rgba(163,45,45,.4);border-radius:10px;color:#F09595;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">Eliminar</button>
+        style="flex:1;padding:11px;background:#FDF0EE;border:1px solid rgba(192,57,43,.2);border-radius:10px;color:var(--red);font-size:13px;font-weight:700;cursor:pointer;">Eliminar</button>
     </div>
   </div>`;
   document.body.appendChild(modal);
