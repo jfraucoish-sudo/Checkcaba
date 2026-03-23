@@ -793,38 +793,48 @@ select{padding:5px 8px;}
       <div class="cab-logo-name">LA CABAÑA</div>
     </div>
     <div class="login-card">
-      <div class="login-card-title">Selecciona tu punto de venta</div>
-      <div class="punto-grid">
-        <div class="punto-card" id="pc-soacha" onclick="selectPunto('soacha')">
-          <div class="pc-icon">🏠</div>
-          <div class="pc-name">Soacha</div>
-          <div class="pc-sub">Taquería Hernández</div>
-        </div>
-        <div class="punto-card" id="pc-plaza" onclick="selectPunto('plaza')">
-          <div class="pc-icon">🏬</div>
-          <div class="pc-name">Mi Plaza</div>
-          <div class="pc-sub">Cabaña Jekemi</div>
-        </div>
-      </div>
+      <div class="login-card-title">¿Quién eres hoy?</div>
       <div class="login-field">
         <label>Tu nombre</label>
-        <select id="login-nombre" onchange="autoFillRol(this.value)">
+        <select id="login-nombre" onchange="onLoginNombreChange(this.value)">
           <option value="">Selecciona tu nombre...</option>
         </select>
+      </div>
+      <!-- Punto asignado (auto desde horarios) -->
+      <div id="login-punto-auto" style="display:none;margin-bottom:14px;">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Punto asignado</div>
+        <div id="login-punto-tag" style="background:var(--bg2);border:1px solid var(--bg3);border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px;"></div>
+      </div>
+      <!-- Selector de punto manual si no está en horarios -->
+      <div id="login-punto-manual" style="display:none;">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Punto de venta</div>
+        <div class="punto-grid">
+          <div class="punto-card" id="pc-soacha" onclick="selectPunto('soacha')">
+            <div class="pc-icon">🏠</div><div class="pc-name">Soacha</div>
+          </div>
+          <div class="punto-card" id="pc-plaza" onclick="selectPunto('plaza')">
+            <div class="pc-icon">🏬</div><div class="pc-name">Mi Plaza</div>
+          </div>
+        </div>
       </div>
       <div class="login-field">
         <label>Tu rol</label>
         <select id="login-rol">
           <option value="">Selecciona tu rol...</option>
-          <option value="empleado">Cocina</option>
-          <option value="cajero">Cajero / Recepción</option>
-          <option value="domiciliario">Domiciliario</option>
-          <option value="jefe">Jefe de cocina</option>
-          <option value="supervisor">Supervisor</option>
-          <option value="admin">Administrador / Encargado</option>
+          <option value="empleado">🍳 Cocina</option>
+          <option value="cajero">💻 Cajero / Recepción</option>
+          <option value="domiciliario">🛵 Domiciliario</option>
+          <option value="jefe">👨‍🍳 Jefe de cocina</option>
+          <option value="supervisor">👁️ Supervisor</option>
         </select>
       </div>
       <button class="login-btn" onclick="entrar()">Ingresar →</button>
+      <!-- Acceso admin separado -->
+      <div style="margin-top:16px;text-align:center;border-top:1px solid var(--bg3);padding-top:14px;">
+        <button onclick="mostrarLoginAdmin()" style="background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;">
+          🔐 Acceso Administrador
+        </button>
+      </div>
     </div>
     </div>
   </div>
@@ -1548,14 +1558,88 @@ async function cargarPersonalLogin(){
   }
 }
 
-function autoFillRol(nombre){
-  if(!nombre||!window._personalData) return;
-  const info = window._personalData[nombre];
-  if(!info) return;
-  const rolSugerido = AREA_ROL[info.area]||'empleado';
-  const rolSel = document.getElementById('login-rol');
-  if(rolSel) rolSel.value = rolSugerido;
+function onLoginNombreChange(nombre){
+  if(!nombre) {
+    document.getElementById('login-punto-auto').style.display='none';
+    document.getElementById('login-punto-manual').style.display='none';
+    selPunto=null;
+    return;
+  }
+  // Sugerir rol
+  if(window._personalData){
+    const info = window._personalData[nombre];
+    if(info){
+      const rolSugerido = AREA_ROL[info.area]||'empleado';
+      const rolSel = document.getElementById('login-rol');
+      if(rolSel) rolSel.value = rolSugerido;
+    }
+  }
+  // Buscar punto en horarios de la semana
+  _detectarPuntoDesdeHorarios(nombre);
 }
+
+async function _detectarPuntoDesdeHorarios(nombre){
+  const now=new Date();
+  const day=now.getDay();
+  const diff=day===0?-6:1-day;
+  const mon=new Date(now); mon.setDate(now.getDate()+diff);
+  const wk=mon.toISOString().slice(0,10);
+  
+  let horSem = window._horariosCache?.[wk];
+  if(!horSem){
+    try {
+      const doc = await _db.collection('horarios').doc(wk).get();
+      if(doc.exists){ 
+        window._horariosCache=window._horariosCache||{};
+        window._horariosCache[wk]=doc.data();
+        horSem=doc.data();
+      }
+    } catch(e){}
+  }
+  
+  const autoEl = document.getElementById('login-punto-auto');
+  const manualEl = document.getElementById('login-punto-manual');
+  const tagEl = document.getElementById('login-punto-tag');
+  
+  // Buscar en qué punto está hoy
+  let puntoDetectado = null;
+  if(horSem){
+    // El horario guarda por punto: horSem puede tener datos de empleados con punto
+    // Estructura: horSem[nombre][diasIdx].punto o buscar en personal
+    const diaIdx = now.getDay(); 
+    const monIdx = diaIdx===0?6:diaIdx-1;
+    if(horSem[nombre]){
+      const diaHoy = horSem[nombre][monIdx];
+      if(diaHoy && diaHoy.tipo!=='descanso' && diaHoy.punto){
+        puntoDetectado = diaHoy.punto;
+      }
+    }
+    // Si no está en horarios, buscar punto base en personal
+    if(!puntoDetectado && window._personalData?.[nombre]){
+      const info = window._personalData[nombre];
+      if(info.punto && info.punto!=='ambos') puntoDetectado = info.punto;
+    }
+  } else if(window._personalData?.[nombre]){
+    const info = window._personalData[nombre];
+    if(info.punto && info.punto!=='ambos') puntoDetectado = info.punto;
+  }
+  
+  if(puntoDetectado){
+    selPunto = puntoDetectado;
+    const puntoNombres={soacha:'🏠 Soacha · Taquería Hernández', plaza:'🏬 Mi Plaza · Cabaña Jekemi'};
+    tagEl.textContent = puntoNombres[puntoDetectado]||puntoDetectado;
+    autoEl.style.display='block';
+    manualEl.style.display='none';
+  } else {
+    // No detectado — mostrar selector manual
+    selPunto=null;
+    autoEl.style.display='none';
+    manualEl.style.display='block';
+  }
+}
+
+// Función legacy para compatibilidad
+function autoFillRol(nombre){ onLoginNombreChange(nombre); }
 
 // Inicializar login al cargar
 document.addEventListener('DOMContentLoaded', ()=>{
@@ -1616,14 +1700,91 @@ let curRol='empleado';
 function entrar(){
   const nombre=document.getElementById('login-nombre').value;
   const rol=document.getElementById('login-rol').value;
-  if(!selPunto){alert('Selecciona un punto de venta');return;}
   if(!nombre){alert('Selecciona tu nombre');return;}
   if(!rol){alert('Selecciona tu rol');return;}
+  if(!selPunto){alert('No pudimos detectar tu punto. Selecciónalo manualmente.');return;}
   if(rol==='supervisor'){
     mostrarPinModal(nombre, rol);
     return;
   }
   _completarLogin(nombre, rol);
+}
+
+function mostrarLoginAdmin(){
+  // Modal de acceso admin: elige punto + PIN
+  const existing=document.getElementById('admin-login-modal');
+  if(existing){existing.remove();return;}
+  const overlay=document.createElement('div');
+  overlay.id='admin-login-modal';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1.5rem;';
+  overlay.innerHTML=`
+  <div style="background:var(--surface);border:1px solid var(--bg3);border-radius:20px;padding:26px 22px;width:100%;max-width:320px;text-align:center;">
+    <div style="font-size:26px;margin-bottom:8px;">🔐</div>
+    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Acceso Administrador</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:18px;">Selecciona el punto a revisar</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div class="punto-card" id="adm-pc-soacha" onclick="adminSelectPunto('soacha')" style="padding:12px 8px;">
+        <div style="font-size:22px;margin-bottom:4px;">🏠</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);">Soacha</div>
+      </div>
+      <div class="punto-card" id="adm-pc-plaza" onclick="adminSelectPunto('plaza')" style="padding:12px 8px;">
+        <div style="font-size:22px;margin-bottom:4px;">🏬</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);">Mi Plaza</div>
+      </div>
+    </div>
+    <div id="adm-punto-sel" style="font-size:11px;color:var(--text3);margin-bottom:10px;min-height:16px;"></div>
+    <input id="admin-pin-inp" type="tel" maxlength="4" placeholder="PIN 4 dígitos" autocomplete="off"
+      style="width:100%;padding:13px;text-align:center;font-size:22px;letter-spacing:8px;background:var(--surface);border:1.5px solid var(--bg3);border-radius:12px;color:var(--text);outline:none;margin-bottom:6px;">
+    <div id="admin-pin-err" style="font-size:12px;color:#FF6B55;margin-bottom:12px;min-height:16px;"></div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="document.getElementById('admin-login-modal').remove()" style="flex:1;padding:12px;background:var(--bg2);border:1px solid var(--bg3);border-radius:12px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>
+      <button onclick="verificarPinAdmin()" style="flex:1;padding:12px;background:var(--brand);border:none;border-radius:12px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Entrar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(()=>document.getElementById('admin-pin-inp')?.focus(),300);
+  const inp=overlay.querySelector('#admin-pin-inp');
+  inp.addEventListener('input',()=>{inp.value=inp.value.replace(/[^0-9]/g,'');});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')verificarPinAdmin();});
+}
+
+let _adminPuntoSel=null;
+function adminSelectPunto(p){
+  _adminPuntoSel=p;
+  document.querySelectorAll('#admin-login-modal .punto-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('adm-pc-'+p)?.classList.add('selected');
+  const nombres={soacha:'🏠 Soacha seleccionado',plaza:'🏬 Mi Plaza seleccionado'};
+  const el=document.getElementById('adm-punto-sel');
+  if(el) el.textContent=nombres[p]||p;
+}
+function verificarPinAdmin(){
+  const pin=document.getElementById('admin-pin-inp')?.value;
+  const err=document.getElementById('admin-pin-err');
+  if(!_adminPuntoSel){if(err)err.textContent='Selecciona un punto primero';return;}
+  if(pin==='1234'){
+    document.getElementById('admin-login-modal')?.remove();
+    selPunto=_adminPuntoSel;
+    _completarLoginAdmin(_adminPuntoSel);
+  } else {
+    if(err)err.textContent='PIN incorrecto';
+    const inp=document.getElementById('admin-pin-inp');
+    if(inp){inp.value='';inp.style.borderColor='#FF6B55';setTimeout(()=>{inp.style.borderColor='var(--bg3)';if(err)err.textContent='';},2000);inp.focus();}
+  }
+}
+function _completarLoginAdmin(punto){
+  curPunto=punto; curUser='Administrador'; curRol='admin';
+  localStorage.setItem('cabana_session',JSON.stringify({nombre:'Administrador',rol:'admin',punto,ts:Date.now()}));
+  try{
+    const now=new Date(),day=now.getDay(),diff=day===0?-6:1-day,mon=new Date(now);
+    mon.setDate(now.getDate()+diff);
+    const wk=mon.toISOString().slice(0,10);
+    _db.collection('horarios').doc(wk).get().then(doc=>{
+      if(doc.exists){window._horariosCache=window._horariosCache||{};window._horariosCache[wk]=doc.data();}
+      updateHomeUI();
+    }).catch(()=>{});
+  }catch(e){}
+  updateHomeUI(); startClock();
+  irAAdmin();
 }
 
 function _completarLogin(nombre, rol){
@@ -1653,89 +1814,95 @@ function _completarLogin(nombre, rol){
 // PIN guardado como hash simple para no exponerlo en el DOM
 const _PINS={supervisor:'0710'};
 
+let _supPuntoSel = null;
+
 function mostrarPinModal(nombre, rol){
   const existing=document.getElementById('pin-modal');
   if(existing) existing.remove();
+  _supPuntoSel = selPunto; // usar el que ya detectaron, pero dejar cambiar
 
   const overlay=document.createElement('div');
   overlay.id='pin-modal';
   overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1.5rem;';
 
-  const box=document.createElement('div');
-  box.style.cssText='background:var(--surface);border:1px solid var(--bg3);border-radius:20px;padding:26px 22px;width:100%;max-width:300px;text-align:center;';
+  overlay.innerHTML=`
+  <div style="background:var(--surface);border:1px solid var(--bg3);border-radius:20px;padding:24px 20px;width:100%;max-width:320px;text-align:center;">
+    <div style="font-size:26px;margin-bottom:6px;">👁️</div>
+    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Acceso Supervisor</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">¿Qué punto vas a supervisar hoy?</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+      <div class="punto-card${selPunto==='soacha'?' selected':''}" id="sup-pc-soacha"
+        onclick="supSelectPunto('soacha')" style="padding:12px 8px;cursor:pointer;">
+        <div style="font-size:22px;margin-bottom:4px;">🏠</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);">Soacha</div>
+      </div>
+      <div class="punto-card${selPunto==='plaza'?' selected':''}" id="sup-pc-plaza"
+        onclick="supSelectPunto('plaza')" style="padding:12px 8px;cursor:pointer;">
+        <div style="font-size:22px;margin-bottom:4px;">🏬</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text);">Mi Plaza</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:8px;">PIN de supervisor</div>
+    <input id="pin-input" type="tel" maxlength="4" placeholder="0000" autocomplete="off"
+      style="width:100%;padding:13px;text-align:center;font-size:22px;letter-spacing:8px;background:var(--surface);border:1.5px solid var(--bg3);border-radius:12px;color:var(--text);outline:none;">
+    <div id="pin-error" style="font-size:12px;color:#FF6B55;margin-top:6px;min-height:16px;"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button onclick="document.getElementById('pin-modal').remove()"
+        style="flex:1;padding:12px;background:var(--bg2);border:1px solid var(--bg3);border-radius:12px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>
+      <button onclick="intentarPinSup('${nombre}','${rol}')"
+        style="flex:1;padding:12px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Entrar</button>
+    </div>
+  </div>`;
 
-  const title=document.createElement('div');
-  title.style.cssText='font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;';
-  title.textContent='🔐 Acceso Supervisor';
-
-  const sub=document.createElement('div');
-  sub.style.cssText='font-size:12px;color:var(--text3);margin-bottom:18px;';
-  sub.textContent='Ingresa el PIN de 4 dígitos';
-
-  const inp=document.createElement('input');
-  inp.id='pin-input';
-  inp.type='tel';
-  inp.maxLength=4;
-  inp.placeholder='0000';
-  inp.autocomplete='off';
-  inp.setAttribute('autocomplete','new-password');
-  inp.setAttribute('data-lpignore','true');
-  inp.style.cssText='width:100%;padding:14px;text-align:center;font-size:24px;letter-spacing:10px;background:var(--surface);border:1.5px solid var(--bg3);border-radius:12px;color:var(--text);outline:none;';
-
-  const err=document.createElement('div');
-  err.id='pin-error';
-  err.style.cssText='font-size:12px;color:#FF6B55;margin-top:8px;min-height:18px;';
-  err.textContent='';
-
-  const btnRow=document.createElement('div');
-  btnRow.style.cssText='display:flex;gap:10px;margin-top:14px;';
-
-  const btnCancel=document.createElement('button');
-  btnCancel.textContent='Cancelar';
-  btnCancel.style.cssText='flex:1;padding:12px;background:var(--bg2);border:1px solid var(--bg3);border-radius:12px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;';
-  btnCancel.onclick=()=>overlay.remove();
-
-  const btnOk=document.createElement('button');
-  btnOk.textContent='Entrar';
-  btnOk.style.cssText='flex:1;padding:12px;background:#FF9100;border:none;border-radius:12px;color:#2D1B15;font-family:Poppins,sans-serif;font-size:13px;font-weight:800;cursor:pointer;';
-
-  function intentarPin(){
-    const val=inp.value;
-    if(val.length<4){ err.textContent='Ingresa los 4 dígitos'; return; }
-    if(val===_PINS[rol]){
-      overlay.remove();
-      _completarLogin(nombre, rol);
-    } else {
-      inp.value='';
-      err.textContent='PIN incorrecto. Intenta de nuevo.';
-      inp.style.borderColor='#FF6B55';
-      setTimeout(()=>{ inp.style.borderColor='var(--bg3)'; err.textContent=''; },2000);
-      inp.focus();
-    }
-  }
-
-  btnOk.onclick=intentarPin;
-  inp.addEventListener('keydown', e=>{ if(e.key==='Enter') intentarPin(); });
-  // Delay para evitar que autocompletado del navegador dispare la verificación
-  setTimeout(()=>{
-    inp.value='';
-    inp.addEventListener('input', ()=>{
-      inp.value=inp.value.replace(/[^0-9]/g,'');
-      err.textContent='';
-    });
-  }, 500);
-
-  box.appendChild(title);
-  box.appendChild(sub);
-  box.appendChild(inp);
-  box.appendChild(err);
-  btnRow.appendChild(btnCancel);
-  btnRow.appendChild(btnOk);
-  box.appendChild(btnRow);
-  overlay.appendChild(box);
   document.body.appendChild(overlay);
-  setTimeout(()=>inp.focus(), 200);
+
+  const inp=overlay.querySelector('#pin-input');
+  inp.addEventListener('input',()=>{ inp.value=inp.value.replace(/[^0-9]/g,''); });
+  inp.addEventListener('keydown',e=>{ if(e.key==='Enter') intentarPinSup(nombre,rol); });
+  // Delay para evitar autocompletado
+  setTimeout(()=>{ inp.value=''; inp.focus(); }, 300);
+  // Forzar clase selected en el punto ya detectado
+  if(_supPuntoSel){ supSelectPunto(_supPuntoSel); }
 }
+
+function supSelectPunto(p){
+  _supPuntoSel=p;
+  ['soacha','plaza'].forEach(id=>{
+    document.getElementById('sup-pc-'+id)?.classList.toggle('selected',id===p);
+  });
+}
+
+function intentarPinSup(nombre, rol){
+  const val=document.getElementById('pin-input')?.value;
+  const err=document.getElementById('pin-error');
+  if(!_supPuntoSel){ if(err) err.textContent='Selecciona un punto'; return; }
+  if((val||'').length<4){ if(err) err.textContent='Ingresa los 4 dígitos'; return; }
+  if(val===_PINS[rol]){
+    selPunto=_supPuntoSel;
+    document.getElementById('pin-modal')?.remove();
+    _completarLogin(nombre, rol);
+  } else {
+    const inp=document.getElementById('pin-input');
+    if(inp){ inp.value=''; inp.style.borderColor='#FF6B55'; inp.focus(); }
+    if(err){ err.textContent='PIN incorrecto. Intenta de nuevo.';
+      setTimeout(()=>{ if(inp) inp.style.borderColor='var(--bg3)'; err.textContent=''; },2000); }
+  }
+}
+
+// LEGACY — mantenido por compatibilidad, ya no se usa directamente
+function _legacyIntentarPin(nombre,rol,val,inp,err,overlay){
+  if(val===_PINS[rol]){
+    overlay.remove();
+    _completarLogin(nombre, rol);
+  } else {
+    inp.value='';
+    err.textContent='PIN incorrecto. Intenta de nuevo.';
+    inp.style.borderColor='#FF6B55';
+    setTimeout(()=>{ inp.style.borderColor='var(--bg3)'; err.textContent=''; },2000);
+    inp.focus();
+  }
+}
+// (modal limpiado)
 
 // ── HELPERS para calcular progreso del checklist ──────────────────
 function getAreaPorRol(rol){
@@ -1979,9 +2146,6 @@ function updateHomeUI(){
   const ayerBlock=el('hero-ayer-block');
   const ayerMsg=el('hero-ayer-msg');
   if(ayerMsg){ ayerMsg.textContent=msg; ayerMsg.className='hero-ayer-msg '+cls; }
-  // Si no hay datos de ayer y es primer día, ocultar bloque
-  const prog2=calcProgreso(curPunto,fechaAyer,area,'apertura');
-  const prog3=calcProgreso(curPunto,fechaAyer,area,'cierre');
 
   const adminBtn=document.getElementById('cab-btn-admin');
   if(adminBtn) adminBtn.style.display=(curRol==='admin'||curRol==='jefe'||curRol==='supervisor')?'flex':'none';
@@ -2018,12 +2182,14 @@ function confirmarLogout(){
   // Clear form
   const n=document.getElementById('login-nombre');
   const r=document.getElementById('login-rol');
-  const p1=document.getElementById('pc-soacha');
-  const p2=document.getElementById('pc-plaza');
   if(n) n.value='';
   if(r) r.value='';
-  if(p1) p1.classList.remove('selected');
-  if(p2) p2.classList.remove('selected');
+  selPunto=null; _adminPuntoSel=null;
+  document.getElementById('login-punto-auto').style.display='none';
+  document.getElementById('login-punto-manual').style.display='none';
+  ['pc-soacha','pc-plaza','adm-pc-soacha','adm-pc-plaza'].forEach(id=>{
+    document.getElementById(id)?.classList.remove('selected');
+  });
   showScreen('login');
 }
 
@@ -2194,7 +2360,7 @@ function startClock(){
   setInterval(tickClock,1000);
 }
 function entrarAdmin(){ irAAdmin(); }
-function goBack(){if(curUser){showScreen('home');}else{showScreen('login');}}
+function goBack(){if(curRol==='admin'){irAAdmin();return;}if(curUser){showScreen('home');}else{showScreen('login');}}
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+id).classList.add('active');
@@ -2866,6 +3032,60 @@ function renderAdmin(){
       ${d?.signed?`<div style="font-size:11px;color:var(--txt3);margin-top:3px;">Cajero: ${d.signed.nombre} · ${d.signed.hora}</div>`:''}
     </div>`;
   });
+
+  // ── AVISOS INTELIGENTES ADMIN ────────────────────────────────
+  html+='<div class="sec-lbl">📢 Avisos del turno</div>';
+  const avisos=[];
+  // Verificar temperaturas fuera de rango
+  Object.entries(PUNTOS).forEach(([pid,p])=>{
+    const pNombre=p.name;
+    AREAS_LIST.forEach(area=>{
+      TURNOS_LIST.forEach(turno=>{
+        const tasks=(CL[area.id]||{})[turno.id]||[];
+        const d=loadDataDateAdmin(pid,adminDate,area.id,turno.id);
+        (d?.tasks||[]).forEach((t,i)=>{
+          const tk=tasks[i];if(!tk)return;
+          if(tk.tipo==='temp'&&t.val!==''){
+            const v=parseFloat(t.val);
+            if(!isNaN(v)&&(v<tk.rango[0]||v>tk.rango[1])){
+              const sensor=tk.t.replace('Primera temperatura: ','').replace('Segunda temperatura: ','').replace('Tercera temperatura: ','');
+              avisos.push({tipo:'error',txt:'⚠️ Temp fuera de rango en '+pNombre+': '+sensor+' → '+v+tk.unit+' (esperado '+tk.rango[0]+'–'+tk.rango[1]+tk.unit+')'});
+            }
+          }
+        });
+      });
+    });
+  });
+  // Verificar turnos sin firma
+  Object.entries(PUNTOS).forEach(([pid,p])=>{
+    TURNOS_LIST.forEach(turno=>{
+      const d=loadDataDateAdmin(pid,adminDate,'admin',turno.id);
+      if(d&&d.tasks&&d.tasks.length>0&&!d.signed){
+        avisos.push({tipo:'warn',txt:'📝 Turno '+turno.name+' en '+p.name+' completado pero sin firma del supervisor'});
+      }
+    });
+  });
+  // Caja sin registrar
+  Object.entries(PUNTOS).forEach(([pid,p])=>{
+    const d=loadDataDateAdmin(pid,adminDate,'caja','cierre');
+    if(!d||!(d.tasks&&d.tasks.length)){
+      if(adminDate===todayStr()){
+        avisos.push({tipo:'info',txt:'💰 '+p.name+': aún no hay cierre de caja registrado'});
+      }
+    }
+  });
+  if(avisos.length){
+    html+='<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:4px;">';
+    avisos.forEach(av=>{
+      const bg=av.tipo==='error'?'var(--red-bg)':av.tipo==='warn'?'var(--amber-bg)':'var(--blue-bg)';
+      const border=av.tipo==='error'?'rgba(192,57,43,.2)':av.tipo==='warn'?'rgba(133,106,0,.2)':'rgba(26,82,118,.2)';
+      const col=av.tipo==='error'?'var(--red)':av.tipo==='warn'?'var(--amber)':'var(--blue)';
+      html+='<div style="background:'+bg+';border:1px solid '+border+';border-radius:10px;padding:10px 12px;font-size:12px;color:'+col+';line-height:1.4;">'+av.txt+'</div>';
+    });
+    html+='</div>';
+  } else {
+    html+='<div style="background:var(--green-bg);border:1px solid rgba(45,106,79,.2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--green);margin-bottom:4px;">✅ Sin alertas críticas en este turno. ¡El punto va bien!</div>';
+  }
 
   // WhatsApp resumen admin
   html+=`<div class="sec-lbl">Enviar reporte admin</div>
