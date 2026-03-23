@@ -636,15 +636,23 @@ select{padding:5px 8px;}
 .cab-hero-lbl{font-size:9px;font-weight:700;color:rgba(253,246,238,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;display:flex;align-items:center;gap:5px;}
 .cab-hero-dot{width:5px;height:5px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite;}
 /* Progress bar de hoy */
-.hero-prog-wrap{margin-bottom:14px;}
-.hero-prog-lbl{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
-.hero-prog-title{font-family:'DM Serif Display',serif;font-size:22px;color:#FDF6EE;line-height:1;}
-.hero-prog-pct{font-size:28px;font-weight:700;color:var(--accent);font-family:'DM Serif Display',serif;}
-.hero-prog-track{height:6px;background:rgba(253,246,238,.12);border-radius:3px;overflow:hidden;}
-.hero-prog-fill{height:100%;border-radius:3px;transition:width .6s ease;background:var(--accent);}
+.hero-turnos{display:flex;flex-direction:column;gap:10px;margin-bottom:4px;}
+.hero-turno-row{display:flex;align-items:center;gap:10px;}
+.hero-turno-ico{font-size:14px;width:20px;text-align:center;flex-shrink:0;}
+.hero-turno-body{flex:1;}
+.hero-turno-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;}
+.hero-turno-name{font-size:11px;font-weight:600;color:rgba(253,246,238,.7);}
+.hero-turno-pct{font-size:13px;font-weight:700;color:var(--accent);font-family:'DM Sans',sans-serif;}
+.hero-turno-pct.good{color:#81C784;}
+.hero-turno-pct.mid{color:var(--accent2);}
+.hero-turno-pct.low{color:#EF9A9A;}
+.hero-turno-pct.nd{color:rgba(253,246,238,.25);}
+.hero-prog-track{height:4px;background:rgba(253,246,238,.1);border-radius:2px;overflow:hidden;}
+.hero-prog-fill{height:100%;border-radius:2px;transition:width .7s ease;}
 .hero-prog-fill.good{background:#4CAF50;}
 .hero-prog-fill.mid{background:var(--accent);}
 .hero-prog-fill.low{background:#e53935;}
+.hero-prog-fill.nd{background:rgba(253,246,238,.1);}
 /* Card de ayer */
 .hero-ayer{padding:12px 18px;border-top:1px solid rgba(253,246,238,.08);}
 .hero-ayer-title{font-size:9px;font-weight:700;color:rgba(253,246,238,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;}
@@ -868,18 +876,12 @@ select{padding:5px 8px;}
       </div>
       <div class="cab-hero">
         <div class="cab-hero-top">
-          <div class="cab-hero-lbl"><div class="cab-hero-dot"></div><span id="hero-lbl-turno">Mi turno de hoy</span></div>
-          <!-- Progress hoy -->
-          <div class="hero-prog-wrap">
-            <div class="hero-prog-lbl">
-              <div class="cab-hero-time" id="cab-turno-hero">—</div>
-              <div class="hero-prog-pct" id="hero-pct-hoy">—</div>
-            </div>
-            <div class="hero-prog-track">
-              <div class="hero-prog-fill" id="hero-prog-fill" style="width:0%"></div>
-            </div>
+          <div class="cab-hero-lbl"><div class="cab-hero-dot"></div>Mi jornada de hoy</div>
+          <!-- 3 turnos -->
+          <div class="hero-turnos" id="hero-turnos-wrap">
+            <!-- renderizado por JS -->
           </div>
-          <div id="cab-horario-hero" style="font-size:11px;color:rgba(253,246,238,.4);min-height:14px;margin-bottom:2px;"></div>
+          <div id="cab-horario-hero" style="font-size:11px;color:rgba(253,246,238,.3);min-height:14px;margin-top:2px;"></div>
         </div>
         <!-- Resumen de ayer -->
         <div class="hero-ayer" id="hero-ayer-block">
@@ -1912,8 +1914,6 @@ function updateHomeUI(){
   // Turno detectado por hora actual
   const hora=new Date().getHours();
   const turnoActual=getTurnoActual();
-  const turnoNames={apertura:'☀️ Apertura',medio:'🌤️ Turno medio',cierre:'🌙 Cierre'};
-  if(el('cab-turno-hero')) el('cab-turno-hero').textContent=turnoNames[turnoActual]||'—';
 
   // Horario del empleado
   try {
@@ -1941,22 +1941,34 @@ function updateHomeUI(){
     }
   } catch(e){}
 
-  // ── PROGRESS BAR HOY ──────────────────────────────────────────────
+  // ── 3 TURNOS HOY ──────────────────────────────────────────────────
   const area=getAreaPorRol(curRol);
-  const prog=calcProgreso(curPunto,todayStr(),area,turnoActual);
-  const pct=prog.pct;
-  const fillEl=el('hero-prog-fill');
-  const pctEl=el('hero-pct-hoy');
-  const lblEl=el('hero-lbl-turno');
-  if(fillEl){
-    fillEl.style.width=pct+'%';
-    fillEl.className='hero-prog-fill '+(pct>=80?'good':pct>=40?'mid':'low');
-  }
-  if(pctEl) pctEl.textContent=prog.hasDatos?pct+'%':'—';
-  if(lblEl){
-    if(pct===100) lblEl.textContent='✅ ¡Turno completado!';
-    else if(pct>0) lblEl.textContent='📋 Mi turno de hoy';
-    else lblEl.textContent='📋 Mi turno de hoy';
+  const turnos3=[
+    {id:'apertura', icon:'☀️', name:'Apertura'},
+    {id:'medio',    icon:'🌤️', name:'Turno medio'},
+    {id:'cierre',   icon:'🌙', name:'Cierre'},
+  ];
+  const wrap=el('hero-turnos-wrap');
+  if(wrap){
+    wrap.innerHTML=turnos3.map(t=>{
+      const prog=calcProgreso(curPunto,todayStr(),area,t.id);
+      const pct=prog.pct;
+      const cls=!prog.hasDatos?'nd':pct>=80?'good':pct>=40?'mid':'low';
+      const pctTxt=prog.hasDatos?pct+'%':'—';
+      const fillW=prog.hasDatos?pct:0;
+      return `<div class="hero-turno-row">
+        <div class="hero-turno-ico">${t.icon}</div>
+        <div class="hero-turno-body">
+          <div class="hero-turno-top">
+            <div class="hero-turno-name">${t.name}</div>
+            <div class="hero-turno-pct ${cls}">${pctTxt}</div>
+          </div>
+          <div class="hero-prog-track">
+            <div class="hero-prog-fill ${cls}" style="width:${fillW}%"></div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
   }
 
   // ── RESUMEN DE AYER ───────────────────────────────────────────────
