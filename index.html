@@ -784,35 +784,47 @@ select{padding:5px 8px;}
       <div class="cab-logo-name">LA CABAÑA</div>
     </div>
     <div class="login-card">
-      <div class="login-card-title">Selecciona tu punto de venta</div>
-      <div class="punto-grid">
-        <div class="punto-card" id="pc-soacha" onclick="selectPunto('soacha')">
-          <div class="pc-icon">🏠</div>
-          <div class="pc-name">Soacha</div>
-          <div class="pc-sub">Taquería Hernández</div>
-        </div>
-        <div class="punto-card" id="pc-plaza" onclick="selectPunto('plaza')">
-          <div class="pc-icon">🏬</div>
-          <div class="pc-name">Mi Plaza</div>
-          <div class="pc-sub">Cabaña Jekemi</div>
-        </div>
-      </div>
+      <div class="login-card-title">¿Quién eres?</div>
       <div class="login-field">
         <label>Tu nombre</label>
-        <select id="login-nombre" onchange="autoFillRol(this.value)">
+        <select id="login-nombre" onchange="onNombreChange(this.value)">
           <option value="">Selecciona tu nombre...</option>
         </select>
       </div>
-      <div class="login-field">
-        <label>Tu rol</label>
-        <select id="login-rol">
-          <option value="">Selecciona tu rol...</option>
-          <option value="empleado">Cocina</option>
-          <option value="cajero">Cajero / Recepción</option>
-          <option value="domiciliario">Domiciliario</option>
-          <option value="jefe">Jefe de cocina</option>
-          <option value="supervisor">👁️ Supervisor</option>
-          <option value="admin">🔑 Administrador</option>
+      <!-- Info detectada automáticamente -->
+      <div id="login-info-auto" style="display:none;background:var(--bg2);border:1px solid var(--bg3);border-radius:12px;padding:12px 14px;margin-bottom:14px;">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Detectado automáticamente</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:12px;color:var(--text3);">Punto</div>
+            <div style="font-size:14px;font-weight:700;color:var(--text);" id="login-info-punto">—</div>
+          </div>
+          <div>
+            <div style="font-size:12px;color:var(--text3);">Cargo</div>
+            <div style="font-size:14px;font-weight:700;color:var(--text);" id="login-info-rol">—</div>
+          </div>
+        </div>
+      </div>
+      <!-- Si no se detecta punto, selector manual -->
+      <div id="login-punto-manual" style="display:none;">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Selecciona tu punto</div>
+        <div class="punto-grid">
+          <div class="punto-card" id="pc-soacha" onclick="selectPunto('soacha')">
+            <div class="pc-icon">🏠</div><div class="pc-name">Soacha</div>
+          </div>
+          <div class="punto-card" id="pc-plaza" onclick="selectPunto('plaza')">
+            <div class="pc-icon">🏬</div><div class="pc-name">Mi Plaza</div>
+          </div>
+        </div>
+      </div>
+      <!-- Campos ocultos para compatibilidad -->
+      <select id="login-rol" style="display:none;">
+        <option value="empleado">Cocina</option>
+        <option value="cajero">Cajero / Recepción</option>
+        <option value="domiciliario">Domiciliario</option>
+        <option value="jefe">Jefe de cocina</option>
+        <option value="supervisor">Supervisor</option>
+        <option value="admin">Administrador</option>
           <option value="gerente">👔 Gerente</option>
         </select>
       </div>
@@ -1508,10 +1520,19 @@ let selPunto=null;
 // Mapa de rol por defecto según área del personal
 const AREA_ROL = {
   cocina:'empleado', recepcion:'cajero', cajeros:'cajero',
-  domiciliarios:'domiciliario', supervisor:'supervisor', administrador:'admin'
+  domiciliarios:'domiciliario', supervisor:'supervisor',
+  administrador:'admin', gerente:'gerente'
 };
 
-// Cargar personal desde Firebase para el select del login
+function normalizarPunto(p){
+  if(!p) return null;
+  const s=p.toLowerCase().trim();
+  if(s==='soacha') return 'soacha';
+  if(['plaza','mi plaza','miplaza','hogares','hogar'].includes(s)) return 'plaza';
+  return null;
+}
+
+// Cargar personal desde Firebase
 async function cargarPersonalLogin(){
   const sel = document.getElementById('login-nombre');
   if(!sel) return;
@@ -1519,29 +1540,92 @@ async function cargarPersonalLogin(){
     const snap = await _db.collection('personal').get();
     const personal = {};
     snap.forEach(d=>{ personal[d.id]=d.data(); });
-    // Filtrar activos (no retirados ni inactivos)
     const activos = Object.entries(personal)
-      .filter(([n,p])=>p.estado!=='retirado'&&p.estado!=='inactivo')
+      .filter(([n,p])=>{const e=(p.estado||'activo').toLowerCase();return e!=='retirado'&&e!=='inactivo';})
       .sort((a,b)=>a[0].localeCompare(b[0]));
     sel.innerHTML = '<option value="">Selecciona tu nombre...</option>';
     activos.forEach(([nombre,info])=>{
-      sel.innerHTML += `<option value="${nombre}" data-area="${info.area||''}">${nombre}</option>`;
+      sel.innerHTML += '<option value="'+nombre+'">'+nombre+'</option>';
     });
-    // Guardar para autoFillRol
     window._personalData = personal;
   } catch(e){
-    // Si falla Firebase usar lista hardcodeada del horarios
     sel.innerHTML = '<option value="">Selecciona tu nombre...</option>';
   }
 }
 
-function autoFillRol(nombre){
-  if(!nombre||!window._personalData) return;
-  const info = window._personalData[nombre];
-  if(!info) return;
-  const rolSugerido = AREA_ROL[info.area]||'empleado';
-  const rolSel = document.getElementById('login-rol');
-  if(rolSel) rolSel.value = rolSugerido;
+async function onNombreChange(nombre){
+  if(!nombre){
+    document.getElementById('login-info-auto').style.display='none';
+    document.getElementById('login-punto-manual').style.display='none';
+    selPunto=null; return;
+  }
+
+  // 1. Rol desde personal
+  let rolDetectado='empleado', puntoDetectado=null;
+  if(window._personalData&&window._personalData[nombre]){
+    const info=window._personalData[nombre];
+    rolDetectado=AREA_ROL[info.area]||'empleado';
+    puntoDetectado=normalizarPunto(info.punto);
+  }
+
+  // 2. Punto del día desde horarios (más preciso)
+  try {
+    const now=new Date(), day=now.getDay(), diff=day===0?-6:1-day;
+    const mon=new Date(now); mon.setDate(now.getDate()+diff);
+    const wk=mon.toISOString().slice(0,10);
+    let horSem=window._horariosCache?.[wk];
+    if(!horSem){
+      const doc=await _db.collection('horarios').doc(wk).get();
+      if(doc.exists){
+        window._horariosCache=window._horariosCache||{};
+        window._horariosCache[wk]=doc.data();
+        horSem=doc.data();
+      }
+    }
+    if(horSem&&horSem[nombre]){
+      const monIdx=now.getDay()===0?6:now.getDay()-1;
+      const diaHoy=horSem[nombre][monIdx];
+      if(diaHoy&&diaHoy.tipo!=='descanso'&&diaHoy.punto){
+        const p=normalizarPunto(diaHoy.punto);
+        if(p) puntoDetectado=p;
+      }
+    }
+  } catch(e){}
+
+  // 3. Mostrar info detectada
+  const rolLabels={empleado:'Cocina',cajero:'Cajero',domiciliario:'Domiciliario',
+    jefe:'Jefe cocina',supervisor:'Supervisor',admin:'Administrador',gerente:'Gerente'};
+  const puntoNombres={soacha:'🏠 Soacha',plaza:'🏬 Mi Plaza'};
+
+  const infoEl=document.getElementById('login-info-auto');
+  const manualEl=document.getElementById('login-punto-manual');
+  const puntoEl=document.getElementById('login-info-punto');
+  const rolEl=document.getElementById('login-info-rol');
+  const rolSel=document.getElementById('login-rol');
+
+  if(rolSel) rolSel.value=rolDetectado;
+
+  if(puntoDetectado){
+    selPunto=puntoDetectado;
+    if(puntoEl) puntoEl.textContent=puntoNombres[puntoDetectado]||puntoDetectado;
+    if(rolEl) rolEl.textContent=rolLabels[rolDetectado]||rolDetectado;
+    if(infoEl) infoEl.style.display='block';
+    if(manualEl) manualEl.style.display='none';
+  } else {
+    selPunto=null;
+    if(rolEl) rolEl.textContent=rolLabels[rolDetectado]||rolDetectado;
+    if(infoEl) infoEl.style.display='none';
+    if(manualEl) manualEl.style.display='block';
+  }
+}
+
+// Legacy
+function autoFillRol(nombre){ onNombreChange(nombre); }
+function selectPunto(p){
+  selPunto=p;
+  document.querySelectorAll('#login-punto-manual .punto-card').forEach(c=>c.classList.remove('selected'));
+  const el=document.getElementById('pc-'+p);
+  if(el) el.classList.add('selected');
 }
 
 // Inicializar login al cargar
@@ -1602,10 +1686,13 @@ let curRol='empleado';
 
 function entrar(){
   const nombre=document.getElementById('login-nombre').value;
-  const rol=document.getElementById('login-rol').value;
-  if(!selPunto){alert('Selecciona un punto de venta');return;}
+  const rol=document.getElementById('login-rol').value||'empleado';
   if(!nombre){alert('Selecciona tu nombre');return;}
-  if(!rol){alert('Selecciona tu rol');return;}
+  if(!selPunto){
+    document.getElementById('login-punto-manual').style.display='block';
+    alert('No pudimos detectar tu punto. Selecciónalo manualmente.');
+    return;
+  }
   if(rol==='supervisor'||rol==='admin'||rol==='gerente'){
     mostrarPinModal(nombre, rol);
     return;
@@ -2068,12 +2155,12 @@ function confirmarLogout(){
   // Clear form
   const n=document.getElementById('login-nombre');
   const r=document.getElementById('login-rol');
-  const p1=document.getElementById('pc-soacha');
-  const p2=document.getElementById('pc-plaza');
   if(n) n.value='';
   if(r) r.value='';
-  if(p1) p1.classList.remove('selected');
-  if(p2) p2.classList.remove('selected');
+  selPunto=null;
+  document.getElementById('login-info-auto').style.display='none';
+  document.getElementById('login-punto-manual').style.display='none';
+  ['pc-soacha','pc-plaza'].forEach(id=>document.getElementById(id)?.classList.remove('selected'));
   showScreen('login');
 }
 
