@@ -633,12 +633,35 @@ async function renderEncHorario(){
 
   areas.forEach(area=>{
     const emps = Object.entries(PERSONAL).filter(([n,p])=>{
-      // Excluir retirados e inactivos del horario
       if(p.estado==='retirado'||p.estado==='inactivo') return false;
-      if(area.id==='recepcion'&&p.area==='recepcion') return true;
-      if(area.id==='cajeros'&&p.area==='recepcion') return true;
-      if(area.id!=='recepcion'&&area.id!=='cajeros') return p.area===area.id;
-      return false;
+
+      // Verificar área
+      const areaMatch = (area.id==='recepcion'||area.id==='cajeros')
+        ? p.area==='recepcion'
+        : p.area===area.id;
+      if(!areaMatch) return false;
+
+      // Verificar punto para esta semana
+      // Si el empleado tiene turno asignado esta semana con tipo hogares/soacha,
+      // mostrar según ese turno. Si no, usar punto base o rotación.
+      if(p.rota){
+        // Para empleados que rotan: ver si tienen asignación esta semana
+        const turnoEmp = h[n];
+        if(turnoEmp){
+          // Ver en cuántos días aparece en cada punto
+          const enHogares = turnoEmp.filter(d=>d.tipo==='hogares'||
+            (d.tipo==='trabajo' && p.punto==='hogares')).length;
+          const enSoacha  = turnoEmp.filter(d=>d.tipo==='soacha'||
+            (d.tipo==='trabajo' && p.punto==='soacha')).length;
+          if(curPunto==='hogares') return enHogares >= enSoacha;
+          else return enSoacha > enHogares;
+        }
+        // Sin turno asignado aún: mostrar en punto base
+        return p.punto===curPunto;
+      } else {
+        // Fijo: solo aparece en su punto
+        return p.punto===curPunto || p.punto==='ambos';
+      }
     });
 
     if(emps.length===0) return;
@@ -657,7 +680,22 @@ async function renderEncHorario(){
             <div class="emp-avatar">${ini}</div>
             <div>
               <div class="emp-name">${nombre}${solPend>0?` <span style="font-size:10px;background:rgba(255,145,0,.2);color:var(--naranja);padding:1px 6px;border-radius:6px;">solicitud</span>`:''}</div>
-              <div class="emp-meta">${info.rota?'Rota entre puntos':'Fijo'} · ${area.label}</div>
+              <div class="emp-meta">${info.rota?'🔄 Rota':'📍 Fijo'} · ${area.label}</div>
+              ${info.rota?`<div style="display:flex;gap:4px;margin-top:4px;">
+                <button onclick="event.stopPropagation();asignarPunto('${wk}','${nombre}','hogares')"
+                  style="font-size:9px;padding:2px 7px;border-radius:6px;border:1px solid;cursor:pointer;font-weight:700;
+                  background:${(h[nombre]||[])[0]?.tipo!=='soacha'?'rgba(255,145,0,.2)':'rgba(254,242,223,.05)'};
+                  color:${(h[nombre]||[])[0]?.tipo!=='soacha'?'var(--naranja)':'rgba(254,242,223,.3)'};
+                  border-color:${(h[nombre]||[])[0]?.tipo!=='soacha'?'var(--naranja)':'rgba(254,242,223,.1)'};">
+                  🏠 Hogares</button>
+                <button onclick="event.stopPropagation();asignarPunto('${wk}','${nombre}','soacha')"
+                  style="font-size:9px;padding:2px 7px;border-radius:6px;border:1px solid;cursor:pointer;font-weight:700;
+                  background:${(h[nombre]||[])[0]?.tipo==='soacha'?'rgba(24,95,165,.25)':'rgba(254,242,223,.05)'};
+                  color:${(h[nombre]||[])[0]?.tipo==='soacha'?'#85B7EB':'rgba(254,242,223,.3)'};
+                  border-color:${(h[nombre]||[])[0]?.tipo==='soacha'?'#85B7EB':'rgba(254,242,223,.1)'};">
+                  🏬 Soacha</button>
+              </div>`:''}
+
             </div>
           </div>
           <div class="emp-week-dots">`;
@@ -715,6 +753,27 @@ function defaultTurno(nombre){
     arr.push({tipo:'trabajo',entrada:'13:00',pico_ini:'',pico_fin:'',cierre:'22:00'});
   }
   return arr;
+}
+
+// Asignar punto a empleado que rota — cambia todos los días de la semana
+async function asignarPunto(wk, nombre, punto){
+  if(!horarios[wk]) horarios[wk]={};
+  const turno = horarios[wk][nombre] || defaultTurno(nombre);
+  const info = PERSONAL[nombre];
+
+  // Marcar cada día con el punto asignado (excepto descansos)
+  turno.forEach((dia,i)=>{
+    if(dia.tipo==='descanso') return;
+    if(punto==='hogares'){
+      dia.tipo='trabajo';
+    } else {
+      dia.tipo='soacha';
+    }
+  });
+
+  horarios[wk][nombre] = turno;
+  await saveHorario(wk);
+  renderEncHorario();
 }
 
 function changeWeek(dir){
