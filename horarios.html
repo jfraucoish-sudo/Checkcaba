@@ -1513,9 +1513,12 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     if(!esEncargada){
       // Verificar que el nombre existe en el personal activo
       const info = PERSONAL[nombre];
-      const esValido = info && info.estado!=='retirado' && info.estado!=='inactivo';
+      // Si PERSONAL está vacío (Firebase falló), dejar pasar igual
+      const personalVacio = Object.keys(PERSONAL).length === 0;
+      const esValido = personalVacio || (info && info.estado!=='retirado' && info.estado!=='inactivo');
       if(!esValido){
-        // Nombre no existe o está inactivo — mostrar login normal
+        hideLoading();
+        showScreen('sc-login');
         return;
       }
       // Empleado válido — login automático, bloqueado a su nombre
