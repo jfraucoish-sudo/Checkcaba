@@ -460,7 +460,26 @@ function isToday(date){
 async function loadHorario(wk){
   try{
     const doc = await _db.collection('horarios').doc(wk).get();
-    if(doc.exists) horarios[wk]=doc.data();
+    if(doc.exists){
+      const data = doc.data();
+      // Si un empleado no tiene _punto, inferirlo del tipo de sus días
+      // o del punto base en PERSONAL
+      Object.entries(data).forEach(([nombre, turno])=>{
+        if(nombre.startsWith('_') || !Array.isArray(turno)) return;
+        if(!turno._punto){
+          // Ver si hay días tipo 'soacha' — si la mayoría es soacha, asignar soacha
+          const diasSoacha = turno.filter(d=>d.tipo==='soacha').length;
+          const diasTrabajo = turno.filter(d=>d.tipo==='trabajo').length;
+          if(diasSoacha > diasTrabajo){
+            turno._punto = 'soacha';
+          } else {
+            // Usar punto base del personal si existe
+            turno._punto = PERSONAL[nombre]?.punto || 'hogares';
+          }
+        }
+      });
+      horarios[wk]=data;
+    }
     else horarios[wk]={};
   }catch(e){ horarios[wk]=horarios[wk]||{}; }
 }
@@ -634,20 +653,13 @@ async function renderEncHorario(){
   areas.forEach(area=>{
     const emps = Object.entries(PERSONAL).filter(([n,p])=>{
       if(p.estado==='retirado'||p.estado==='inactivo') return false;
-
-      // Verificar área
+      // Verificar área (recepcion = cajeros en soacha)
       const areaMatch = (area.id==='recepcion'||area.id==='cajeros')
-        ? p.area==='recepcion'
-        : p.area===area.id;
+        ? p.area==='recepcion' : p.area===area.id;
       if(!areaMatch) return false;
-
-      // Verificar punto para esta semana
-      // Si el empleado tiene turno asignado esta semana con tipo hogares/soacha,
-      // mostrar según ese turno. Si no, usar punto base o rotación.
-      // Determinar punto asignado esta semana
-      const turnoEmp = h[n];
-      const puntoSemana = turnoEmp?._punto || p.punto;
-      return puntoSemana===curPunto || p.punto==='ambos';
+      // Punto asignado esta semana: _punto guardado > punto base del empleado
+      const puntoAsignado = h[n]?._punto || p.punto;
+      return puntoAsignado === curPunto;
     });
 
     if(emps.length===0) return;
