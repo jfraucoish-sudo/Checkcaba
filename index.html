@@ -834,7 +834,7 @@ select{padding:5px 8px;}
       <!-- Acceso admin separado -->
       <div style="margin-top:16px;text-align:center;border-top:1px solid var(--bg3);padding-top:14px;">
         <button onclick="mostrarLoginAdmin()" style="background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;">
-          🔐 Acceso Administrador
+          👁️ Acceso Supervisor
         </button>
       </div>
     </div>
@@ -1741,7 +1741,7 @@ function mostrarLoginAdmin(){
   overlay.innerHTML=`
   <div style="background:var(--surface);border:1px solid var(--bg3);border-radius:20px;padding:26px 22px;width:100%;max-width:320px;text-align:center;">
     <div style="font-size:26px;margin-bottom:8px;">🔐</div>
-    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Acceso Administrador</div>
+    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">Acceso Supervisor</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:18px;">Selecciona el punto a revisar</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
       <div class="punto-card" id="adm-pc-soacha" onclick="adminSelectPunto('soacha')" style="padding:12px 8px;">
@@ -1952,6 +1952,38 @@ function calcProgreso(punto, fecha, area, turno){
   return {pct:Math.round(done/total*100),done,total,hasDatos:!!(data?.tasks?.length)};
 }
 
+// Cargar resumen de papas del punto para el hero del supervisor
+async function _cargarResumenPapa(){
+  try {
+    const hoy=todayStr();
+    const snap=await _db.collection('produccion_real')
+      .where('fecha','==',hoy)
+      .where('punto','==',curPunto)
+      .get();
+    let totalReg=0, totalEsperado=0;
+    snap.forEach(doc=>{
+      const d=doc.data();
+      if(d.kg_real!==undefined) totalReg++;
+      if(d.kg_proyectado!==undefined) totalEsperado++;
+    });
+    // Estimamos cumplimiento como: registros del día vs turnos esperados (3)
+    const pct=totalEsperado>0?Math.min(100,Math.round(totalReg/3*100)):
+              snap.size>0?100:0;
+    const pctEl=document.getElementById('hero-papa-pct');
+    const fillEl=document.getElementById('hero-papa-fill');
+    if(pctEl&&fillEl){
+      if(snap.size===0){
+        pctEl.textContent='Sin datos'; pctEl.className='hero-turno-pct nd';
+        fillEl.style.width='0%'; fillEl.className='hero-prog-fill nd';
+      } else {
+        const cls=pct>=80?'good':pct>=40?'mid':'low';
+        pctEl.textContent=pct+'%'; pctEl.className='hero-turno-pct '+cls;
+        fillEl.style.width=pct+'%'; fillEl.className='hero-prog-fill '+cls;
+      }
+    }
+  } catch(e){}
+}
+
 // ── MENSAJE de ayer según rol ─────────────────────────────────────
 function getMensajeAyer(punto, fechaAyer, rol){
   const area=getAreaPorRol(rol);
@@ -2138,7 +2170,7 @@ function updateHomeUI(){
   ];
   const wrap=el('hero-turnos-wrap');
   if(wrap){
-    wrap.innerHTML=turnos3.map(t=>{
+    let turnosHTML = turnos3.map(t=>{
       const prog=calcProgreso(curPunto,todayStr(),area,t.id);
       const pct=prog.pct;
       const cls=!prog.hasDatos?'nd':pct>=80?'good':pct>=40?'mid':'low';
@@ -2157,6 +2189,50 @@ function updateHomeUI(){
         </div>
       </div>`;
     }).join('');
+
+    // Barras de grupo para admin/supervisor/gerente/jefe
+    if(ROLES_ALTOS.includes(curRol)){
+      // Barra general checklist del punto (todas las áreas/turnos)
+      let totalDone=0, totalTasks=0;
+      AREAS_LIST.forEach(ar=>{
+        turnos3.forEach(t=>{
+          const p=calcProgreso(curPunto,todayStr(),ar.id,t.id);
+          totalDone+=p.done; totalTasks+=p.total;
+        });
+      });
+      const pctGrupo=totalTasks?Math.round(totalDone/totalTasks*100):0;
+      const clsG=pctGrupo>=80?'good':pctGrupo>=40?'mid':'low';
+      turnosHTML+=`<div style="margin-top:10px;border-top:1px solid rgba(253,246,238,.08);padding-top:10px;">
+        <div style="font-size:9px;font-weight:700;color:rgba(253,246,238,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;">📊 Resumen del punto hoy</div>
+        <div class="hero-turno-row">
+          <div class="hero-turno-ico">✅</div>
+          <div class="hero-turno-body">
+            <div class="hero-turno-top">
+              <div class="hero-turno-name">Checklist equipo</div>
+              <div class="hero-turno-pct ${clsG}">${totalTasks?pctGrupo+'%':'—'}</div>
+            </div>
+            <div class="hero-prog-track">
+              <div class="hero-prog-fill ${clsG}" style="width:${totalTasks?pctGrupo:0}%"></div>
+            </div>
+          </div>
+        </div>
+        <div id="hero-papa-bar" class="hero-turno-row" style="margin-top:8px;">
+          <div class="hero-turno-ico">🥔</div>
+          <div class="hero-turno-body">
+            <div class="hero-turno-top">
+              <div class="hero-turno-name">App Papas</div>
+              <div class="hero-turno-pct nd" id="hero-papa-pct">—</div>
+            </div>
+            <div class="hero-prog-track">
+              <div class="hero-prog-fill nd" id="hero-papa-fill" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+      // Cargar dato de papa en background
+      _cargarResumenPapa();
+    }
+    wrap.innerHTML=turnosHTML;
   }
 
   // ── RESUMEN DE AYER ───────────────────────────────────────────────
@@ -2170,7 +2246,8 @@ function updateHomeUI(){
 
   const ROLES_ALTOS=['admin','gerente','supervisor','jefe'];
   const adminBtn=document.getElementById('cab-btn-admin');
-  if(adminBtn) adminBtn.style.display=ROLES_ALTOS.includes(curRol)?'flex':'none';
+  // Solo gerente ve el dashboard admin
+  if(adminBtn) adminBtn.style.display=(curRol==='gerente')?'flex':'none';
   const papasBtn=document.getElementById('cab-btn-papas');
   const rolesConPapas=['admin','gerente','jefe','supervisor','empleado'];
   if(papasBtn) papasBtn.style.display=rolesConPapas.includes(curRol)?'flex':'none';
