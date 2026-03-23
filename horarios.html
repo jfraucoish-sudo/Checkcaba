@@ -1481,7 +1481,14 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     await loadPersonalDB();
 
     if(!esEncargada){
-      // Empleado — login automático, solo puede ver su propio horario
+      // Verificar que el nombre existe en el personal activo
+      const info = PERSONAL[nombre];
+      const esValido = info && info.estado!=='retirado' && info.estado!=='inactivo';
+      if(!esValido){
+        // Nombre no existe o está inactivo — mostrar login normal
+        return;
+      }
+      // Empleado válido — login automático
       curUser=nombre; curRole='empleado';
       await loadHorario(weekKey(0));
       await loadHorario(weekKey(1));

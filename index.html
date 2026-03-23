@@ -696,7 +696,9 @@ select{padding:5px 8px;}
       </div>
       <div class="login-field">
         <label>Tu nombre</label>
-        <input type="text" id="login-nombre" placeholder="Ej: Carlos Martínez" autocomplete="name">
+        <select id="login-nombre" onchange="autoFillRol(this.value)">
+          <option value="">Selecciona tu nombre...</option>
+        </select>
       </div>
       <div class="login-field">
         <label>Tu rol</label>
@@ -1342,6 +1344,50 @@ let curPunto=null, curUser='', curArea='admin', curTurno='apertura';
 let curTab='checklist', adminDate=todayStr();
 let selPunto=null;
 
+// Mapa de rol por defecto según área del personal
+const AREA_ROL = {
+  cocina:'empleado', recepcion:'cajero', cajeros:'cajero',
+  domiciliarios:'domiciliario', supervisor:'supervisor', administrador:'admin'
+};
+
+// Cargar personal desde Firebase para el select del login
+async function cargarPersonalLogin(){
+  const sel = document.getElementById('login-nombre');
+  if(!sel) return;
+  try {
+    const snap = await _db.collection('personal').get();
+    const personal = {};
+    snap.forEach(d=>{ personal[d.id]=d.data(); });
+    // Filtrar activos (no retirados ni inactivos)
+    const activos = Object.entries(personal)
+      .filter(([n,p])=>p.estado!=='retirado'&&p.estado!=='inactivo')
+      .sort((a,b)=>a[0].localeCompare(b[0]));
+    sel.innerHTML = '<option value="">Selecciona tu nombre...</option>';
+    activos.forEach(([nombre,info])=>{
+      sel.innerHTML += `<option value="${nombre}" data-area="${info.area||''}">${nombre}</option>`;
+    });
+    // Guardar para autoFillRol
+    window._personalData = personal;
+  } catch(e){
+    // Si falla Firebase usar lista hardcodeada del horarios
+    sel.innerHTML = '<option value="">Selecciona tu nombre...</option>';
+  }
+}
+
+function autoFillRol(nombre){
+  if(!nombre||!window._personalData) return;
+  const info = window._personalData[nombre];
+  if(!info) return;
+  const rolSugerido = AREA_ROL[info.area]||'empleado';
+  const rolSel = document.getElementById('login-rol');
+  if(rolSel) rolSel.value = rolSugerido;
+}
+
+// Inicializar login al cargar
+document.addEventListener('DOMContentLoaded', ()=>{
+  cargarPersonalLogin();
+});
+
 // Per-task state (in-memory, synced to localStorage on change)
 const TS = {};
 function tsk(a,t,i){return `${a}_${t}_${i}`;}
@@ -1394,10 +1440,10 @@ function selectPunto(p){
 let curRol='empleado';
 
 function entrar(){
-  const nombre=document.getElementById('login-nombre').value.trim();
+  const nombre=document.getElementById('login-nombre').value;
   const rol=document.getElementById('login-rol').value;
   if(!selPunto){alert('Selecciona un punto de venta');return;}
-  if(!nombre){alert('Escribe tu nombre');return;}
+  if(!nombre){alert('Selecciona tu nombre');return;}
   if(!rol){alert('Selecciona tu rol');return;}
   if(rol==='supervisor'){
     mostrarPinModal(nombre, rol);
