@@ -1704,34 +1704,48 @@ async function _cargarDatosHero(punto){
   const hoy = todayStr();
   const ayerD = new Date(); ayerD.setDate(ayerD.getDate()-1);
   const ayer = ayerD.toISOString().slice(0,10);
-  const areas = ['cocina','neveras','admin','caja','domi','bodega'];
-  const turnos = ['apertura','medio','cierre'];
-  const fechas = [hoy, ayer];
-  // Para supervisor cargamos ambos puntos
   const puntos = (curRol==='supervisor'||curRol==='gerente') ? ['soacha','plaza'] : [punto];
 
-  const promesas = [];
-  puntos.forEach(pt => {
-    fechas.forEach(f => {
-      areas.forEach(ar => {
-        turnos.forEach(tu => {
-          const docId = _fbDocId(pt, f, ar, tu);
-          promesas.push(
-            _db.collection('checklists').doc(docId).get()
-              .then(doc => {
-                if(doc.exists){
-                  const key = _lsKey(pt, f, ar, tu);
-                  localStorage.setItem(key, JSON.stringify(doc.data()));
-                }
-              })
-              .catch(()=>{})
-          );
+  try {
+    // Una sola query por punto, filtrando por prefijo del docId
+    for(const pt of puntos){
+      // Query: documentos que empiezan con "pt_hoy" o "pt_ayer"
+      const prefijos = [pt+'_'+hoy, pt+'_'+ayer];
+      for(const prefijo of prefijos){
+        const snap = await _db.collection('checklists')
+          .orderBy('__name__')
+          .startAt(prefijo)
+          .endAt(prefijo+'')
+          .get();
+        snap.forEach(doc => {
+          const parts = doc.id.split('_');
+          if(parts.length>=4){
+            const [p,f,...rest] = parts;
+            // rest puede ser [area, turno] o [area, sub, turno] — tomar últimos 2
+            const tu = rest[rest.length-1];
+            const ar = rest.slice(0, rest.length-1).join('_');
+            const key = _lsKey(p,f,ar,tu);
+            localStorage.setItem(key, JSON.stringify(doc.data()));
+          }
         });
-      });
-    });
-  });
-
-  await Promise.all(promesas);
+      }
+    }
+  } catch(e){
+    // Fallback: queries directas por docId
+    const areas = ['cocina','neveras','admin','caja','domi','bodega'];
+    const turnos = ['apertura','medio','cierre'];
+    const fechas = [hoy, ayer];
+    const promesas = [];
+    puntos.forEach(pt => fechas.forEach(f => areas.forEach(ar => turnos.forEach(tu => {
+      promesas.push(
+        _db.collection('checklists').doc(_fbDocId(pt,f,ar,tu)).get()
+          .then(doc => {
+            if(doc.exists) localStorage.setItem(_lsKey(pt,f,ar,tu), JSON.stringify(doc.data()));
+          }).catch(()=>{})
+      );
+    }))));
+    await Promise.all(promesas);
+  }
   updateHomeUI();
 }
 
@@ -1754,10 +1768,11 @@ function _completarLogin(nombre, rol){
       updateHomeUI();
     }).catch(()=>{});
   } catch(e){}
-  updateHomeUI();
   startClock();
   showScreen('home');
-  // Cargar datos de hoy/ayer desde Firebase para el hero
+  // Mostrar — primero sin datos, luego actualizar con Firebase
+  updateHomeUI();
+  // Cargar datos de Firebase y actualizar hero
   _cargarDatosHero(curPunto);
 }
 
@@ -2381,7 +2396,7 @@ function switchTab(tab){
 // ══════════════════════════════════════════════════════════════
 // PROGRESS
 // ══════════════════════════════════════════════════════════════
-function calcProg(a,t){
+function calcProgLocal(a,t){
   const tasks=(CL[a]||{})[t]||[];
   if(!tasks.length) return{d:0,total:0};
   let d=0;
@@ -2395,9 +2410,9 @@ function calcProg(a,t){
   });
   return{d,total:tasks.length};
 }
-function pct(a,t){const{d,total}=calcProg(a,t);return total?Math.round(d/total*100):0;}
+function pct(a,t){const{d,total}=calcProgLocal(a,t);return total?Math.round(d/total*100):0;}
 function updateProg(){
-  const{d,total}=calcProg(curArea,curTurno);
+  const{d,total}=calcProgLocal(curArea,curTurno);
   const p=total?Math.round(d/total*100):0;
   const lbl=document.getElementById('prog-lbl');
   const pn=document.getElementById('prog-pct');
@@ -2496,7 +2511,7 @@ function renderChecklist(){
   const tasks=(CL[curArea]||{})[curTurno]||[];
   const fkey=sfk();
   const signed=SIGNED[fkey];
-  const{d,total}=calcProg(curArea,curTurno);
+  const{d,total}=calcProgLocal(curArea,curTurno);
   const p=total?Math.round(d/total*100):0;
   let html=`<div class="prog-wrap">
     <div class="prog-top"><span class="prog-label" id="prog-lbl">${d} de ${total} tareas</span><span class="prog-pct" id="prog-pct">${p}%</span></div>
@@ -2730,7 +2745,7 @@ function getAlertas(){
         }
       }
       // Area sin completar según hora
-      const{d,total}=calcProg(area.id,turno.id);
+      const{d,total}=calcProgLocal(area.id,turno.id);
       const p=total?Math.round(d/total*100):0;
       if(total>0&&p<100){
         let esHora=false;
