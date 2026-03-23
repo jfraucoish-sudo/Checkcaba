@@ -330,7 +330,7 @@ body{font-family:'Inter',sans-serif;color:var(--crema);min-height:100vh;}
       </div>
       <div class="modal-row">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <label style="margin-bottom:0;">Hora pico (refuerzo)</label>
+          <label style="margin-bottom:0;">Turno partido (sale y regresa)</label>
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:12px;color:rgba(254,242,223,.6);">
             <input type="checkbox" id="modal-pico-check" onchange="togglePicoFields(this.checked)" style="width:16px;height:16px;accent-color:var(--naranja);">
             Activar
@@ -338,8 +338,8 @@ body{font-family:'Inter',sans-serif;color:var(--crema);min-height:100vh;}
         </div>
         <div id="modal-pico-fields" style="display:none;gap:8px;display:none;">
           <div style="display:flex;gap:8px;">
-            <input type="time" id="modal-pico-ini" placeholder="inicio">
-            <input type="time" id="modal-pico-fin" placeholder="fin">
+            <input type="time" id="modal-pico-ini" placeholder="sale a las...">
+            <input type="time" id="modal-pico-fin" placeholder="regresa a las...">
           </div>
         </div>
       </div>
@@ -688,7 +688,7 @@ async function renderEncHorario(){
           html+=`<span class="cell-otro">SOAC</span>`;
         } else {
           html+=`<span class="cell-start">${dia.entrada||'—'}</span>`;
-          if(dia.pico_ini) html+=`<span class="cell-pico">(${dia.pico_ini}–${dia.pico_fin})</span>`;
+          if(dia.pico_ini) html+=`<span class="cell-pico">↕${dia.pico_ini}</span>`;
           html+=`<span class="cell-end">${dia.cierre||''}</span>`;
         }
         html+=`</div></div>`;
@@ -1246,9 +1246,14 @@ async function renderEmpHorario(){
       } else if(dia.tipo==='soacha'){
         html+=`<div class="my-otro">🏬<br>SOA</div>`;
       } else {
-        html+=`<div class="my-time">${dia.entrada||'—'}</div>`;
-        if(dia.pico_ini) html+=`<div class="my-pico">${dia.pico_ini}</div>`;
-        html+=`<div class="my-end">${dia.cierre||''}</div>`;
+        if(dia.pico_ini){
+          html+=`<div class="my-time">${dia.entrada||'—'} – ${dia.pico_ini}</div>`;
+          html+=`<div class="my-pico">↩ ${dia.pico_fin}</div>`;
+          html+=`<div class="my-end">– ${dia.cierre||''}</div>`;
+        } else {
+          html+=`<div class="my-time">${dia.entrada||'—'}</div>`;
+          html+=`<div class="my-end">– ${dia.cierre||''}</div>`;
+        }
       }
       html+=`</div></div>`;
     });
@@ -1267,9 +1272,13 @@ async function renderEmpHorario(){
       } else if(hoy.tipo==='hogares'||hoy.tipo==='soacha'){
         html+=`<div style="font-family:'Poppins',sans-serif;font-size:16px;font-weight:800;color:var(--blue-t);">${hoy.tipo==='hogares'?'🏠 Trabajas en Hogares':'🏬 Trabajas en Soacha'}</div>`;
         html+=`<div style="font-size:13px;color:rgba(254,242,223,.6);margin-top:4px;">${hoy.entrada||''} — ${hoy.cierre||''}</div>`;
+      } else if(hoy.pico_ini){
+        html+=`<div style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:900;color:var(--crema);">${hoy.entrada} – ${hoy.pico_ini}</div>`;
+        html+=`<div style="font-size:12px;color:rgba(254,242,223,.4);margin:5px 0 3px;letter-spacing:.3px;">↩ REGRESA A LAS ${hoy.pico_fin}</div>`;
+        html+=`<div style="font-family:'Poppins',sans-serif;font-size:22px;font-weight:900;color:var(--crema);">${hoy.pico_fin} – ${hoy.cierre}</div>`;
+        html+=`<div style="font-size:10px;color:rgba(254,242,223,.25);margin-top:5px;text-transform:uppercase;letter-spacing:.5px;">Turno partido</div>`;
       } else {
-        html+=`<div style="font-family:'Poppins',sans-serif;font-size:24px;font-weight:900;color:var(--crema);">${hoy.entrada||'—'} <span style="color:rgba(254,242,223,.3);font-size:16px;">→</span> ${hoy.cierre||''}</div>`;
-        if(hoy.pico_ini) html+=`<div style="font-size:12px;color:var(--naranja);margin-top:4px;">Pico: ${hoy.pico_ini} – ${hoy.pico_fin}</div>`;
+        html+=`<div style="font-family:'Poppins',sans-serif;font-size:26px;font-weight:900;color:var(--crema);">${hoy.entrada||'—'} – ${hoy.cierre||''}</div>`;
       }
       html+=`</div>`;
     }
