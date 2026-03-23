@@ -1544,9 +1544,12 @@ async function cargarPersonalLogin(){
     const snap = await _db.collection('personal').get();
     const personal = {};
     snap.forEach(d=>{ personal[d.id]=d.data(); });
-    // Filtrar activos (no retirados ni inactivos)
+    // Mostrar todos excepto retirados e inactivos
     const activos = Object.entries(personal)
-      .filter(([n,p])=>p.estado!=='retirado'&&p.estado!=='inactivo')
+      .filter(([n,p])=>{
+        const est=(p.estado||'activo').toLowerCase();
+        return est!=='retirado'&&est!=='inactivo';
+      })
       .sort((a,b)=>a[0].localeCompare(b[0]));
     sel.innerHTML = '<option value="">Selecciona tu nombre...</option>';
     activos.forEach(([nombre,info])=>{
@@ -1603,37 +1606,43 @@ async function _detectarPuntoDesdeHorarios(nombre){
   const manualEl = document.getElementById('login-punto-manual');
   const tagEl = document.getElementById('login-punto-tag');
   
+  // Normalizar nombre de punto: 'hogares' = 'plaza', variantes → estándar
+  function normalizarPunto(p){
+    if(!p) return null;
+    const s = p.toLowerCase().trim();
+    if(s==='soacha') return 'soacha';
+    if(s==='plaza'||s==='mi plaza'||s==='miplaza'||s==='hogares'||s==='hogar') return 'plaza';
+    return null; // 'ambos' u otros → null = mostrar selector
+  }
+
   // Buscar en qué punto está hoy
   let puntoDetectado = null;
-  if(horSem){
-    // El horario guarda por punto: horSem puede tener datos de empleados con punto
-    // Estructura: horSem[nombre][diasIdx].punto o buscar en personal
-    const diaIdx = now.getDay(); 
-    const monIdx = diaIdx===0?6:diaIdx-1;
-    if(horSem[nombre]){
-      const diaHoy = horSem[nombre][monIdx];
-      if(diaHoy && diaHoy.tipo!=='descanso' && diaHoy.punto){
-        puntoDetectado = diaHoy.punto;
-      }
+  const diaIdx = now.getDay();
+  const monIdx = diaIdx===0?6:diaIdx-1;
+
+  if(horSem && horSem[nombre]){
+    const diaHoy = horSem[nombre][monIdx];
+    if(diaHoy && diaHoy.tipo!=='descanso'){
+      // Intentar desde campo punto del día
+      puntoDetectado = normalizarPunto(diaHoy.punto);
     }
-    // Si no está en horarios, buscar punto base en personal
-    if(!puntoDetectado && window._personalData?.[nombre]){
-      const info = window._personalData[nombre];
-      if(info.punto && info.punto!=='ambos') puntoDetectado = info.punto;
-    }
-  } else if(window._personalData?.[nombre]){
-    const info = window._personalData[nombre];
-    if(info.punto && info.punto!=='ambos') puntoDetectado = info.punto;
   }
-  
+
+  // Si no está en horarios o no tiene punto en el día, usar punto base de personal
+  if(!puntoDetectado && window._personalData?.[nombre]){
+    const info = window._personalData[nombre];
+    puntoDetectado = normalizarPunto(info.punto);
+  }
+
+  const puntoNombres={soacha:'🏠 Soacha · Taquería Hernández', plaza:'🏬 Mi Plaza · Cabaña Jekemi'};
+
   if(puntoDetectado){
     selPunto = puntoDetectado;
-    const puntoNombres={soacha:'🏠 Soacha · Taquería Hernández', plaza:'🏬 Mi Plaza · Cabaña Jekemi'};
     tagEl.textContent = puntoNombres[puntoDetectado]||puntoDetectado;
     autoEl.style.display='block';
     manualEl.style.display='none';
   } else {
-    // No detectado — mostrar selector manual
+    // punto='ambos' o sin dato — mostrar selector manual
     selPunto=null;
     autoEl.style.display='none';
     manualEl.style.display='block';
@@ -1704,7 +1713,13 @@ function entrar(){
   const rol=document.getElementById('login-rol').value;
   if(!nombre){alert('Selecciona tu nombre');return;}
   if(!rol){alert('Selecciona tu rol');return;}
-  if(!selPunto){alert('No pudimos detectar tu punto. Selecciónalo manualmente.');return;}
+  if(!selPunto){
+    // Mostrar selector manual si no está visible
+    const manualEl=document.getElementById('login-punto-manual');
+    if(manualEl) manualEl.style.display='block';
+    alert('Selecciona tu punto de venta (Soacha o Mi Plaza)');
+    return;
+  }
   if(rol==='supervisor'){
     mostrarPinModal(nombre, rol);
     return;
