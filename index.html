@@ -958,7 +958,7 @@ select{padding:5px 8px;}
           <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--brand)" d="M19 3H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2v9l5-3 5 3v-9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg></div>
           <div class="cab-btn-lbl">Solicitar vacaciones</div>
         </div>
-        <div class="cab-btn" onclick="irAGuia()">
+        <div class="cab-btn" id="cab-btn-guia" onclick="irAGuia()">
           <div class="cab-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
           <div class="cab-btn-lbl">Guía Caldo Birria</div>
         </div>
@@ -1882,10 +1882,11 @@ async function _heroCargarFirmas(ayerMsgEl, alertasPrevias){
   } catch(e){}
   if(ayerMsgEl){
     if(alertas.length){
-      ayerMsgEl.textContent=alertas[0]+(alertas.length>1?' (+'+( alertas.length-1)+' más)':'');
+      // Mostrar todas las alertas en líneas separadas
+      ayerMsgEl.innerHTML=alertas.map(a=>'<div style="margin-bottom:4px;">'+a+'</div>').join('');
       ayerMsgEl.className='hero-ayer-msg alert';
     } else {
-      ayerMsgEl.textContent='✅ Ambos puntos con registros al día. ¡Buen trabajo del equipo!';
+      ayerMsgEl.textContent='✅ Ambos puntos al día. ¡El equipo va bien, sigue así!';
       ayerMsgEl.className='hero-ayer-msg ok';
     }
   }
@@ -2096,6 +2097,24 @@ function updateHomeUI(){
         if(!conDatos.length) alertas.push('⚠️ '+pt.name+': sin registros hoy. ¡Requiere supervisión!');
         else if(promG<50) alertas.push('🔴 '+pt.name+': solo '+promG+'% completado. Intervenir.');
       });
+      // Agregar mensaje de cumplimiento general
+      const todosConDatos = [].concat(...[{id:'soacha'},{id:'plaza'}].map(pt=>{
+        return [
+          calcPunto(pt.id,hoy,misAreas,'apertura'),
+          calcPunto(pt.id,hoy,misAreas,'medio'),
+          calcPunto(pt.id,hoy,misAreas,'cierre')
+        ].filter(x=>x.hay);
+      }));
+      if(todosConDatos.length){
+        const promTotal=Math.round(todosConDatos.reduce((a,b)=>a+b.pct,0)/todosConDatos.length);
+        let textoMot='', clsMot='ok';
+        if(promTotal>=90){textoMot='🌟 ¡Excelente jornada! Ambos puntos por encima del 90%. El equipo está respondiendo.';clsMot='ok';}
+        else if(promTotal>=70){textoMot='✅ Buen ritmo hoy ('+promTotal+'% promedio). Revisa los turnos pendientes antes del cierre.';clsMot='ok';}
+        else if(promTotal>=50){textoMot='⚡ '+promTotal+'% de avance general. Hay turnos sin completar — ¿ya revisaste en campo?';clsMot='warn';}
+        else{textoMot='🔴 Solo '+promTotal+'% completado. El equipo necesita supervisión directa ahora.';clsMot='alert';}
+        alertas.unshift(textoMot);
+        // Actualizar cls del mensaje si hay texto motivador
+      }
       wrap.innerHTML=html;
       // Cargar firmas app papa en background
       _heroCargarFirmas(ayerMsg, alertas);
@@ -2128,9 +2147,56 @@ function updateHomeUI(){
         barraHTML('📊','Cumplimiento total',{pct:pctPunto,hay:hay2})+
       '</div>';
       wrap.innerHTML=html;
-      // Mensaje ayer con caja
-      const {msg,cls}=mensajeAyer(curPunto,ayer,curRol);
-      if(ayerMsg){ayerMsg.textContent=msg;ayerMsg.className='hero-ayer-msg '+cls;}
+      // Mensaje inteligente para admin
+      const horaAdmin = new Date().getHours();
+      const turnoActualAdmin = horaAdmin<13?'apertura':horaAdmin<19?'medio':'cierre';
+      const miProg = calcPunto(curPunto,hoy,misAreasAdmin,turnoActualAdmin);
+      let msgAdmin='', clsAdmin='ok';
+
+      // Estado del punto completo
+      const puntoPct = pctPunto;
+      if(!hay2){
+        msgAdmin='📋 Aún no hay registros de hoy. ¡Empieza el checklist del turno!';
+        clsAdmin='warn';
+      } else if(puntoPct===100){
+        msgAdmin='🌟 ¡Punto al 100%! Todos los turnos completados. ¡Así se trabaja!';
+        clsAdmin='ok';
+      } else if(puntoPct>=80){
+        msgAdmin='✅ '+puntoPct+'% del punto completado. Queda poco — ¡ciérralo al 100%!';
+        clsAdmin='ok';
+      } else if(puntoPct>=50){
+        msgAdmin='⚡ '+puntoPct+'% completado en '+PUNTOS[curPunto].name+'. Motiva al equipo a terminar los turnos.';
+        clsAdmin='warn';
+      } else {
+        msgAdmin='⚠️ Solo '+puntoPct+'% en el punto. El equipo no está completando los checklists — interviene.';
+        clsAdmin='alert';
+      }
+
+      // Agregar estado de caja si hay datos
+      const fmt=n=>new Intl.NumberFormat('es-CO').format(Math.abs(Math.round(n)));
+      const dataCaja=loadDataDate(curPunto,ayer,'caja','cierre');
+      const tasksCaja=(CL['caja']||{})['cierre']||[];
+      let ci=0,da=0,si=0,tieneCaja=false;
+      (dataCaja&&dataCaja.tasks||[]).forEach((t,i)=>{
+        const tk=tasksCaja[i];if(!tk)return;
+        if(tk.campo==='Efectivo cierre'&&t.val){ci=parseFloat(t.val)||0;tieneCaja=true;}
+        if(tk.campo==='Ventas datáfono'&&t.val) da=parseFloat(t.val)||0;
+        if(tk.campo==='Ventas sistema'&&t.val)   si=parseFloat(t.val)||0;
+      });
+      let cajaMensaje='';
+      if(tieneCaja&&si>0){
+        const diff=(ci+da)-si;
+        if(diff<0) cajaMensaje=' | 🚨 Caja ayer: faltaron $'+fmt(diff);
+        else if(diff>0) cajaMensaje=' | 💰 Caja ayer: sobraron $'+fmt(diff);
+        else cajaMensaje=' | ✅ Caja cuadrada ayer';
+      } else if(ayer) {
+        cajaMensaje=' | ⚠️ Sin arqueo de ayer';
+      }
+
+      if(ayerMsg){
+        ayerMsg.textContent=msgAdmin+cajaMensaje;
+        ayerMsg.className='hero-ayer-msg '+clsAdmin;
+      }
       return;
     }
 
@@ -2154,6 +2220,8 @@ function updateHomeUI(){
   const papasBtn=document.getElementById('cab-btn-papas');
   const rolesConPapas=['admin','gerente','jefe','supervisor','empleado'];
   if(papasBtn) papasBtn.style.display=rolesConPapas.includes(curRol)?'flex':'none';
+  const guiaBtn=document.getElementById('cab-btn-guia');
+  if(guiaBtn) guiaBtn.style.display=['empleado','jefe','admin','supervisor','gerente','cajero'].includes(curRol)?'flex':'none';
 }
 
 function showLogout(){
