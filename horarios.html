@@ -1460,34 +1460,42 @@ function initLogin(){
   });
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{
+document.addEventListener('DOMContentLoaded', async ()=>{
   initLogin();
-  // Auto-login si viene desde La Cabaña App
-  const params = new URLSearchParams(window.location.search);
-  const nombre = params.get('nombre');
-  const rol    = params.get('rol');
-  const punto  = params.get('punto');
-  if(nombre && rol){
+
+  // Leer sesión de La Cabaña App
+  let session = null;
+  try {
+    const raw = sessionStorage.getItem('cabana_session');
+    if(raw){
+      session = JSON.parse(raw);
+      // Sesión válida por 12 horas
+      if(Date.now() - session.ts > 12*60*60*1000) session = null;
+    }
+  } catch(e){}
+
+  if(session){
+    const {nombre, rol, punto} = session;
     const esEncargada = rol==='admin'||rol==='supervisor';
+
+    await loadPersonalDB();
+
     if(!esEncargada){
-      // Login automático como empleado
+      // Empleado — login automático, solo puede ver su propio horario
       curUser=nombre; curRole='empleado';
-      loadPersonalDB().then(()=>{
-        loadHorario(weekKey(0)).then(()=>{
-          loadHorario(weekKey(1)).then(()=>{
-            showScreen('sc-empleado');
-            const ini=nombre.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
-            document.getElementById('emp-avatar').textContent=ini;
-            document.getElementById('emp-hdr-sub').textContent=nombre;
-            empTab('horario');
-          });
-        });
-      });
+      await loadHorario(weekKey(0));
+      await loadHorario(weekKey(1));
+      showScreen('sc-empleado');
+      const ini=nombre.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+      document.getElementById('emp-avatar').textContent=ini;
+      document.getElementById('emp-hdr-sub').textContent=nombre;
+      empTab('horario');
     } else {
-      // Encargada/supervisor — preseleccionar en el select pero pedir PIN
+      // Admin/Supervisor — preseleccionar y pedir PIN
       const sel=document.getElementById('login-nombre');
       if(sel) sel.value='__encargada__';
-      document.getElementById('pin-field').style.display='block';
+      const pf=document.getElementById('pin-field');
+      if(pf) pf.style.display='block';
     }
   }
 });

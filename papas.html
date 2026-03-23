@@ -1523,23 +1523,34 @@ function aplicarModoAcceso(modo) {
 
 // Verificar sesión al cargar
 (function(){
-  // Auto-login desde La Cabaña App via URL param
-  const params = new URLSearchParams(window.location.search);
-  const fromCabana = params.get('cabana_rol');
-  if(fromCabana) {
-    const modoMap = {
-      admin:'admin',
-      jefe:'admin',
-      supervisor:'super',
-      cajero:'1',
-      domiciliario:'1',
-      empleado:'1',
-      '1':'1'
-    };
-    const modo = modoMap[fromCabana] || '1';
-    sessionStorage.setItem('jekemi_ok', modo);
+  // 1. Leer sesión compartida de La Cabaña App
+  let modoFromCabana = null;
+  try {
+    const raw = sessionStorage.getItem('cabana_session');
+    if(raw){
+      const session = JSON.parse(raw);
+      if(Date.now() - session.ts < 12*60*60*1000){
+        const modoMap = {admin:'admin',jefe:'admin',supervisor:'super',cajero:'1',domiciliario:'1',empleado:'1'};
+        modoFromCabana = modoMap[session.rol] || '1';
+      }
+    }
+  } catch(e){}
+
+  // 2. Fallback: URL param (compatibilidad)
+  if(!modoFromCabana){
+    const params = new URLSearchParams(window.location.search);
+    const fromCabana = params.get('cabana_rol');
+    if(fromCabana){
+      const modoMap = {admin:'admin',jefe:'admin',supervisor:'super',cajero:'1',domiciliario:'1',empleado:'1','1':'1'};
+      modoFromCabana = modoMap[fromCabana] || '1';
+    }
   }
-  const s=sessionStorage.getItem('jekemi_ok');
+
+  if(modoFromCabana){
+    sessionStorage.setItem('jekemi_ok', modoFromCabana);
+  }
+
+  const s = sessionStorage.getItem('jekemi_ok');
   if(s==='1'||s==='super'||s==='admin'){
     document.getElementById('login-overlay').style.display='none';
     aplicarModoAcceso(s);
