@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard · La Cabaña Ops</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#F5EFE6; --bg2:#EDE5D8; --bg3:#E2D8C8;
+  --surface:#fff; --surface2:#FBF7F1;
+  --brand:#2B1810; --brand2:#4A2C1F;
+  --accent:#E8720C; --accent2:#FF9A3C;
+  --text:#1A0F0A; --text2:#5C3D2E; --text3:#9C7B6B;
+  --green:#2D6A4F; --green-bg:#E8F5F0;
+  --red:#C0392B;   --red-bg:#FDF0EE;
+  --blue:#1A5276;  --blue-bg:#EAF2FB;
+  --amber:#856A00; --amber-bg:#FFF9E6;
+  --shadow:0 2px 12px rgba(43,24,16,.08);
+  --shadow2:0 4px 24px rgba(43,24,16,.12);
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);}
+
+/* ── HEADER ── */
+header{
+  background:var(--surface);
+  border-bottom:1px solid var(--bg3);
+  padding:14px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+  box-shadow:var(--shadow);
+}
+.hdr-brand{display:flex;align-items:center;gap:12px;}
+.hdr-brand-name{font-family:'DM Serif Display',serif;font-size:18px;color:var(--brand);}
+.hdr-brand-sub{font-size:11px;color:var(--text3);margin-top:1px;}
+.hdr-badge{background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.5px;}
+
+/* ── FILTERS BAR ── */
+.filters{
+  background:var(--surface);
+  border-bottom:1px solid var(--bg3);
+  padding:12px 24px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.filter-group{display:flex;align-items:center;gap:8px;}
+.filter-group label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.filter-group select, .filter-group input{
+  padding:7px 12px;
+  background:var(--bg);
+  border:1.5px solid var(--bg3);
+  border-radius:8px;
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;
+  color:var(--text);
+  outline:none;cursor:pointer;
+}
+.filter-group select:focus, .filter-group input:focus{border-color:var(--accent);}
+.btn-load{
+  padding:8px 20px;
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;font-weight:700;
+  cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+  transition:all .15s;
+  box-shadow:0 2px 8px rgba(232,114,12,.3);
+}
+.btn-load:hover{opacity:.9;transform:translateY(-1px);}
+.btn-load:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.loading-bar{
+  height:3px;
+  background:var(--accent);
+  position:fixed;top:0;left:0;z-index:999;
+  transition:width .3s;
+  border-radius:0 2px 2px 0;
+}
+
+/* ── MAIN ── */
+main{padding:20px 24px 40px;max-width:1280px;margin:0 auto;}
+
+/* ── KPI STRIP ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;}
+.kpi{
+  background:var(--surface);
+  border:1px solid var(--bg3);
+  border-radius:var(--r);
+  padding:16px 18px;
+  box-shadow:var(--shadow);
+  position:relative;overflow:hidden;
+}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent);border-radius:var(--r) var(--r) 0 0;}
+.kpi.green::before{background:var(--green);}
+.kpi.red::before{background:var(--red);}
+.kpi.blue::before{background:var(--blue);}
+.kpi.amber::before{background:var(--amber);}
+.kpi-lbl{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;}
+.kpi-val{font-family:'DM Serif Display',serif;font-size:32px;color:var(--text);line-height:1;}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+.kpi-trend{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;margin-top:6px;padding:2px 8px;border-radius:20px;}
+.trend-up{background:var(--green-bg);color:var(--green);}
+.trend-down{background:var(--red-bg);color:var(--red);}
+
+/* ── SECTION ── */
+.section{margin-bottom:28px;}
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.section-title{font-family:'DM Serif Display',serif;font-size:17px;color:var(--brand);}
+.section-sub{font-size:12px;color:var(--text3);margin-top:2px;}
+
+/* ── GRID 2 COL ── */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr;}}
+
+/* ── CARD ── */
+.card{
+  background:var(--surface);
+  border:1px solid var(--bg3);
+  border-radius:var(--r);
+  padding:20px;
+  box-shadow:var(--shadow);
+}
+.card-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card-title .ico{font-size:16px;}
+
+/* ── CHART WRAPPER ── */
+.chart-wrap{position:relative;height:220px;}
+.chart-wrap.tall{height:280px;}
+
+/* ── COMPLIANCE BARS ── */
+.comp-row{margin-bottom:12px;}
+.comp-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.comp-label{font-size:13px;color:var(--text);font-weight:500;}
+.comp-pct{font-size:13px;font-weight:700;}
+.comp-bar-bg{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;}
+.comp-bar{height:100%;border-radius:4px;transition:width .5s ease;}
+
+/* ── TEMP TABLE ── */
+.temp-table{width:100%;border-collapse:collapse;font-size:13px;}
+.temp-table th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;border-bottom:2px solid var(--bg3);background:var(--bg2);}
+.temp-table td{padding:9px 12px;border-bottom:1px solid var(--bg3);color:var(--text);vertical-align:top;}
+.temp-table tr:last-child td{border-bottom:none;}
+.temp-table tr:hover td{background:var(--bg2);}
+.badge-ok{background:var(--green-bg);color:var(--green);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;}
+.badge-warn{background:var(--amber-bg);color:var(--amber);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;}
+.badge-err{background:var(--red-bg);color:var(--red);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;}
+.badge-nd{background:var(--bg2);color:var(--text3);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;}
+
+/* ── FIRMA TABLE ── */
+.firma-list{display:flex;flex-direction:column;gap:8px;}
+.firma-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border-radius:10px;}
+.firma-who{font-size:13px;font-weight:600;color:var(--text);}
+.firma-meta{font-size:11px;color:var(--text3);margin-top:2px;}
+.firma-hora{font-size:12px;font-weight:700;color:var(--accent);}
+
+/* ── TASK DETAIL ── */
+.task-detail-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;}
+.task-detail-list::-webkit-scrollbar{width:4px;}
+.task-detail-list::-webkit-scrollbar-track{background:var(--bg2);}
+.task-detail-list::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:4px;}
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:8px;background:var(--bg);}
+.task-item.done{background:var(--green-bg);}
+.task-item.fail{background:var(--red-bg);}
+.task-icon{font-size:14px;margin-top:1px;flex-shrink:0;}
+.task-text{font-size:12px;color:var(--text);flex:1;line-height:1.4;}
+.task-val{font-size:12px;font-weight:700;color:var(--accent);margin-left:6px;white-space:nowrap;}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:48px 24px;color:var(--text3);}
+.empty-ico{font-size:40px;margin-bottom:12px;}
+.empty-txt{font-size:14px;font-weight:500;}
+.empty-sub{font-size:12px;margin-top:6px;}
+
+/* ── PUNTO TABS ── */
+.punto-tabs{display:flex;gap:8px;margin-bottom:20px;}
+.pt{padding:7px 18px;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--bg3);background:var(--surface);color:var(--text3);transition:all .15s;}
+.pt.active{background:var(--brand);color:#fff;border-color:var(--brand);}
+
+/* ── SNAPSHOT ROW ── */
+.snap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:8px;}
+.snap-cell{background:var(--bg2);border-radius:10px;padding:12px 14px;text-align:center;}
+.snap-area{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+.snap-pct{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text);}
+.snap-pct.high{color:var(--green);}
+.snap-pct.mid{color:var(--amber);}
+.snap-pct.low{color:var(--red);}
+
+/* ── SPINNER ── */
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── ALERTS ── */
+.alert-list{display:flex;flex-direction:column;gap:8px;}
+.alert-item{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:10px;border:1px solid;}
+.alert-item.err{background:var(--red-bg);border-color:rgba(192,57,43,.2);}
+.alert-item.warn{background:var(--amber-bg);border-color:rgba(133,106,0,.2);}
+.alert-item.ok{background:var(--green-bg);border-color:rgba(45,106,79,.2);}
+.alert-ico{font-size:16px;flex-shrink:0;}
+.alert-txt{font-size:13px;color:var(--text);font-weight:500;}
+.alert-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+</style>
+</head>
+<body>
+
+<div class="loading-bar" id="loading-bar" style="width:0%"></div>
+
+<header>
+  <div class="hdr-brand">
+    <div>
+      <div class="hdr-brand-name">La Cabaña · Ops</div>
+      <div class="hdr-brand-sub">Dashboard de operaciones</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span id="last-update" style="font-size:11px;color:var(--text3);">Sin cargar</span>
+    <span class="hdr-badge">LIVE</span>
+  </div>
+</header>
+
+<div class="filters">
+  <div class="filter-group">
+    <label>Desde</label>
+    <input type="date" id="f-desde">
+  </div>
+  <div class="filter-group">
+    <label>Hasta</label>
+    <input type="date" id="f-hasta">
+  </div>
+  <div class="filter-group">
+    <label>Punto</label>
+    <select id="f-punto">
+      <option value="todos">Ambos puntos</option>
+      <option value="soacha">Soacha</option>
+      <option value="plaza">Mi Plaza</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Turno</label>
+    <select id="f-turno">
+      <option value="todos">Todos</option>
+      <option value="apertura">Apertura</option>
+      <option value="medio">Turno medio</option>
+      <option value="cierre">Cierre</option>
+    </select>
+  </div>
+  <button class="btn-load" id="btn-load" onclick="cargar()">
+    <span id="load-ico">🔄</span> Cargar datos
+  </button>
+</div>
+
+<main id="main-content">
+  <div class="empty">
+    <div class="empty-ico">📊</div>
+    <div class="empty-txt">Selecciona un rango de fechas y carga los datos</div>
+    <div class="empty-sub">Los datos se leen directamente de Firebase en tiempo real</div>
+  </div>
+</main>
+
+<script>
+// ── Firebase ──────────────────────────────────────────────────────────────
+const FB_CFG = {
+  apiKey: "AIzaSyChgB2irJrzTuIGHWsyZPEXtZdWXcuEAjo",
+  authDomain: "lacabana-app.firebaseapp.com",
+  projectId: "lacabana-app",
+  storageBucket: "lacabana-app.firebasestorage.app",
+  messagingSenderId: "856696449767",
+  appId: "1:856696449767:web:1d623828d05d5f96c15042"
+};
+let _app, _db;
+try { _app = firebase.app('dash'); } catch(e) { _app = firebase.initializeApp(FB_CFG,'dash'); }
+_db = firebase.firestore(_app);
+
+// ── Task definitions (mirrored from checkresto) ───────────────────────────
+const CL = {
+  admin:{
+    apertura:[
+      {t:'Verificar base de caja y efectivo del turno anterior',tipo:'check',crit:true},
+      {t:'Primera temperatura: plancha taquería',tipo:'temp',rango:[180,230],crit:true,unit:'°C'},
+      {t:'Primera temperatura: plancha carnes',tipo:'temp',rango:[180,230],crit:true,unit:'°C'},
+      {t:'Primera temperatura: plancha panes',tipo:'temp',rango:[150,200],crit:true,unit:'°C'},
+      {t:'Primera temperatura: freidora 1',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Primera temperatura: freidora 2',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Primera temperatura: freidora 3',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Primera temperatura: nevera refrigeración',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
+      {t:'Primera temperatura: nevera congelación',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
+      {t:'Verificar personal presente por área',tipo:'check',crit:true},
+      {t:'Verificar aseo del personal',tipo:'check',crit:true},
+      {t:'Mise en place cocina — calidad general',tipo:'aseo',label:'Mise en place cocina',crit:true},
+      {t:'Validar orden de neveras',tipo:'aseo',label:'Orden neveras',crit:true},
+      {t:'Calidad de producto: caldo y carne',tipo:'aseo',label:'Calidad caldo/carne',crit:true},
+      {t:'Calidad de papa 80/20',tipo:'aseo',label:'Calidad papa 80/20',crit:true},
+      {t:'Prueba de papa final (150g)',tipo:'aseo',label:'Prueba papa final',crit:true},
+      {t:'Aseo general del punto',tipo:'aseo',label:'Aseo general',crit:true},
+      {t:'Verificar baños',tipo:'aseo',label:'Baños',crit:true},
+    ],
+    medio:[
+      {t:'Ronda cocina',tipo:'check',crit:true},
+      {t:'Ronda salón',tipo:'check',crit:true},
+      {t:'Ronda baños',tipo:'check',crit:true},
+      {t:'Ronda bodega',tipo:'check',crit:true},
+      {t:'Ronda caja — Rappi/DiDi/WhatsApp/Meta',tipo:'check',crit:true},
+      {t:'Segunda temperatura: freidora 1',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Segunda temperatura: freidora 2',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Segunda temperatura: freidora 3',tipo:'temp',rango:[320,365],crit:true,unit:'°F'},
+      {t:'Segunda temperatura: planchas',tipo:'temp',rango:[180,230],crit:true,unit:'°C'},
+      {t:'Segunda temperatura: nevera refrigeración',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
+      {t:'Segunda temperatura: nevera congelación',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
+      {t:'Mise en place cocina al 80%',tipo:'aseo',label:'Mise en place',crit:true},
+      {t:'Calidad verduras turno medio',tipo:'aseo',label:'Calidad verduras',crit:true},
+      {t:'Calidad caldo y carne',tipo:'aseo',label:'Calidad caldo/carne',crit:true},
+      {t:'Calidad papa 80/20',tipo:'aseo',label:'Calidad papa',crit:true},
+      {t:'Aseo cocina',tipo:'aseo',label:'Aseo cocina',crit:true},
+      {t:'Aseo salón',tipo:'aseo',label:'Aseo salón',crit:true},
+      {t:'Aseo baños',tipo:'aseo',label:'Aseo baños',crit:true},
+      {t:'Cumplimiento general turno',tipo:'aseo',label:'Cumplimiento',crit:true},
+    ],
+    cierre:[
+      {t:'Cajero — cierre de caja y bolsas',tipo:'cierre_area',crit:true},
+      {t:'Cocina — equipos apagados, aseo y mise en place',tipo:'cierre_area',crit:true},
+      {t:'Salón — mesas, sillas, barrido y trapeado',tipo:'cierre_area',crit:true},
+      {t:'Domiciliarios — baños lavados, canecas limpias',tipo:'cierre_area',crit:true},
+      {t:'Bodega — inventario registrado, acceso asegurado',tipo:'cierre_area',crit:true},
+      {t:'Revisar arqueo de caja y bolsas',tipo:'check',crit:true},
+      {t:'Neveras en funcionamiento al cierre',tipo:'check',crit:true},
+      {t:'Tercera temperatura: nevera refrigeración',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
+      {t:'Tercera temperatura: nevera congelación',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
+      {t:'Inventario cierre: panadería',tipo:'check',crit:true},
+      {t:'Inventario cierre: abarrotes',tipo:'check',crit:true},
+      {t:'Inventario cierre: verduras',tipo:'check',crit:true},
+      {t:'Inventario cierre: salsas',tipo:'check',crit:true},
+      {t:'Cumplimiento general cierre',tipo:'aseo',label:'Cumplimiento cierre',crit:true},
+    ],
+  },
+  cocina:{
+    apertura:[
+      {t:'Mise en place general',tipo:'aseo',label:'Mise en place',crit:true},
+      {t:'Temperatura freidoras al inicio',tipo:'temp',rango:[320,365],unit:'°F',crit:true},
+      {t:'Calidad de caldo',tipo:'aseo',label:'Calidad caldo',crit:true},
+      {t:'Aseo de equipos',tipo:'check',crit:true},
+    ],
+    medio:[
+      {t:'Reposición mise en place',tipo:'check',crit:true},
+      {t:'Control temperatura freidoras',tipo:'temp',rango:[320,365],unit:'°F',crit:true},
+      {t:'Limpieza de equipos en turno',tipo:'check',crit:true},
+    ],
+    cierre:[
+      {t:'Equipos apagados y limpios',tipo:'check',crit:true},
+      {t:'Mise en place cubierto para mañana',tipo:'check',crit:true},
+      {t:'Aseo profundo cocina',tipo:'aseo',label:'Aseo profundo',crit:true},
+    ],
+  },
+};
+
+const AREAS_LABEL = {admin:'Admin/Supervisor',cocina:'Cocina',caja:'Cajero',domi:'Domiciliarios',neveras:'Neveras/Frío',bodega:'Bodega'};
+const TURNOS_LABEL = {apertura:'Apertura',medio:'Turno medio',cierre:'Cierre'};
+const PUNTO_LABEL = {soacha:'Soacha',plaza:'Mi Plaza'};
+
+// ── State ─────────────────────────────────────────────────────────────────
+let rawChecklists = [];
+let rawFirmas = [];
+let charts = {};
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+function setProgress(pct){ document.getElementById('loading-bar').style.width = pct+'%'; }
+function fmtDate(d){ return new Date(d).toLocaleDateString('es-CO',{day:'2-digit',month:'short'}); }
+function pctColor(p){ return p>=80?'var(--green)':p>=60?'var(--amber)':'var(--red)'; }
+function pctClass(p){ return p>=80?'high':p>=60?'mid':'low'; }
+function avg(arr){ return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+function round1(n){ return Math.round(n*10)/10; }
+
+// ── Default dates ─────────────────────────────────────────────────────────
+(function initDates(){
+  const today = new Date();
+  const desde = new Date(today); desde.setDate(today.getDate()-6);
+  document.getElementById('f-hasta').value = today.toISOString().slice(0,10);
+  document.getElementById('f-desde').value = desde.toISOString().slice(0,10);
+})();
+
+// ── Destroy all charts ────────────────────────────────────────────────────
+function destroyCharts(){
+  Object.values(charts).forEach(c=>{ try{c.destroy();}catch(e){} });
+  charts = {};
+}
+
+// ── LOAD ──────────────────────────────────────────────────────────────────
+async function cargar(){
+  const desde = document.getElementById('f-desde').value;
+  const hasta = document.getElementById('f-hasta').value;
+  const punto = document.getElementById('f-punto').value;
+  const turno = document.getElementById('f-turno').value;
+
+  if(!desde||!hasta){ alert('Selecciona fechas'); return; }
+
+  const btn = document.getElementById('btn-load');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Cargando...';
+  setProgress(10);
+
+  try {
+    // Fetch checklists
+    let q = _db.collection('checklists');
+    const snap = await q.get();
+    setProgress(50);
+
+    rawChecklists = [];
+    snap.forEach(doc=>{
+      const d = doc.data();
+      const id = doc.id; // formato: punto_fecha_area_turno
+      const parts = id.split('_');
+      if(parts.length < 4) return;
+      const [p, fecha, area, t] = parts;
+      if(fecha < desde || fecha > hasta) return;
+      if(punto !== 'todos' && p !== punto) return;
+      if(turno !== 'todos' && t !== turno) return;
+      rawChecklists.push({id, punto:p, fecha, area, turno:t, ...d});
+    });
+
+    // Fetch firmas
+    const fSnap = await _db.collection('firmas').get();
+    setProgress(80);
+
+    rawFirmas = [];
+    fSnap.forEach(doc=>{
+      const d = doc.data();
+      if(!d.fecha || d.fecha < desde || d.fecha > hasta) return;
+      if(punto !== 'todos' && d.punto !== punto) return;
+      if(turno !== 'todos' && d.turno !== turno) return;
+      rawFirmas.push({id:doc.id, ...d});
+    });
+
+    setProgress(100);
+    document.getElementById('last-update').textContent = 'Actualizado: ' + new Date().toLocaleTimeString('es-CO');
+    renderDashboard(desde, hasta);
+
+  } catch(err){
+    console.error(err);
+    alert('Error cargando datos: ' + err.message);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<span>🔄</span> Actualizar';
+  setTimeout(()=>setProgress(0), 500);
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────
+function renderDashboard(desde, hasta){
+  destroyCharts();
+
+  if(!rawChecklists.length){
+    document.getElementById('main-content').innerHTML = `
+      <div class="empty">
+        <div class="empty-ico">🗒️</div>
+        <div class="empty-txt">No hay datos en el rango seleccionado</div>
+        <div class="empty-sub">${desde} → ${hasta}</div>
+      </div>`;
+    return;
+  }
+
+  // ── Compute KPIs ──────────────────────────────────────────────────────
+  const totalDocs = rawChecklists.length;
+  const firmaCount = rawFirmas.length;
+  const dates = [...new Set(rawChecklists.map(d=>d.fecha))].sort();
+  const diasConDatos = dates.length;
+
+  // Overall compliance
+  let totalTasks=0, doneTasks=0;
+  rawChecklists.forEach(doc=>{
+    const defs = (CL[doc.area]||{})[doc.turno]||[];
+    const tasks = doc.tasks||[];
+    defs.forEach((_,i)=>{
+      totalTasks++;
+      const t = tasks[i];
+      if(t && (t.done || (t.val && t.val!=='') || t.aseo>0)) doneTasks++;
+    });
+  });
+  const pctGlobal = totalTasks ? Math.round(doneTasks/totalTasks*100) : 0;
+
+  // Critical compliance
+  let critTotal=0, critDone=0;
+  rawChecklists.forEach(doc=>{
+    const defs = (CL[doc.area]||{})[doc.turno]||[];
+    const tasks = doc.tasks||[];
+    defs.forEach((def,i)=>{
+      if(!def.crit) return;
+      critTotal++;
+      const t = tasks[i];
+      if(t && (t.done || (t.val && t.val!=='') || t.aseo>0)) critDone++;
+    });
+  });
+  const pctCrit = critTotal ? Math.round(critDone/critTotal*100) : 0;
+
+  // Temp alerts
+  let tempTotal=0, tempAlerts=0;
+  rawChecklists.forEach(doc=>{
+    const defs = (CL[doc.area]||{})[doc.turno]||[];
+    const tasks = doc.tasks||[];
+    defs.forEach((def,i)=>{
+      if(def.tipo!=='temp') return;
+      const t = tasks[i];
+      if(!t||!t.val) return;
+      const v = parseFloat(t.val);
+      if(isNaN(v)) return;
+      tempTotal++;
+      if(v < def.rango[0] || v > def.rango[1]) tempAlerts++;
+    });
+  });
+
+  // Avg aseo rating
+  let aseoSum=0, aseoCount=0;
+  rawChecklists.forEach(doc=>{
+    (doc.tasks||[]).forEach(t=>{
+      if(t.aseo && t.aseo>0){ aseoSum+=t.aseo; aseoCount++; }
+    });
+  });
+  const avgAseo = aseoCount ? round1(aseoSum/aseoCount) : 0;
+
+  // ── Compliance by area ────────────────────────────────────────────────
+  const byArea = {};
+  rawChecklists.forEach(doc=>{
+    if(!byArea[doc.area]) byArea[doc.area]={total:0,done:0};
+    const defs = (CL[doc.area]||{})[doc.turno]||[];
+    const tasks = doc.tasks||[];
+    defs.forEach((_,i)=>{
+      byArea[doc.area].total++;
+      const t = tasks[i];
+      if(t && (t.done || (t.val && t.val!=='') || t.aseo>0)) byArea[doc.area].done++;
+    });
+  });
+
+  // ── Compliance by date ────────────────────────────────────────────────
+  const byDate = {};
+  rawChecklists.forEach(doc=>{
+    if(!byDate[doc.fecha]) byDate[doc.fecha]={total:0,done:0};
+    const defs = (CL[doc.area]||{})[doc.turno]||[];
+    const tasks = doc.tasks||[];
+    defs.forEach((_,i)=>{
+      byDate[doc.fecha].total++;
+      const t = tasks[i];
+      if(t && (t.done || (t.val && t.val!=='') || t.aseo>0)) byDate[doc.fecha].done++;
+    });
+  });
+
+  // ── Compliance by punto ───────────────────────────────────────────────
+  const byPunto = {};
+  rawChecklists.forEach(doc=>{
+    if(!byPunto[doc.punto]) byPunto[doc.punto]={total:0,done:0};
+    const defs = (CL[doc.area]||{})[doc.turno]||[];
+    const tasks = doc.tasks||[];
+    defs.forEach((_,i)=>{
+      byPunto[doc.punto].total++;
+      const t = tasks[i];
+      if(t && (t.done || (t.val && t.val!=='') || t.aseo>0)) byPunto[doc.punto].done++;
+    });
+  });
+
+  // ── Temps data ────────────────────────────────────────────────────────
+  const tempRows = [];
+  rawChecklists.forEach(doc=>{
+    const defs = (CL[doc.area]||{})[doc.turno]||[];
+    const tasks = doc.tasks||[];
+    defs.forEach((def,i)=>{
+      if(def.tipo!=='temp') return;
+      const t = tasks[i];
+      if(!t||!t.val) return;
+      const v = parseFloat(t.val);
+      if(isNaN(v)) return;
+      const ok = v>=def.rango[0] && v<=def.rango[1];
+      tempRows.push({
+        fecha:doc.fecha, punto:doc.punto, turno:doc.turno,
+        sensor:def.t, valor:v, unit:def.unit,
+        rango:def.rango, ok
+      });
+    });
+  });
+
+  // ── Uncompleted critical tasks ─────────────────────────────────────────
+  const critFails = [];
+  rawChecklists.forEach(doc=>{
+    const defs = (CL[doc.area]||{})[doc.turno]||[];
+    const tasks = doc.tasks||[];
+    defs.forEach((def,i)=>{
+      if(!def.crit) return;
+      const t = tasks[i];
+      const done = t && (t.done || (t.val && t.val!=='') || t.aseo>0);
+      if(!done){
+        critFails.push({
+          fecha:doc.fecha, punto:doc.punto, turno:doc.turno,
+          area:doc.area, tarea:def.t, usuario:doc.usuario||'—'
+        });
+      }
+    });
+  });
+
+  // ── Recent firmas ─────────────────────────────────────────────────────
+  const firmasSorted = [...rawFirmas].sort((a,b)=>(b.fecha+b.hora||'').localeCompare(a.fecha+a.hora||''));
+
+  // ── RENDER HTML ───────────────────────────────────────────────────────
+  const sortedDates = Object.keys(byDate).sort();
+
+  document.getElementById('main-content').innerHTML = `
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="kpi-lbl">Cumplimiento global</div>
+      <div class="kpi-val" style="color:${pctColor(pctGlobal)}">${pctGlobal}%</div>
+      <div class="kpi-sub">${doneTasks} de ${totalTasks} tareas</div>
+    </div>
+    <div class="kpi ${pctCrit>=80?'green':pctCrit>=60?'amber':'red'}">
+      <div class="kpi-lbl">Tareas críticas</div>
+      <div class="kpi-val" style="color:${pctColor(pctCrit)}">${pctCrit}%</div>
+      <div class="kpi-sub">${critDone} de ${critTotal} completadas</div>
+    </div>
+    <div class="kpi ${tempAlerts===0?'green':'red'}">
+      <div class="kpi-lbl">Alertas temperatura</div>
+      <div class="kpi-val" style="color:${tempAlerts===0?'var(--green)':'var(--red)'}">${tempAlerts}</div>
+      <div class="kpi-sub">de ${tempTotal} mediciones registradas</div>
+    </div>
+    <div class="kpi blue">
+      <div class="kpi-lbl">Calificación aseo</div>
+      <div class="kpi-val">${avgAseo}<span style="font-family:'DM Sans';font-size:16px;color:var(--text3)">/5</span></div>
+      <div class="kpi-sub">${aseoCount} evaluaciones</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-lbl">Días con datos</div>
+      <div class="kpi-val">${diasConDatos}</div>
+      <div class="kpi-sub">${totalDocs} checklists · ${firmaCount} firmas</div>
+    </div>
+    <div class="kpi ${critFails.length===0?'green':'red'}">
+      <div class="kpi-lbl">Tareas críticas omitidas</div>
+      <div class="kpi-val" style="color:${critFails.length===0?'var(--green)':'var(--red)'}">${critFails.length}</div>
+      <div class="kpi-sub">sin completar en el período</div>
+    </div>
+  </div>
+
+  <!-- ROW 1: Tendencia + Por área -->
+  <div class="grid2 section">
+    <div class="card">
+      <div class="card-title"><span class="ico">📈</span> Cumplimiento por día</div>
+      <div class="chart-wrap">
+        <canvas id="chart-trend"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="ico">🏷️</span> Cumplimiento por área</div>
+      <div style="margin-top:4px;">
+        ${Object.entries(byArea).map(([area,d])=>{
+          const pct = d.total ? Math.round(d.done/d.total*100):0;
+          return `
+          <div class="comp-row">
+            <div class="comp-info">
+              <div class="comp-label">${AREAS_LABEL[area]||area}</div>
+              <div class="comp-pct" style="color:${pctColor(pct)}">${pct}%</div>
+            </div>
+            <div class="comp-bar-bg">
+              <div class="comp-bar" style="width:${pct}%;background:${pctColor(pct)};"></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Por punto + Por turno -->
+  <div class="grid2 section">
+    <div class="card">
+      <div class="card-title"><span class="ico">🏪</span> Cumplimiento por punto</div>
+      <div class="chart-wrap">
+        <canvas id="chart-punto"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="ico">⏰</span> Documentos por turno</div>
+      <div class="chart-wrap">
+        <canvas id="chart-turno"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: Temperaturas -->
+  <div class="section">
+    <div class="section-hdr">
+      <div>
+        <div class="section-title">🌡️ Registro de Temperaturas</div>
+        <div class="section-sub">Últimas mediciones registradas · rango esperado entre paréntesis</div>
+      </div>
+    </div>
+    <div class="card">
+      ${tempRows.length ? `
+      <div style="overflow-x:auto;">
+        <table class="temp-table">
+          <thead>
+            <tr>
+              <th>Fecha</th><th>Punto</th><th>Turno</th>
+              <th>Sensor</th><th>Valor</th><th>Rango</th><th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tempRows.slice(-30).reverse().map(r=>`
+            <tr>
+              <td>${fmtDate(r.fecha)}</td>
+              <td>${PUNTO_LABEL[r.punto]||r.punto}</td>
+              <td>${TURNOS_LABEL[r.turno]||r.turno}</td>
+              <td>${r.sensor.replace('Primera temperatura: ','').replace('Segunda temperatura: ','').replace('Tercera temperatura: ','')}</td>
+              <td><strong>${r.valor}${r.unit}</strong></td>
+              <td style="color:var(--text3);font-size:11px;">${r.rango[0]}–${r.rango[1]}${r.unit}</td>
+              <td><span class="${r.ok?'badge-ok':'badge-err'}">${r.ok?'✓ OK':'⚠ Fuera'}</span></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>` : `<div class="empty"><div class="empty-ico">🌡️</div><div class="empty-txt">Sin temperaturas registradas</div></div>`}
+    </div>
+  </div>
+
+  <!-- ROW 4: Alertas criticas + Firmas -->
+  <div class="grid2 section">
+    <div class="card">
+      <div class="card-title"><span class="ico">🚨</span> Tareas críticas omitidas</div>
+      ${critFails.length ? `
+      <div class="alert-list">
+        ${critFails.slice(0,15).map(f=>`
+        <div class="alert-item err">
+          <span class="alert-ico">⚠️</span>
+          <div>
+            <div class="alert-txt">${f.tarea}</div>
+            <div class="alert-sub">${fmtDate(f.fecha)} · ${PUNTO_LABEL[f.punto]||f.punto} · ${AREAS_LABEL[f.area]||f.area} · ${TURNOS_LABEL[f.turno]||f.turno} ${f.usuario!=='—'?'· '+f.usuario:''}</div>
+          </div>
+        </div>`).join('')}
+        ${critFails.length>15?`<div style="text-align:center;font-size:12px;color:var(--text3);padding:8px;">y ${critFails.length-15} más...</div>`:''}
+      </div>` : `
+      <div class="alert-item ok">
+        <span class="alert-ico">✅</span>
+        <div>
+          <div class="alert-txt">Sin tareas críticas omitidas</div>
+          <div class="alert-sub">Excelente cumplimiento en el período</div>
+        </div>
+      </div>`}
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="ico">✍️</span> Últimas firmas</div>
+      ${firmasSorted.length ? `
+      <div class="firma-list">
+        ${firmasSorted.slice(0,10).map(f=>`
+        <div class="firma-item">
+          <div>
+            <div class="firma-who">${f.nombre||'—'}</div>
+            <div class="firma-meta">${PUNTO_LABEL[f.punto]||f.punto||'—'} · ${AREAS_LABEL[f.area]||f.area||'—'} · ${TURNOS_LABEL[f.turno]||f.turno||'—'} · ${fmtDate(f.fecha||'')}</div>
+          </div>
+          <div class="firma-hora">${f.hora||'—'}</div>
+        </div>`).join('')}
+      </div>` : `<div class="empty"><div class="empty-ico">✍️</div><div class="empty-txt">Sin firmas registradas</div></div>`}
+    </div>
+  </div>
+
+  `;
+
+  // ── Draw charts ────────────────────────────────────────────────────────
+  const chartDefaults = {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#9C7B6B',font:{size:11}}},
+      y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{color:'#9C7B6B',font:{size:11}},beginAtZero:true}
+    }
+  };
+
+  // Trend chart
+  const trendLabels = sortedDates.map(fmtDate);
+  const trendData = sortedDates.map(d=>{ const v=byDate[d]; return v.total?Math.round(v.done/v.total*100):0; });
+  charts.trend = new Chart(document.getElementById('chart-trend'), {
+    type:'line',
+    data:{
+      labels:trendLabels,
+      datasets:[{
+        label:'Cumplimiento %',
+        data:trendData,
+        fill:true,
+        backgroundColor:'rgba(232,114,12,.08)',
+        borderColor:'#E8720C',
+        borderWidth:2,
+        pointBackgroundColor:'#E8720C',
+        pointRadius:4,
+        tension:.4,
+      }]
+    },
+    options:{...chartDefaults, scales:{...chartDefaults.scales, y:{...chartDefaults.scales.y, max:100, ticks:{...chartDefaults.scales.y.ticks, callback:v=>v+'%'}}}}
+  });
+
+  // Punto chart
+  const puntoLabels = Object.keys(byPunto).map(p=>PUNTO_LABEL[p]||p);
+  const puntoPcts = Object.values(byPunto).map(d=>d.total?Math.round(d.done/d.total*100):0);
+  charts.punto = new Chart(document.getElementById('chart-punto'), {
+    type:'doughnut',
+    data:{
+      labels:puntoLabels,
+      datasets:[{
+        data:puntoPcts,
+        backgroundColor:['#E8720C','#2B1810'],
+        borderWidth:0,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:true,position:'bottom',labels:{color:'#5C3D2E',font:{size:12},padding:12}},
+        tooltip:{callbacks:{label:ctx=>' '+ctx.label+': '+ctx.raw+'%'}}
+      }
+    }
+  });
+
+  // Turno chart
+  const turnoCount = {};
+  rawChecklists.forEach(d=>{ turnoCount[d.turno]=(turnoCount[d.turno]||0)+1; });
+  const turnoLabels = Object.keys(turnoCount).map(t=>TURNOS_LABEL[t]||t);
+  const turnoVals = Object.values(turnoCount);
+  charts.turno = new Chart(document.getElementById('chart-turno'), {
+    type:'bar',
+    data:{
+      labels:turnoLabels,
+      datasets:[{
+        label:'Checklists',
+        data:turnoVals,
+        backgroundColor:['#E8720C','#4A2C1F','#2B1810'],
+        borderRadius:8,
+        borderWidth:0,
+      }]
+    },
+    options:{...chartDefaults, plugins:{...chartDefaults.plugins, legend:{display:false}}}
+  });
+}
+
+// ── Auto-load on enter ────────────────────────────────────────────────────
+document.addEventListener('keydown', e=>{ if(e.key==='Enter') cargar(); });
+</script>
+</body>
+</html>
