@@ -177,7 +177,7 @@ body{font-family:'Inter',sans-serif;color:var(--crema);min-height:100vh;}
 .my-day.descanso{background:rgba(255,145,0,.08);}
 .my-day.today{background:rgba(255,145,0,.06);border-bottom:2px solid var(--naranja);}
 .my-time{font-family:'Poppins',sans-serif;font-size:11px;font-weight:700;color:var(--crema);}
-.my-pico{font-size:9px;color:var(--naranja);}
+.my-pico{font-size:9px;color:var(--cafe);background:var(--naranja);border-radius:4px;padding:1px 4px;display:inline-block;font-weight:700;margin:1px 0;}
 .my-end{font-size:9px;color:rgba(254,242,223,.35);}
 .my-rest{font-size:10px;font-weight:700;color:var(--naranja);}
 .my-otro{font-size:9px;color:var(--blue-t);font-weight:700;}
@@ -1247,12 +1247,13 @@ async function renderEmpHorario(){
         html+=`<div class="my-otro">🏬<br>SOA</div>`;
       } else {
         if(dia.pico_ini){
-          html+=`<div class="my-time">${dia.entrada||'—'} – ${dia.pico_ini}</div>`;
-          html+=`<div class="my-pico">↩ ${dia.pico_fin}</div>`;
-          html+=`<div class="my-end">– ${dia.cierre||''}</div>`;
+          // Turno partido estilo Excel: 1:00pm (4pm-7pm) 11:00pm
+          html+=`<div class="my-time">${dia.entrada||'—'}</div>`;
+          html+=`<div class="my-pico">(${dia.pico_ini}–${dia.pico_fin})</div>`;
+          html+=`<div class="my-end">${dia.cierre||''}</div>`;
         } else {
           html+=`<div class="my-time">${dia.entrada||'—'}</div>`;
-          html+=`<div class="my-end">– ${dia.cierre||''}</div>`;
+          html+=`<div class="my-end">${dia.cierre||''}</div>`;
         }
       }
       html+=`</div></div>`;
@@ -1302,7 +1303,11 @@ async function renderEmpHorario(){
       if(dia.tipo==='descanso') html+=`<div class="my-rest">DESC</div>`;
       else if(dia.tipo==='hogares') html+=`<div class="my-otro">HOG</div>`;
       else if(dia.tipo==='soacha') html+=`<div class="my-otro">SOA</div>`;
-      else{ html+=`<div class="my-time">${dia.entrada||'—'}</div><div class="my-end">${dia.cierre||''}</div>`; }
+      else {
+        html+=`<div class="my-time">${dia.entrada||'—'}</div>`;
+        if(dia.pico_ini) html+=`<div class="my-pico">(${dia.pico_ini}–${dia.pico_fin})</div>`;
+        html+=`<div class="my-end">${dia.cierre||''}</div>`;
+      }
       html+=`</div></div>`;
     });
     html+=`</div></div>`;
