@@ -891,9 +891,9 @@ select{padding:5px 8px;}
           <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--brand)" d="M19 3H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2v9l5-3 5 3v-9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg></div>
           <div class="cab-btn-lbl">Solicitar vacaciones</div>
         </div>
-        <div class="cab-btn">
-          <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--brand)" d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg></div>
-          <div class="cab-btn-lbl">Capacitación</div>
+        <div class="cab-btn" onclick="irAGuia()">
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+          <div class="cab-btn-lbl">Guía Caldo Birria</div>
         </div>
         <div class="cab-btn">
           <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--brand)" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></div>
@@ -1789,6 +1789,10 @@ function filterAreasByRol(){
 
 function getVisibleAreas(){
   return window._filteredAreas||AREAS_LIST;
+}
+
+function irAGuia(){
+  window.open('guia_birria.html', '_blank');
 }
 
 function irAHorarios(){
