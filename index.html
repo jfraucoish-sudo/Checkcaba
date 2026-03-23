@@ -2097,7 +2097,7 @@ function updateHomeUI(){
         if(!conDatos.length) alertas.push('⚠️ '+pt.name+': sin registros hoy. ¡Requiere supervisión!');
         else if(promG<50) alertas.push('🔴 '+pt.name+': solo '+promG+'% completado. Intervenir.');
       });
-      // Agregar mensaje de cumplimiento general
+      // ── Texto de cumplimiento general ─────────────────────────
       const todosConDatos = [].concat(...[{id:'soacha'},{id:'plaza'}].map(pt=>{
         return [
           calcPunto(pt.id,hoy,misAreas,'apertura'),
@@ -2107,13 +2107,57 @@ function updateHomeUI(){
       }));
       if(todosConDatos.length){
         const promTotal=Math.round(todosConDatos.reduce((a,b)=>a+b.pct,0)/todosConDatos.length);
-        let textoMot='', clsMot='ok';
-        if(promTotal>=90){textoMot='🌟 ¡Excelente jornada! Ambos puntos por encima del 90%. El equipo está respondiendo.';clsMot='ok';}
-        else if(promTotal>=70){textoMot='✅ Buen ritmo hoy ('+promTotal+'% promedio). Revisa los turnos pendientes antes del cierre.';clsMot='ok';}
-        else if(promTotal>=50){textoMot='⚡ '+promTotal+'% de avance general. Hay turnos sin completar — ¿ya revisaste en campo?';clsMot='warn';}
-        else{textoMot='🔴 Solo '+promTotal+'% completado. El equipo necesita supervisión directa ahora.';clsMot='alert';}
+        let textoMot='';
+        if(promTotal>=90) textoMot='🌟 ¡Excelente! Los administradores llevan un 90%+ hoy. El equipo está respondiendo bien.';
+        else if(promTotal>=70) textoMot='✅ '+promTotal+'% promedio hoy. Revisa con los administradores los turnos pendientes antes del cierre.';
+        else if(promTotal>=50) textoMot='⚡ '+promTotal+'% completado. Los administradores tienen tareas pendientes — valida el avance con ellos.';
+        else textoMot='🔴 Solo '+promTotal+'% completado por los administradores. Se requiere supervisión directa en campo hoy.';
         alertas.unshift(textoMot);
-        // Actualizar cls del mensaje si hay texto motivador
+      }
+
+      // ── Alertas por área incompleta según hora del día ────────
+      const horaActual=new Date().getHours();
+      const minutosActual=new Date().getMinutes();
+      const horaDecimal=horaActual+(minutosActual/60);
+      // Apertura debería estar lista después de 1:30pm (13.5)
+      // Turno medio después de 7pm (19)
+      // Cierre se evalúa al día siguiente
+      const areaNames={admin:'Admin/Cajero',cocina:'Cocina',caja:'Caja',domi:'Domiciliarios',neveras:'Neveras',bodega:'Bodega'};
+      [{id:'soacha',ico:'🏠'},{id:'plaza',ico:'🏬'}].forEach(pt=>{
+        if(horaDecimal>=13.5){
+          // Verificar apertura
+          const areasApert=['admin','cocina','caja','domi','neveras'];
+          areasApert.forEach(ar=>{
+            const pr=calcProg(pt.id,hoy,ar,'apertura');
+            if(pr.total>0&&!pr.hay){
+              alertas.push('⚠️ '+pt.ico+' '+areaNames[ar]+' en '+PUNTOS[pt.id].name+': apertura sin registrar');
+            } else if(pr.hay&&pr.pct<60){
+              alertas.push('🔶 '+pt.ico+' '+areaNames[ar]+' en '+PUNTOS[pt.id].name+': apertura al '+pr.pct+'% — incompleta');
+            }
+          });
+        }
+        if(horaDecimal>=19){
+          // Verificar turno medio
+          const areasMedio=['admin','cocina','caja','neveras'];
+          areasMedio.forEach(ar=>{
+            const pr=calcProg(pt.id,hoy,ar,'medio');
+            if(pr.total>0&&!pr.hay){
+              alertas.push('⚠️ '+pt.ico+' '+areaNames[ar]+' en '+PUNTOS[pt.id].name+': turno medio sin registrar');
+            }
+          });
+        }
+      });
+
+      // ── Resumen de ayer para supervisor ──────────────────────
+      const ayerFecha=(()=>{const d=new Date();d.setDate(d.getDate()-1);return d.toISOString().slice(0,10);})();
+      const ayerDatos=[].concat(...[{id:'soacha'},{id:'plaza'}].map(pt=>{
+        return ['apertura','medio','cierre'].map(tu=>calcProg(pt.id,ayerFecha,'admin',tu)).filter(x=>x.hay);
+      }));
+      if(ayerDatos.length){
+        const promAyer=Math.round(ayerDatos.reduce((a,b)=>a+b.pct,0)/ayerDatos.length);
+        if(promAyer>=90) alertas.push('✨ Ayer excelente: administradores al '+promAyer+'% de cumplimiento. ¡Buen equipo!');
+        else if(promAyer>=70) alertas.push('📊 Ayer: '+promAyer+'% de cumplimiento en puntos. Hay margen de mejora.');
+        else alertas.push('📉 Ayer solo '+promAyer+'% de cumplimiento en los puntos. Habla con los administradores hoy.');
       }
       wrap.innerHTML=html;
       // Cargar firmas app papa en background
@@ -2193,9 +2237,28 @@ function updateHomeUI(){
         cajaMensaje=' | ⚠️ Sin arqueo de ayer';
       }
 
+      // Alertas de áreas incompletas según hora
+      const horaA=new Date().getHours()+(new Date().getMinutes()/60);
+      const areaLabels={admin:'Admin/Cajero apertura',cocina:'Cocina',caja:'Caja',domi:'Domiciliarios',neveras:'Neveras'};
+      const alertasAdmin=[];
+      if(horaA>=13.5){
+        ['admin','cocina','caja','domi','neveras'].forEach(ar=>{
+          const pr=calcProg(curPunto,hoy,ar,'apertura');
+          if(pr.total>0&&!pr.hay) alertasAdmin.push('⚠️ '+areaLabels[ar]+': apertura sin registrar');
+          else if(pr.hay&&pr.pct<60) alertasAdmin.push('🔶 '+areaLabels[ar]+': apertura al '+pr.pct+'%');
+        });
+      }
+      if(horaA>=19){
+        ['admin','cocina','caja','neveras'].forEach(ar=>{
+          const pr=calcProg(curPunto,hoy,ar,'medio');
+          if(pr.total>0&&!pr.hay) alertasAdmin.push('⚠️ '+areaLabels[ar]+': turno medio sin registrar');
+        });
+      }
+      const alertasStr=alertasAdmin.length?' | 🔔 '+alertasAdmin.length+' área(s) pendiente(s)':'';
       if(ayerMsg){
-        ayerMsg.textContent=msgAdmin+cajaMensaje;
-        ayerMsg.className='hero-ayer-msg '+clsAdmin;
+        ayerMsg.innerHTML='<div>'+msgAdmin+cajaMensaje+'</div>'+
+          (alertasAdmin.length?'<div style="margin-top:6px;">'+alertasAdmin.map(a=>'<div>'+a+'</div>').join('')+'</div>':'');
+        ayerMsg.className='hero-ayer-msg '+(alertasAdmin.length?'alert':clsAdmin);
       }
       return;
     }
@@ -2318,9 +2381,10 @@ function irAPapas(){
   // curRol values: admin, jefe, supervisor, cajero, domiciliario, empleado
   // papas modes: admin, super, 1 (operario)
   const rolMap={
-    admin:'admin',
-    jefe:'admin',
-    supervisor:'supervisor',
+    admin:'super',
+    jefe:'super',
+    supervisor:'super',
+    gerente:'super',
     cajero:'1',
     domiciliario:'1',
     empleado:'1'
