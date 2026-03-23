@@ -631,9 +631,27 @@ select{padding:5px 8px;}
 .cab-dt-r{text-align:right;}
 .cab-dt-r .cab-dt-day{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;}
 .cab-dt-r .cab-dt-full{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;color:var(--naranja);}
-.cab-hero{background:var(--cafe-mid);border:1px solid rgba(255,145,0,.2);border-radius:18px;padding:16px 18px;margin-bottom:14px;}
-.cab-hero-lbl{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;display:flex;align-items:center;gap:5px;}
-.cab-hero-dot{width:5px;height:5px;background:var(--naranja);border-radius:50%;animation:pulse 2s infinite;}
+.cab-hero{background:var(--brand);border-radius:18px;overflow:hidden;margin-bottom:14px;box-shadow:0 4px 20px rgba(43,24,16,.18);}
+.cab-hero-top{padding:16px 18px 12px;}
+.cab-hero-lbl{font-size:9px;font-weight:700;color:rgba(253,246,238,.45);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;display:flex;align-items:center;gap:5px;}
+.cab-hero-dot{width:5px;height:5px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite;}
+/* 3 barras de turno */
+.hero-turnos{display:flex;flex-direction:column;gap:9px;}
+.hero-t-row{display:flex;align-items:center;gap:10px;}
+.hero-t-ico{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.hero-t-body{flex:1;}
+.hero-t-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;}
+.hero-t-name{font-size:11px;font-weight:600;color:rgba(253,246,238,.65);}
+.hero-t-pct{font-size:13px;font-weight:700;}
+.hero-t-pct.g{color:#81C784;}.hero-t-pct.m{color:#FFB74D;}.hero-t-pct.l{color:#EF9A9A;}.hero-t-pct.n{color:rgba(253,246,238,.25);}
+.hero-t-track{height:4px;background:rgba(253,246,238,.1);border-radius:2px;overflow:hidden;}
+.hero-t-fill{height:100%;border-radius:2px;transition:width .6s ease;}
+.hero-t-fill.g{background:#4CAF50;}.hero-t-fill.m{background:#FF9800;}.hero-t-fill.l{background:#f44336;}.hero-t-fill.n{background:rgba(253,246,238,.1);}
+/* Bloque ayer */
+.hero-ayer{padding:11px 18px 14px;border-top:1px solid rgba(253,246,238,.08);}
+.hero-ayer-lbl{font-size:9px;font-weight:700;color:rgba(253,246,238,.35);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;}
+.hero-ayer-msg{font-size:12px;line-height:1.5;font-weight:500;}
+.hero-ayer-msg.ok{color:#81C784;}.hero-ayer-msg.warn{color:#FFB74D;}.hero-ayer-msg.alert{color:#FF8A65;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
 .cab-hero-tlbl{font-size:10px;color:rgba(253,246,238,.45);text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px;}
 .cab-hero-time{font-family:'DM Serif Display',serif;font-size:30px;font-weight:400;color:#FDF6EE;letter-spacing:-0.5px;line-height:1;margin-bottom:6px;}
@@ -849,18 +867,23 @@ select{padding:5px 8px;}
         </div>
       </div>
       <div class="cab-hero">
-        <div class="cab-hero-lbl"><div class="cab-hero-dot"></div>Resumen de jornada</div>
-        <div class="cab-hero-tlbl">Turno de hoy</div>
-        <div class="cab-hero-time" id="cab-turno-hero">—</div>
-        <div id="cab-horario-hero" style="font-size:12px;color:var(--text3);margin-bottom:10px;min-height:16px;"></div>
-        <div class="cab-hero-bot">
+        <div class="cab-hero-top">
+          <div class="cab-hero-lbl"><div class="cab-hero-dot"></div>Mi jornada de hoy</div>
+          <div class="hero-turnos" id="hero-turnos-wrap"></div>
+          <div id="cab-horario-hero" style="font-size:11px;color:rgba(253,246,238,.3);margin-top:8px;min-height:12px;"></div>
+        </div>
+        <div class="hero-ayer" id="hero-ayer-block">
+          <div class="hero-ayer-lbl">Ayer</div>
+          <div class="hero-ayer-msg n" id="hero-ayer-msg">Cargando...</div>
+        </div>
+        <div class="cab-hero-bot" style="padding:10px 18px 14px;border-top:1px solid rgba(253,246,238,.08);display:flex;justify-content:space-between;align-items:center;">
           <div>
-            <div class="cab-est-lbl">Punto asignado</div>
+            <div class="cab-est-lbl">Punto</div>
             <div class="cab-est-val" id="cab-punto-hero">—</div>
           </div>
           <div>
             <div class="cab-est-lbl">Rol</div>
-            <div class="cab-est-val" id="cab-rol-hero" style="color:var(--text);">—</div>
+            <div class="cab-est-val" id="cab-rol-hero">—</div>
           </div>
           <div class="cab-clk">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1701,6 +1724,101 @@ function mostrarPinModal(nombre, rol){
   setTimeout(()=>inp.focus(), 200);
 }
 
+// ── Calcular progreso de un área/turno desde localStorage ──────────
+function calcProg(punto, fecha, area, turno){
+  const data = loadDataDate(punto, fecha, area, turno);
+  const tasks = (CL[area]||{})[turno]||[];
+  if(!tasks.length) return {pct:0, done:0, total:0, hay:false};
+  let done=0;
+  (data&&data.tasks||[]).forEach((t,i)=>{
+    const tk=tasks[i]; if(!tk) return;
+    if(tk.tipo==='check'&&t.done) done++;
+    else if(tk.tipo==='aseo'&&t.aseo>0) done++;
+    else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='') done++;
+    else if(tk.tipo==='arqueo'||tk.tipo==='datofonos') done++;
+  });
+  return {pct:Math.round(done/tasks.length*100), done, total:tasks.length, hay:!!(data&&data.tasks&&data.tasks.length)};
+}
+
+function areaPorRol(rol){
+  return {empleado:'cocina',jefe:'cocina',cajero:'caja',domiciliario:'domi',supervisor:'admin',admin:'admin',gerente:'admin'}[rol]||'cocina';
+}
+
+// ── Mensaje de ayer según rol ────────────────────────────────────
+function mensajeAyer(punto, ayer, rol){
+  const fmt = n => new Intl.NumberFormat('es-CO').format(Math.abs(Math.round(n)));
+
+  if(rol==='cajero'){
+    const data = loadDataDate(punto, ayer, 'caja', 'cierre');
+    const tasks = (CL['caja']||{})['cierre']||[];
+    let ci=0, da=0, si=0, hay=false;
+    (data&&data.tasks||[]).forEach((t,i)=>{
+      const tk=tasks[i]; if(!tk) return;
+      if(tk.campo==='Efectivo cierre'&&t.val){ci=parseFloat(t.val)||0; hay=true;}
+      if(tk.campo==='Ventas datáfono'&&t.val) da=parseFloat(t.val)||0;
+      if(tk.campo==='Ventas sistema'&&t.val)  si=parseFloat(t.val)||0;
+    });
+    if(!hay) return {msg:'⚠️ Ayer no registraste el cierre de caja. ¡Hoy no lo olvides!', cls:'alert'};
+    if(!si)  return {msg:'📋 Registra ventas del sistema en el cierre para ver el comparativo.', cls:'warn'};
+    const diff=(ci+da)-si;
+    if(diff===0) return {msg:'✅ ¡Caja cuadrada ayer! Todo en orden. Así se trabaja 💚', cls:'ok'};
+    if(diff>0)   return {msg:'💰 Sobrante de $'+fmt(diff)+' ayer. Repórtalo al supervisor hoy.', cls:'warn'};
+    return {msg:'🚨 Faltaron $'+fmt(Math.abs(diff))+' en caja ayer. El supervisor debe revisarlo.', cls:'alert'};
+  }
+
+  if(rol==='domiciliario'){
+    const p1=calcProg(punto,ayer,'domi','apertura');
+    const p2=calcProg(punto,ayer,'domi','cierre');
+    const pcts=[p1,p2].filter(x=>x.hay);
+    if(!pcts.length) return {msg:'🛵 Ayer no registraste tus tareas. ¡Hoy empieza bien desde el arranque!', cls:'warn'};
+    const prom=Math.round(pcts.reduce((a,b)=>a+b.pct,0)/pcts.length);
+    if(prom>=80) return {msg:'🛵 ¡Buen trabajo ayer! '+prom+'% completado. La zona de domicilios quedó bien. ¡Hoy igual!', cls:'ok'};
+    return {msg:'🛵 Ayer completaste el '+prom+'% de tus tareas. Recuerda: baños limpios y canecas desde el arranque.', cls:'warn'};
+  }
+
+  if(rol==='admin'||rol==='supervisor'||rol==='gerente'){
+    const areas=['admin','cocina','caja','domi','neveras','bodega'];
+    const turnos=['apertura','medio','cierre'];
+    let total=0, cnt=0;
+    areas.forEach(ar=>turnos.forEach(tu=>{
+      const p=calcProg(punto,ayer,ar,tu);
+      if(p.hay){total+=p.pct; cnt++;}
+    }));
+    const data=loadDataDate(punto,ayer,'caja','cierre');
+    const tasks=(CL['caja']||{})['cierre']||[];
+    let ci=0,da=0,si=0;
+    (data&&data.tasks||[]).forEach((t,i)=>{
+      const tk=tasks[i]; if(!tk) return;
+      if(tk.campo==='Efectivo cierre'&&t.val) ci=parseFloat(t.val)||0;
+      if(tk.campo==='Ventas datáfono'&&t.val)  da=parseFloat(t.val)||0;
+      if(tk.campo==='Ventas sistema'&&t.val)    si=parseFloat(t.val)||0;
+    });
+    const prom=cnt?Math.round(total/cnt):0;
+    if(!cnt) return {msg:'Sin datos del punto ayer. Verifica que el equipo esté usando el checklist.', cls:'warn'};
+    if(si>0){
+      const diff=(ci+da)-si;
+      if(diff<0) return {msg:'🚨 Faltante de $'+fmt(Math.abs(diff))+' en caja ayer. Cumplimiento: '+prom+'%.', cls:'alert'};
+      if(diff>0) return {msg:'💰 Sobrante de $'+fmt(diff)+' ayer. Cumplimiento general: '+prom+'%.', cls:'warn'};
+      return {msg:'✅ Caja cuadrada ayer. Cumplimiento del punto: '+prom+'%.', cls:prom>=80?'ok':'warn'};
+    }
+    if(prom>=80) return {msg:'🌟 El punto tuvo '+prom+'% de cumplimiento ayer. ¡Equipo en forma!', cls:'ok'};
+    if(prom>=50) return {msg:'📊 Cumplimiento ayer: '+prom+'%. Hay áreas que necesitan más atención hoy.', cls:'warn'};
+    return {msg:'⚠️ Cumplimiento ayer: '+prom+'%. Habla con el equipo — los checklists no se están completando.', cls:'alert'};
+  }
+
+  // Cocina / jefe (default)
+  const pa=calcProg(punto,ayer,'cocina','apertura');
+  const pm=calcProg(punto,ayer,'cocina','medio');
+  const pc=calcProg(punto,ayer,'cocina','cierre');
+  const turnos=[pa,pm,pc].filter(x=>x.hay);
+  if(!turnos.length) return {msg:'Ayer no registraste ningún turno. ¡Hoy es un día nuevo, aprovéchalo! 💪', cls:'warn'};
+  const prom=Math.round(turnos.reduce((a,b)=>a+b.pct,0)/turnos.length);
+  if(prom===100) return {msg:'🌟 ¡Excelente ayer! Completaste el 100% en cocina. ¡Así se lleva La Cabaña!', cls:'ok'};
+  if(prom>=70)   return {msg:'✅ Ayer completaste el '+prom+'% en cocina. ¡Buen trabajo! Hoy al 100% 🔥', cls:'ok'};
+  if(prom>=40)   return {msg:'⚡ Ayer lograste el '+prom+'% en cocina. Hoy sin excusas — ¡completamos todo!', cls:'warn'};
+  return {msg:'⚠️ Ayer solo el '+prom+'% en cocina. El checklist protege a todos. Hoy: completo.', cls:'alert'};
+}
+
 function updateHomeUI(){
   const p=PUNTOS[curPunto];
   const initials=curUser.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
@@ -1715,41 +1833,57 @@ function updateHomeUI(){
   if(el('cab-perfil-punto'))  el('cab-perfil-punto').textContent=p.icon+' '+p.name;
   if(el('cab-rol-hero')) el('cab-rol-hero').textContent=rolLabels[curRol]||curRol;
 
-  // Turno detectado por hora actual
-  const hora = new Date().getHours();
-  let turnoNombre = '—';
-  if(hora>=6&&hora<=11)  turnoNombre='☀️ Apertura';
-  else if(hora>=12&&hora<=17) turnoNombre='🌤️ Turno medio';
-  else if(hora>=18&&hora<=23) turnoNombre='🌙 Cierre';
-  else turnoNombre='🌙 Cierre';
-  if(el('cab-turno-hero')) el('cab-turno-hero').textContent=turnoNombre;
-
-  // Horario del empleado hoy desde Firebase horarios
+  // Horario desde Firebase
   try {
-    const wk = (()=>{
-      const now=new Date();
-      const day=now.getDay();
-      const diff=day===0?-6:1-day;
-      const mon=new Date(now);
-      mon.setDate(now.getDate()+diff);
-      return mon.toISOString().slice(0,10);
-    })();
-    const horSem = window._horariosCache?.[wk];
+    const wk=(()=>{const now=new Date(),day=now.getDay(),diff=day===0?-6:1-day,mon=new Date(now);mon.setDate(now.getDate()+diff);return mon.toISOString().slice(0,10);})();
+    const horSem=window._horariosCache?.[wk];
     if(horSem&&horSem[curUser]){
-      const dias=['dom','lun','mar','mie','jue','vie','sab'];
-      const diaIdx=new Date().getDay();
-      const monIdx=diaIdx===0?6:diaIdx-1;
+      const monIdx=new Date().getDay()===0?6:new Date().getDay()-1;
       const diaHoy=horSem[curUser][monIdx];
       if(diaHoy&&diaHoy.tipo==='descanso'){
         if(el('cab-horario-hero')) el('cab-horario-hero').textContent='🟡 Día de descanso';
       } else if(diaHoy&&diaHoy.entrada){
         let txt=diaHoy.entrada;
-        if(diaHoy.pico_ini) txt+=` (${diaHoy.pico_ini}–${diaHoy.pico_fin})`;
+        if(diaHoy.pico_ini) txt+=' ('+diaHoy.pico_ini+'–'+diaHoy.pico_fin+')';
         txt+=' → '+diaHoy.cierre;
         if(el('cab-horario-hero')) el('cab-horario-hero').textContent='🕐 '+txt;
       }
     }
   } catch(e){}
+
+  // ── 3 BARRAS DE TURNO ─────────────────────────────────────────────
+  const area = areaPorRol(curRol);
+  const hoy  = todayStr();
+  const turnos3=[
+    {id:'apertura',ico:'☀️',name:'Apertura'},
+    {id:'medio',   ico:'🌤️',name:'Turno medio'},
+    {id:'cierre',  ico:'🌙',name:'Cierre'}
+  ];
+  const wrap=el('hero-turnos-wrap');
+  if(wrap){
+    wrap.innerHTML=turnos3.map(t=>{
+      const pr=calcProg(curPunto,hoy,area,t.id);
+      const cls=!pr.hay?'n':pr.pct>=80?'g':pr.pct>=40?'m':'l';
+      const txt=pr.hay?pr.pct+'%':'—';
+      return '<div class="hero-t-row">'+
+        '<div class="hero-t-ico">'+t.ico+'</div>'+
+        '<div class="hero-t-body">'+
+          '<div class="hero-t-top">'+
+            '<div class="hero-t-name">'+t.name+'</div>'+
+            '<div class="hero-t-pct '+cls+'">'+txt+'</div>'+
+          '</div>'+
+          '<div class="hero-t-track"><div class="hero-t-fill '+cls+'" style="width:'+(pr.hay?pr.pct:0)+'%"></div></div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  }
+
+  // ── MENSAJE DE AYER ──────────────────────────────────────────────
+  const ayer=new Date(); ayer.setDate(ayer.getDate()-1);
+  const fechaAyer=ayer.toISOString().slice(0,10);
+  const {msg,cls}=mensajeAyer(curPunto,fechaAyer,curRol);
+  const ayerMsg=el('hero-ayer-msg');
+  if(ayerMsg){ayerMsg.textContent=msg; ayerMsg.className='hero-ayer-msg '+cls;}
 
   const adminBtn=document.getElementById('cab-btn-admin');
   if(adminBtn) adminBtn.style.display=(curRol==='gerente')?'flex':'none';
