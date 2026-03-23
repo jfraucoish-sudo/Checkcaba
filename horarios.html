@@ -247,11 +247,7 @@ body{font-family:'Inter',sans-serif;color:var(--crema);min-height:100vh;}
     </div>
     <div class="app-hdr-right">
       <div class="hdr-avatar" id="enc-avatar">E</div>
-      <div class="hdr-btn" onclick="doLogout()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
-    </div>
-  </div>
-
-  <div class="app-body" id="enc-body"></div>
+      <div class="hdr-btn" id="enc-logout-btn" onclick="doLogout()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
 
   <div class="bottom-nav">
     <div class="bn active" id="enc-bn-horario" onclick="encTab('horario')">
@@ -282,7 +278,7 @@ body{font-family:'Inter',sans-serif;color:var(--crema);min-height:100vh;}
     </div>
     <div class="app-hdr-right">
       <div class="hdr-avatar" id="emp-avatar">E</div>
-      <div class="hdr-btn" onclick="doLogout()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+      <div class="hdr-btn" id="emp-logout-btn" onclick="doLogout()"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
     </div>
   </div>
 
@@ -522,11 +518,17 @@ async function doLogin(){
     document.getElementById('enc-avatar').textContent='E';
     document.getElementById('enc-hdr-sub').textContent='Encargada';
     encTab('horario');
+    actualizarBtnLogout();
   } else {
     curUser=nombre; curRole='empleado';
     await loadHorario(weekKey(0));
     await loadHorario(weekKey(1));
     showScreen('sc-empleado');
+    const ini2=nombre.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    document.getElementById('emp-avatar').textContent=ini2;
+    document.getElementById('emp-hdr-sub').textContent=nombre;
+    empTab('horario');
+    actualizarBtnLogout();
     const ini=nombre.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
     document.getElementById('emp-avatar').textContent=ini;
     document.getElementById('emp-hdr-sub').textContent=nombre;
@@ -534,11 +536,32 @@ async function doLogin(){
   }
 }
 
+let _fromCabana = false; // true cuando viene de La Cabaña App
+
+function actualizarBtnLogout(){
+  // Si viene de La Cabaña mostrar flecha de volver en vez de salir
+  const backSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+  const logoutSvg = `<svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`;
+  ['enc-logout-btn','emp-logout-btn'].forEach(id=>{
+    const btn = document.getElementById(id);
+    if(btn) btn.innerHTML = _fromCabana ? backSvg : logoutSvg;
+  });
+}
+
 function doLogout(){
   curUser=null; curRole=null; curWeekOffset=0;
-  document.getElementById('login-pin').value='';
-  document.getElementById('login-err').textContent='';
-  showScreen('sc-login');
+  const pinEl=document.getElementById('login-pin');
+  const errEl=document.getElementById('login-err');
+  if(pinEl) pinEl.value='';
+  if(errEl) errEl.textContent='';
+  if(_fromCabana){
+    // Volver a La Cabaña en vez de mostrar login de Horarios
+    window.close();
+    // Si window.close() no funciona (algunos navegadores lo bloquean)
+    setTimeout(()=>{ window.location.href='index.html'; }, 200);
+  } else {
+    showScreen('sc-login');
+  }
 }
 
 function showScreen(id){
@@ -1488,7 +1511,8 @@ document.addEventListener('DOMContentLoaded', async ()=>{
         // Nombre no existe o está inactivo — mostrar login normal
         return;
       }
-      // Empleado válido — login automático
+      // Empleado válido — login automático, bloqueado a su nombre
+      _fromCabana = true;
       curUser=nombre; curRole='empleado';
       await loadHorario(weekKey(0));
       await loadHorario(weekKey(1));
@@ -1497,8 +1521,10 @@ document.addEventListener('DOMContentLoaded', async ()=>{
       document.getElementById('emp-avatar').textContent=ini;
       document.getElementById('emp-hdr-sub').textContent=nombre;
       empTab('horario');
+      actualizarBtnLogout();
     } else {
       // Admin/Supervisor — preseleccionar y pedir PIN
+      _fromCabana = true;
       const sel=document.getElementById('login-nombre');
       if(sel) sel.value='__encargada__';
       const pf=document.getElementById('pin-field');
