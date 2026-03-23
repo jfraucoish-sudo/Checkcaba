@@ -759,11 +759,16 @@ select{padding:5px 8px;}
       <div class="cab-hero">
         <div class="cab-hero-lbl"><div class="cab-hero-dot"></div>Resumen de jornada</div>
         <div class="cab-hero-tlbl">Turno de hoy</div>
-        <div class="cab-hero-time">Apertura</div>
+        <div class="cab-hero-time" id="cab-turno-hero">—</div>
+        <div id="cab-horario-hero" style="font-size:12px;color:rgba(254,242,223,.5);margin-bottom:10px;min-height:16px;"></div>
         <div class="cab-hero-bot">
           <div>
             <div class="cab-est-lbl">Punto asignado</div>
             <div class="cab-est-val" id="cab-punto-hero">—</div>
+          </div>
+          <div>
+            <div class="cab-est-lbl">Rol</div>
+            <div class="cab-est-val" id="cab-rol-hero" style="color:var(--crema);">—</div>
           </div>
           <div class="cab-clk">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1458,6 +1463,19 @@ function _completarLogin(nombre, rol){
   localStorage.setItem('cabana_session', JSON.stringify({
     nombre, rol, punto:curPunto, ts:Date.now()
   }));
+  // Cargar horario de la semana en background para mostrar en hero
+  try {
+    const now=new Date();
+    const day=now.getDay();
+    const diff=day===0?-6:1-day;
+    const mon=new Date(now);
+    mon.setDate(now.getDate()+diff);
+    const wk=mon.toISOString().slice(0,10);
+    _db.collection('horarios').doc(wk).get().then(doc=>{
+      if(doc.exists){ window._horariosCache={}; window._horariosCache[wk]=doc.data(); }
+      updateHomeUI();
+    }).catch(()=>{});
+  } catch(e){}
   updateHomeUI();
   startClock();
   showScreen('home');
@@ -1562,9 +1580,46 @@ function updateHomeUI(){
   if(el('cab-perfil-nombre')) el('cab-perfil-nombre').textContent=curUser;
   if(el('cab-perfil-rol'))    el('cab-perfil-rol').textContent=rolLabels[curRol]||curRol;
   if(el('cab-perfil-punto'))  el('cab-perfil-punto').textContent=p.icon+' '+p.name;
+  if(el('cab-rol-hero')) el('cab-rol-hero').textContent=rolLabels[curRol]||curRol;
+
+  // Turno detectado por hora actual
+  const hora = new Date().getHours();
+  let turnoNombre = '—';
+  if(hora>=6&&hora<=11)  turnoNombre='☀️ Apertura';
+  else if(hora>=12&&hora<=17) turnoNombre='🌤️ Turno medio';
+  else if(hora>=18&&hora<=23) turnoNombre='🌙 Cierre';
+  else turnoNombre='🌙 Cierre';
+  if(el('cab-turno-hero')) el('cab-turno-hero').textContent=turnoNombre;
+
+  // Horario del empleado hoy desde Firebase horarios
+  try {
+    const wk = (()=>{
+      const now=new Date();
+      const day=now.getDay();
+      const diff=day===0?-6:1-day;
+      const mon=new Date(now);
+      mon.setDate(now.getDate()+diff);
+      return mon.toISOString().slice(0,10);
+    })();
+    const horSem = window._horariosCache?.[wk];
+    if(horSem&&horSem[curUser]){
+      const dias=['dom','lun','mar','mie','jue','vie','sab'];
+      const diaIdx=new Date().getDay();
+      const monIdx=diaIdx===0?6:diaIdx-1;
+      const diaHoy=horSem[curUser][monIdx];
+      if(diaHoy&&diaHoy.tipo==='descanso'){
+        if(el('cab-horario-hero')) el('cab-horario-hero').textContent='🟡 Día de descanso';
+      } else if(diaHoy&&diaHoy.entrada){
+        let txt=diaHoy.entrada;
+        if(diaHoy.pico_ini) txt+=` (${diaHoy.pico_ini}–${diaHoy.pico_fin})`;
+        txt+=' → '+diaHoy.cierre;
+        if(el('cab-horario-hero')) el('cab-horario-hero').textContent='🕐 '+txt;
+      }
+    }
+  } catch(e){}
+
   const adminBtn=document.getElementById('cab-btn-admin');
   if(adminBtn) adminBtn.style.display=(curRol==='admin'||curRol==='jefe'||curRol==='supervisor')?'flex':'none';
-  // Control de papas: admin, jefe, supervisor, cocina
   const papasBtn=document.getElementById('cab-btn-papas');
   const rolesConPapas=['admin','jefe','supervisor','empleado'];
   if(papasBtn) papasBtn.style.display=rolesConPapas.includes(curRol)?'flex':'none';
