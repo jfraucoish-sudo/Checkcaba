@@ -489,29 +489,29 @@ async function updateSolicitud(id,estado){
 // ═══════════════════════════════════════════════════
 function initLogin(){
   const sel = document.getElementById('login-nombre');
-  sel.innerHTML = '<option value="">Selecciona...</option>';
-  sel.innerHTML += `<option value="${ENCARGADA}">👩‍💼 Encargada (Horarios)</option>`;
-  const names = Object.keys(PERSONAL).sort();
-  names.forEach(n=>sel.innerHTML+=`<option value="${n}">${n}</option>`);
-
+  if(!sel) return;
+  sel.innerHTML = '<option value="">Selecciona tu nombre...</option>';
+  sel.innerHTML += '<option value="__encargada__">👩‍💼 Encargada / Supervisora</option>';
+  // Solo empleados activos
+  const activos = Object.entries(PERSONAL)
+    .filter(([n,p])=>p.estado!=='retirado'&&p.estado!=='inactivo')
+    .sort((a,b)=>a[0].localeCompare(b[0]));
+  activos.forEach(([n])=> sel.innerHTML += `<option value="${n}">${n}</option>`);
   sel.onchange = ()=>{
-    const v = sel.value;
-    document.getElementById('pin-field').style.display = v===ENCARGADA?'block':'none';
+    document.getElementById('pin-field').style.display = sel.value==='__encargada__'?'block':'none';
     document.getElementById('login-err').textContent='';
   };
 }
 
 async function doLogin(){
   const nombre = document.getElementById('login-nombre').value;
-  const pin = document.getElementById('login-pin').value;
-  const err = document.getElementById('login-err');
-
+  const pin    = document.getElementById('login-pin').value;
+  const err    = document.getElementById('login-err');
   if(!nombre){ err.textContent='Selecciona tu nombre'; return; }
 
   if(nombre==='__encargada__'){
     if(pin!==ENCARGADA_PIN){ err.textContent='PIN incorrecto'; return; }
     curUser=ENCARGADA; curRole='encargada';
-    await loadPersonalDB();
     await loadHorario(weekKey(0));
     await loadSolicitudes();
     showScreen('sc-encargada');
@@ -524,15 +524,11 @@ async function doLogin(){
     await loadHorario(weekKey(0));
     await loadHorario(weekKey(1));
     showScreen('sc-empleado');
-    const ini2=nombre.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
-    document.getElementById('emp-avatar').textContent=ini2;
-    document.getElementById('emp-hdr-sub').textContent=nombre;
-    empTab('horario');
-    actualizarBtnLogout();
     const ini=nombre.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
     document.getElementById('emp-avatar').textContent=ini;
     document.getElementById('emp-hdr-sub').textContent=nombre;
     empTab('horario');
+    actualizarBtnLogout();
   }
 }
 
@@ -1466,30 +1462,17 @@ async function enviarSolicitud(){
 // ═══════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════
-function initLogin(){
-  const sel = document.getElementById('login-nombre');
-  if(!sel) return;
-  sel.innerHTML = '<option value="">Selecciona tu nombre...</option>';
-  // Encargada primero
-  sel.innerHTML += '<option value="__encargada__">👩‍💼 Encargada / Supervisora</option>';
-  // Todos los empleados ordenados
-  const names = Object.keys(PERSONAL).sort();
-  names.forEach(n => sel.innerHTML += `<option value="${n}">${n}</option>`);
-
-  sel.addEventListener('change', ()=>{
-    const v = sel.value;
-    document.getElementById('pin-field').style.display = v==='__encargada__' ? 'block' : 'none';
-    document.getElementById('login-err').textContent = '';
-  });
-}
-
 document.addEventListener('DOMContentLoaded', async ()=>{
+  // 1. Cargar personal desde Firebase primero
+  await loadPersonalDB();
+
+  // 2. Poblar select del login con nombres reales
   initLogin();
 
-  // Leer sesión de La Cabaña App
+  // 3. Leer sesión de La Cabaña App (localStorage — compartido entre pestañas)
   let session = null;
   try {
-    const raw = sessionStorage.getItem('cabana_session');
+    const raw = localStorage.getItem('cabana_session');
     if(raw){
       session = JSON.parse(raw);
       // Sesión válida por 12 horas

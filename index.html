@@ -1455,7 +1455,7 @@ function entrar(){
 function _completarLogin(nombre, rol){
   curPunto=selPunto; curUser=nombre; curRol=rol;
   // Guardar sesión compartida para horarios y papas
-  sessionStorage.setItem('cabana_session', JSON.stringify({
+  localStorage.setItem('cabana_session', JSON.stringify({
     nombre, rol, punto:curPunto, ts:Date.now()
   }));
   updateHomeUI();
@@ -1594,7 +1594,7 @@ function confirmarLogout(){
   if(modal) modal.remove();
   curPunto=null; curUser=''; curRol='empleado'; selPunto=null;
   window._filteredAreas=null;
-  sessionStorage.removeItem('cabana_session');
+  localStorage.removeItem('cabana_session');
   // Clear form
   const n=document.getElementById('login-nombre');
   const r=document.getElementById('login-rol');
