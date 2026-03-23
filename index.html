@@ -1747,6 +1747,34 @@ function mostrarPinModal(nombre, rol){
   setTimeout(()=>inp.focus(), 200);
 }
 
+// ── Cargar firmas app papa para el hero del supervisor ────────────
+async function _heroCargarFirmas(ayerMsgEl, alertasPrevias){
+  const hoy = todayStr();
+  const puntos = ['soacha','plaza'];
+  const alertas = [...alertasPrevias];
+  try {
+    const snap = await _db.collection('firmas')
+      .where('fecha','==',hoy).get();
+    const firmasHoy = {};
+    snap.forEach(doc=>{ firmasHoy[doc.id]=doc.data(); });
+    puntos.forEach(pt=>{
+      const tieneCalc = Object.keys(firmasHoy).some(k=>k.includes(pt)&&k.includes('calc'));
+      const tieneAceite = Object.keys(firmasHoy).some(k=>k.includes(pt)&&k.includes('aceite'));
+      if(!tieneCalc)  alertas.push('📋 '+PUNTOS[pt].name+': falta firma en calculadora de papas hoy');
+      if(!tieneAceite) alertas.push('🛢️ '+PUNTOS[pt].name+': falta firma de control de aceite hoy');
+    });
+  } catch(e){}
+  if(ayerMsgEl){
+    if(alertas.length){
+      ayerMsgEl.textContent=alertas[0]+(alertas.length>1?' (+'+( alertas.length-1)+' más)':'');
+      ayerMsgEl.className='hero-ayer-msg alert';
+    } else {
+      ayerMsgEl.textContent='✅ Ambos puntos con registros al día. ¡Buen trabajo del equipo!';
+      ayerMsgEl.className='hero-ayer-msg ok';
+    }
+  }
+}
+
 // ── Calcular progreso de un área/turno desde localStorage ──────────
 function calcProg(punto, fecha, area, turno){
   const data = loadDataDate(punto, fecha, area, turno);
@@ -1829,11 +1857,18 @@ function mensajeAyer(punto, ayer, rol){
     return {msg:'⚠️ Cumplimiento ayer: '+prom+'%. Habla con el equipo — los checklists no se están completando.', cls:'alert'};
   }
 
-  // Cocina / jefe (default)
+  // Cocina / jefe (default) — suma cocina+neveras+bodega+admin
+  const areasCocina=['cocina','neveras','bodega','admin'];
+  const turnosIds=['apertura','medio','cierre'];
+  const datosAyer=[];
+  areasCocina.forEach(ar=>turnosIds.forEach(tu=>{
+    const p=calcProg(punto,ayer,ar,tu);
+    if(p.hay) datosAyer.push(p);
+  }));
   const pa=calcProg(punto,ayer,'cocina','apertura');
   const pm=calcProg(punto,ayer,'cocina','medio');
   const pc=calcProg(punto,ayer,'cocina','cierre');
-  const turnos=[pa,pm,pc].filter(x=>x.hay);
+  const turnos=datosAyer.length?datosAyer:[pa,pm,pc].filter(x=>x.hay);
   if(!turnos.length) return {msg:'Ayer no registraste ningún turno. ¡Hoy es un día nuevo, aprovéchalo! 💪', cls:'warn'};
   const prom=Math.round(turnos.reduce((a,b)=>a+b.pct,0)/turnos.length);
   if(prom===100) return {msg:'🌟 ¡Excelente ayer! Completaste el 100% en cocina. ¡Así se lleva La Cabaña!', cls:'ok'};
@@ -1874,39 +1909,129 @@ function updateHomeUI(){
     }
   } catch(e){}
 
-  // ── 3 BARRAS DE TURNO ─────────────────────────────────────────────
-  const area = areaPorRol(curRol);
-  const hoy  = todayStr();
-  const turnos3=[
-    {id:'apertura',ico:'☀️',name:'Apertura'},
-    {id:'medio',   ico:'🌤️',name:'Turno medio'},
-    {id:'cierre',  ico:'🌙',name:'Cierre'}
-  ];
-  const wrap=el('hero-turnos-wrap');
-  if(wrap){
-    wrap.innerHTML=turnos3.map(t=>{
-      const pr=calcProg(curPunto,hoy,area,t.id);
-      const cls=!pr.hay?'n':pr.pct>=80?'g':pr.pct>=40?'m':'l';
-      const txt=pr.hay?pr.pct+'%':'—';
-      return '<div class="hero-t-row">'+
-        '<div class="hero-t-ico">'+t.ico+'</div>'+
-        '<div class="hero-t-body">'+
-          '<div class="hero-t-top">'+
-            '<div class="hero-t-name">'+t.name+'</div>'+
-            '<div class="hero-t-pct '+cls+'">'+txt+'</div>'+
-          '</div>'+
-          '<div class="hero-t-track"><div class="hero-t-fill '+cls+'" style="width:'+(pr.hay?pr.pct:0)+'%"></div></div>'+
-        '</div>'+
-      '</div>';
-    }).join('');
+  // ── HERO SEGÚN ROL ───────────────────────────────────────────────
+  const hoy = todayStr();
+  const ayer = (()=>{const d=new Date();d.setDate(d.getDate()-1);return d.toISOString().slice(0,10);})();
+  const wrap = el('hero-turnos-wrap');
+  const ayerMsg = el('hero-ayer-msg');
+
+  // Definir áreas del checklist por rol
+  const AREAS_ROL = {
+    empleado:     ['cocina','neveras','admin'],
+    jefe:         ['cocina','neveras','admin'],
+    cajero:       ['admin','caja'],
+    domiciliario: ['domi'],
+    admin:        ['admin','caja','neveras'],          // su checklist propio
+    supervisor:   ['admin','cocina','caja','domi','neveras','bodega'],
+    gerente:      ['admin','cocina','caja','domi','neveras','bodega'],
+  };
+  const misAreas = (AREAS_ROL[curRol]||['cocina']).filter(id=>AREAS_LIST.find(a=>a.id===id));
+
+  // Calcular progreso combinado de varias áreas por turno
+  function calcPunto(punto, fecha, areas, turno){
+    let done=0, total=0, hay=false;
+    areas.forEach(ar=>{
+      const pr=calcProg(punto,fecha,ar,turno);
+      done+=pr.done; total+=pr.total;
+      if(pr.hay) hay=true;
+    });
+    return {pct:total?Math.round(done/total*100):0, done, total, hay};
   }
 
-  // ── MENSAJE DE AYER ──────────────────────────────────────────────
-  const ayer=new Date(); ayer.setDate(ayer.getDate()-1);
-  const fechaAyer=ayer.toISOString().slice(0,10);
-  const {msg,cls}=mensajeAyer(curPunto,fechaAyer,curRol);
-  const ayerMsg=el('hero-ayer-msg');
-  if(ayerMsg){ayerMsg.textContent=msg; ayerMsg.className='hero-ayer-msg '+cls;}
+  function barraHTML(ico, nombre, pr){
+    const cls=!pr.hay?'n':pr.pct>=80?'g':pr.pct>=40?'m':'l';
+    const txt=pr.hay?pr.pct+'%':'—';
+    return '<div class="hero-t-row">'+
+      '<div class="hero-t-ico">'+ico+'</div>'+
+      '<div class="hero-t-body">'+
+        '<div class="hero-t-top">'+
+          '<div class="hero-t-name">'+nombre+'</div>'+
+          '<div class="hero-t-pct '+cls+'">'+txt+'</div>'+
+        '</div>'+
+        '<div class="hero-t-track"><div class="hero-t-fill '+cls+'" style="width:'+(pr.hay?pr.pct:0)+'%"></div></div>'+
+      '</div>'+
+    '</div>';
+  }
+
+  function textoAyer(prom, hayDatos, extra){
+    if(!hayDatos) return {msg:'Sin registros de ayer. ¡Hoy empieza bien! 💪', cls:'warn'};
+    if(extra) return extra;
+    if(prom===100) return {msg:'🌟 ¡Perfecto ayer! 100% completado. ¡Así se hace!', cls:'ok'};
+    if(prom>=80)   return {msg:'✅ '+prom+'% completado ayer. ¡Muy bien! Hoy al 100% 🔥', cls:'ok'};
+    if(prom>=50)   return {msg:'⚡ '+prom+'% ayer. Hoy sin excusas — ¡completamos todo!', cls:'warn'};
+    return {msg:'⚠️ Solo '+prom+'% ayer. El checklist protege a todos. ¡Hoy completo!', cls:'alert'};
+  }
+
+  if(wrap){
+    // ── SUPERVISOR: ve los DOS puntos ────────────────────────────
+    if(curRol==='supervisor'||curRol==='gerente'){
+      const puntos=[{id:'soacha',ico:'🏠',name:'Soacha'},{id:'plaza',ico:'🏬',name:'Mi Plaza'}];
+      let html='<div style="font-size:9px;font-weight:700;color:rgba(253,246,238,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;">Cumplimiento por punto</div>';
+      const alertas=[];
+      puntos.forEach(pt=>{
+        const pr=calcPunto(pt.id,hoy,misAreas,'apertura');
+        const pm2=calcPunto(pt.id,hoy,misAreas,'medio');
+        const pc=calcPunto(pt.id,hoy,misAreas,'cierre');
+        const conDatos=[pr,pm2,pc].filter(x=>x.hay);
+        const promG=conDatos.length?Math.round(conDatos.reduce((a,b)=>a+b.pct,0)/conDatos.length):0;
+        const cls=!conDatos.length?'n':promG>=80?'g':promG>=40?'m':'l';
+        const txt=conDatos.length?promG+'%':'Sin datos';
+        html+=barraHTML(pt.ico, pt.name+' — Hoy', {pct:promG,hay:conDatos.length>0});
+        if(!conDatos.length) alertas.push('⚠️ '+pt.name+': sin registros hoy. ¡Requiere supervisión!');
+        else if(promG<50) alertas.push('🔴 '+pt.name+': solo '+promG+'% completado. Intervenir.');
+      });
+      wrap.innerHTML=html;
+      // Cargar firmas app papa en background
+      _heroCargarFirmas(ayerMsg, alertas);
+      return;
+    }
+
+    // ── ADMIN: su checklist + resumen del punto ──────────────────
+    if(curRol==='admin'){
+      const turnos3=[
+        {id:'apertura',ico:'☀️',name:'Apertura'},
+        {id:'medio',   ico:'🌤️',name:'Turno medio'},
+        {id:'cierre',  ico:'🌙',name:'Cierre'}
+      ];
+      // Mi progreso (admin + caja + neveras)
+      const misAreasAdmin = ['admin','caja','neveras'];
+      let html='<div style="font-size:9px;font-weight:700;color:rgba(253,246,238,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">Mi checklist</div>';
+      turnos3.forEach(t=>{
+        html+=barraHTML(t.ico, t.name, calcPunto(curPunto,hoy,misAreasAdmin,t.id));
+      });
+      // Cumplimiento general del punto
+      let done2=0,total2=0,hay2=false;
+      misAreas.forEach(ar=>turnos3.forEach(t=>{
+        const pr=calcProg(curPunto,hoy,ar,t.id);
+        done2+=pr.done; total2+=pr.total; if(pr.hay) hay2=true;
+      }));
+      const pctPunto=total2?Math.round(done2/total2*100):0;
+      const clsP=!hay2?'n':pctPunto>=80?'g':pctPunto>=40?'m':'l';
+      html+='<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(253,246,238,.08);">'+
+        '<div style="font-size:9px;font-weight:700;color:rgba(253,246,238,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">Punto '+PUNTOS[curPunto].name+'</div>'+
+        barraHTML('📊','Cumplimiento total',{pct:pctPunto,hay:hay2})+
+      '</div>';
+      wrap.innerHTML=html;
+      // Mensaje ayer con caja
+      const {msg,cls}=mensajeAyer(curPunto,ayer,curRol);
+      if(ayerMsg){ayerMsg.textContent=msg;ayerMsg.className='hero-ayer-msg '+cls;}
+      return;
+    }
+
+    // ── EMPLEADO/JEFE/CAJERO/DOMI: 3 turnos de sus áreas ─────────
+    const turnos3=[
+      {id:'apertura',ico:'☀️',name:'Apertura'},
+      {id:'medio',   ico:'🌤️',name:'Turno medio'},
+      {id:'cierre',  ico:'🌙',name:'Cierre'}
+    ];
+    wrap.innerHTML=turnos3.map(t=>{
+      return barraHTML(t.ico, t.name, calcPunto(curPunto,hoy,misAreas,t.id));
+    }).join('');
+
+    // Mensaje ayer
+    const {msg,cls}=mensajeAyer(curPunto,ayer,curRol);
+    if(ayerMsg){ayerMsg.textContent=msg;ayerMsg.className='hero-ayer-msg '+cls;}
+  }
 
   const adminBtn=document.getElementById('cab-btn-admin');
   if(adminBtn) adminBtn.style.display=(curRol==='gerente')?'flex':'none';
