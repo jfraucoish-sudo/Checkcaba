@@ -1464,66 +1464,44 @@ async function enviarSolicitud(){
 // INIT
 // ═══════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async ()=>{
-  // 1. Cargar personal desde Firebase primero
+  // Cargar personal desde Firebase y poblar select
   await loadPersonalDB();
-
-  // 2. Poblar select del login con nombres reales
   initLogin();
-
-  // 3. Leer sesión de La Cabaña App (localStorage — compartido entre pestañas)
-  let session = null;
+  // Si hay sesión de La Cabaña App, preseleccionar nombre
   try {
     const raw = localStorage.getItem('cabana_session');
     if(raw){
-      session = JSON.parse(raw);
-      // Sesión válida por 12 horas
-      if(Date.now() - session.ts > 12*60*60*1000) session = null;
-    }
-  } catch(e){}
-
-  if(!session){
-    showScreen('sc-login');
-    return;
-  }
-
-  // Session exists
-  {
-    const {nombre, rol, punto} = session;
-    const esEncargada = rol==='admin'||rol==='supervisor';
-
-    await loadPersonalDB();
-
-    if(!esEncargada){
-      // Verificar que el nombre existe en el personal activo
-      const info = PERSONAL[nombre];
-      // Si PERSONAL está vacío (Firebase falló), dejar pasar igual
-      const personalVacio = Object.keys(PERSONAL).length === 0;
-      const esValido = personalVacio || (info && info.estado!=='retirado' && info.estado!=='inactivo');
-      if(!esValido){
-        showScreen('sc-login');
-        return;
+      const session = JSON.parse(raw);
+      if(session && Date.now()-session.ts < 12*60*60*1000){
+        const {nombre, rol} = session;
+        const esEncargada = rol==='admin'||rol==='supervisor';
+        if(esEncargada){
+          const sel=document.getElementById('login-nombre');
+          if(sel) sel.value='__encargada__';
+          const pf=document.getElementById('pin-field');
+          if(pf) pf.style.display='block';
+        } else {
+          // Preseleccionar nombre y entrar automático
+          const sel=document.getElementById('login-nombre');
+          if(sel && nombre){
+            sel.value=nombre;
+            // Auto-login directo
+            curUser=nombre; curRole='empleado'; _fromCabana=true;
+            await loadHorario(weekKey(0));
+            await loadHorario(weekKey(1));
+            showScreen('sc-empleado');
+            const ini=nombre.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+            const av=document.getElementById('emp-avatar');
+            const hs=document.getElementById('emp-hdr-sub');
+            if(av) av.textContent=ini;
+            if(hs) hs.textContent=nombre;
+            empTab('horario');
+            actualizarBtnLogout();
+          }
+        }
       }
-      // Empleado válido — login automático, bloqueado a su nombre
-      _fromCabana = true;
-      curUser=nombre; curRole='empleado';
-      await loadHorario(weekKey(0));
-      await loadHorario(weekKey(1));
-      showScreen('sc-empleado');
-      const ini=nombre.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
-      document.getElementById('emp-avatar').textContent=ini;
-      document.getElementById('emp-hdr-sub').textContent=nombre;
-      empTab('horario');
-      actualizarBtnLogout();
-    } else {
-      // Admin/Supervisor — preseleccionar y pedir PIN
-      _fromCabana = true;
-      showScreen('sc-login');
-      const sel=document.getElementById('login-nombre');
-      if(sel) sel.value='__encargada__';
-      const pf=document.getElementById('pin-field');
-      if(pf) pf.style.display='block';
     }
-  }
+  } catch(e){ console.warn('session error',e); }
 });
 </script>
 </body>
