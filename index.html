@@ -2617,6 +2617,10 @@ async function irAAdmin(){
   showScreen('admin');
   document.getElementById('admin-fecha').textContent=new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long'});
   adminDate=todayStr();
+  // Cargar datos de los 3 días para la tendencia
+  const fechas3=[];
+  for(let i=2;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);fechas3.push(d.toISOString().slice(0,10));}
+  for(const f of fechas3){ if(f!==adminDate) await cargarDatosAdmin(f); }
   await cargarDatosAdmin(adminDate);
   renderAdmin();
 }
@@ -3269,6 +3273,66 @@ function renderAdmin(){
   <div class="dash-date-row">
     ${dates.map(d=>`<div class="date-chip${d===adminDate?' active':''}" onclick="setAdminDate('${d}')">${d===todayStr()?'Hoy':d}</div>`).join('')}
   </div>`;
+
+  // ── TENDENCIA 3 DÍAS ─────────────────────────────────────────
+  const hoy3=todayStr();
+  const dias3=[];
+  for(let i=2;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    dias3.push(d.toISOString().slice(0,10));
+  }
+  const diaLabels3={[todayStr()]:'Hoy'};
+  const ayer3=new Date(); ayer3.setDate(ayer3.getDate()-1);
+  diaLabels3[ayer3.toISOString().slice(0,10)]='Ayer';
+  const anteayer3=new Date(); anteayer3.setDate(anteayer3.getDate()-2);
+  diaLabels3[anteayer3.toISOString().slice(0,10)]='Antier';
+
+  // Calcular % por punto por día
+  function pctDia(pid, fecha){
+    let tot=0,don=0;
+    AREAS_LIST.forEach(area=>TURNOS_LIST.forEach(turno=>{
+      const tasks=(CL[area.id]||{})[turno.id]||[];
+      if(!tasks.length)return;
+      const d=loadDataDateAdmin(pid,fecha,area.id,turno.id);
+      tot+=tasks.length;
+      (d?.tasks||[]).forEach((t,i)=>{
+        const tk=tasks[i];if(!tk)return;
+        if(tk.tipo==='check'&&t.done)don++;
+        else if(tk.tipo==='aseo'&&t.aseo>0)don++;
+        else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')don++;
+        else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')don++;
+      });
+    }));
+    return tot?Math.round(don/tot*100):null;
+  }
+
+  // Solo mostrar puntos según rol
+  const puntosVer = curRol==='admin'
+    ? {[curPunto]: PUNTOS[curPunto]}
+    : PUNTOS; // supervisor/gerente ve ambos
+
+  html+='<div class="sec-lbl">📊 Tendencia 3 días</div>';
+  html+='<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:4px;">';
+  Object.entries(puntosVer).forEach(([pid,p])=>{
+    html+='<div style="background:var(--bg2);border:1px solid var(--bg3);border-radius:14px;padding:12px 14px;">';
+    html+='<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:10px;">'+p.icon+' '+p.name+'</div>';
+    html+='<div style="display:flex;gap:8px;align-items:flex-end;">';
+    dias3.forEach(fecha=>{
+      const pct=pctDia(pid,fecha);
+      const lbl=diaLabels3[fecha]||fecha.slice(5);
+      const h=pct!==null?Math.max(6,Math.round(pct*0.7))+'px':'6px';
+      const col=pct===null?'var(--bg3)':pct>=80?'#4CAF50':pct>=50?'#FF9800':'#f44336';
+      const txt=pct!==null?pct+'%':'—';
+      const active=fecha===adminDate?'border:2px solid var(--accent);':'';
+      html+='<div style="flex:1;text-align:center;cursor:pointer;" onclick="setAdminDate(&quot;'+fecha+'&quot;)">';
+      html+='<div style="font-size:11px;font-weight:700;color:'+(pct!==null?col:'var(--text3)')+';">'+txt+'</div>';
+      html+='<div style="height:'+h+';background:'+col+';border-radius:4px;margin:4px 0;transition:height .3s;'+active+'"></div>';
+      html+='<div style="font-size:10px;color:var(--text3);">'+lbl+'</div>';
+      html+='</div>';
+    });
+    html+='</div></div>';
+  });
+  html+='</div>';
 
   // KPIs per punto
   html+=`<div class="sec-lbl">Cumplimiento general</div>
