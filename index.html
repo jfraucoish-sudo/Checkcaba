@@ -829,6 +829,10 @@ select{padding:5px 8px;}
         </select>
       </div>
       <button class="login-btn" onclick="entrar()">Ingresar →</button>
+      <div style="margin-top:14px;text-align:center;border-top:1px solid var(--bg3);padding-top:12px;display:flex;justify-content:center;gap:20px;">
+        <button onclick="mostrarLoginSupervisor()" style="background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;">👁️ Supervisor</button>
+        <button onclick="mostrarLoginGerente()" style="background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;">👔 Gerente</button>
+      </div>
     </div>
     </div>
   </div>
@@ -1547,6 +1551,10 @@ async function cargarPersonalLogin(){
     activos.forEach(([nombre,info])=>{
       sel.innerHTML += '<option value="'+nombre+'">'+nombre+'</option>';
     });
+    // Agregar JT si no está en Firebase
+    if(!personal['JT']){
+      sel.innerHTML += '<option value="JT">JT</option>';
+    }
     window._personalData = personal;
   } catch(e){
     sel.innerHTML = '<option value="">Selecciona tu nombre...</option>';
@@ -1562,7 +1570,11 @@ async function onNombreChange(nombre){
 
   // 1. Rol desde personal
   let rolDetectado='empleado', puntoDetectado=null;
-  if(window._personalData&&window._personalData[nombre]){
+  // Cargos especiales hardcodeados
+  const cargosEspeciales={'JT':'gerente'};
+  if(cargosEspeciales[nombre]){
+    rolDetectado=cargosEspeciales[nombre];
+  } else if(window._personalData&&window._personalData[nombre]){
     const info=window._personalData[nombre];
     rolDetectado=AREA_ROL[info.area]||'empleado';
     puntoDetectado=normalizarPunto(info.punto);
@@ -1749,6 +1761,74 @@ async function _cargarDatosHero(punto){
   updateHomeUI();
 }
 
+function mostrarLoginSupervisor(){
+  _abrirModalAccesoEspecial('supervisor');
+}
+function mostrarLoginGerente(){
+  _abrirModalAccesoEspecial('gerente');
+}
+function cerrarModales(){
+  ['modal-pin','admin-login-modal'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.remove();
+  });
+}
+function espSelectPunto(p){
+  ['soacha','plaza'].forEach(function(id){
+    document.getElementById('esp-pc-'+id)?.classList.toggle('selected',id===p);
+  });
+  window._espPuntoSel=p;
+}
+function _abrirModalAccesoEspecial(rol){
+  cerrarModales();
+  var iconos={supervisor:'👁️',gerente:'👔'};
+  var titulos={supervisor:'Acceso Supervisor',gerente:'Acceso Gerente'};
+  var overlay=document.createElement('div');
+  overlay.id='modal-pin';
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1.5rem;';
+  var card=document.createElement('div');
+  card.style.cssText='background:var(--surface);border:1px solid var(--bg3);border-radius:20px;padding:24px 20px;width:100%;max-width:320px;text-align:center;';
+  card.innerHTML=
+    '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">'+(iconos[rol]||'🔐')+' '+(titulos[rol]||'Acceso')+'</div>'+
+    '<div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-align:left;">Tu nombre</div>'+
+    '<input id="esp-nombre" type="text" placeholder="Ej: Jhon Frauco" style="width:100%;padding:10px 12px;background:var(--surface);border:1.5px solid var(--bg3);border-radius:10px;color:var(--text);font-size:13px;outline:none;margin-bottom:10px;box-sizing:border-box;">'+
+    '<div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-align:left;">Punto de venta</div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">'+
+      '<div class="punto-card" id="esp-pc-soacha" onclick="espSelectPunto(&quot;soacha&quot;)" style="padding:10px 8px;cursor:pointer;text-align:center;"><div style="font-size:20px;">🏠</div><div style="font-size:11px;font-weight:700;color:var(--text);">Soacha</div></div>'+
+      '<div class="punto-card" id="esp-pc-plaza" onclick="espSelectPunto(&quot;plaza&quot;)" style="padding:10px 8px;cursor:pointer;text-align:center;"><div style="font-size:20px;">🏬</div><div style="font-size:11px;font-weight:700;color:var(--text);">Mi Plaza</div></div>'+
+    '</div>'+
+    '<div style="font-size:11px;color:var(--text3);margin-bottom:6px;text-align:left;">PIN de acceso</div>'+
+    '<input id="esp-pin" type="tel" maxlength="4" placeholder="0000" autocomplete="off" style="width:100%;padding:12px;text-align:center;font-size:22px;letter-spacing:8px;background:var(--surface);border:1.5px solid var(--bg3);border-radius:12px;color:var(--text);outline:none;">'+
+    '<div id="esp-err" style="font-size:12px;color:#FF6B55;margin-top:6px;min-height:16px;"></div>'+
+    '<div style="display:flex;gap:8px;margin-top:12px;">'+
+      '<button onclick="cerrarModales()" style="flex:1;padding:12px;background:var(--bg2);border:1px solid var(--bg3);border-radius:12px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>'+
+      '<button id="esp-ok" style="flex:1;padding:12px;background:var(--accent);border:none;border-radius:12px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Entrar</button>'+
+    '</div>';
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+  window._espPuntoSel=null;
+  var pinInp=document.getElementById('esp-pin');
+  pinInp.addEventListener('input',function(){pinInp.value=pinInp.value.replace(/[^0-9]/g,'');});
+  document.getElementById('esp-ok').onclick=function(){
+    var nombre=document.getElementById('esp-nombre').value.trim();
+    var pin=pinInp.value;
+    var err=document.getElementById('esp-err');
+    if(!nombre){err.textContent='Escribe tu nombre';return;}
+    if(!window._espPuntoSel){err.textContent='Selecciona un punto';return;}
+    if(pin.length<4){err.textContent='Ingresa el PIN';return;}
+    var pins={supervisor:'0710',gerente:'1128'};
+    if(pin===pins[rol]){
+      selPunto=window._espPuntoSel;
+      cerrarModales();
+      _completarLogin(nombre,rol);
+    } else {
+      err.textContent='PIN incorrecto';
+      pinInp.value=''; pinInp.focus();
+    }
+  };
+  pinInp.addEventListener('keydown',function(e){if(e.key==='Enter')document.getElementById('esp-ok').click();});
+  setTimeout(function(){document.getElementById('esp-nombre').focus();},300);
+}
+
 function _completarLogin(nombre, rol){
   curPunto=selPunto; curUser=nombre; curRol=rol;
   // Guardar sesión compartida para horarios y papas
@@ -1780,7 +1860,7 @@ function _completarLogin(nombre, rol){
 }
 
 // PIN guardado como hash simple para no exponerlo en el DOM
-const _PINS={supervisor:'0710', admin:'1234', gerente:'1234'};
+const _PINS={supervisor:'0710', admin:'1234', gerente:'1128'};
 
 function mostrarPinModal(nombre, rol){
   const existing=document.getElementById('pin-modal');
@@ -1793,9 +1873,36 @@ function mostrarPinModal(nombre, rol){
   const box=document.createElement('div');
   box.style.cssText='background:var(--surface);border:1px solid var(--bg3);border-radius:20px;padding:26px 22px;width:100%;max-width:300px;text-align:center;';
 
+  const iconos={supervisor:'👁️',admin:'🔑',gerente:'👔'};
+  const titulos={supervisor:'Acceso Supervisor',admin:'Acceso Administrador',gerente:'Acceso Gerente'};
+
   const title=document.createElement('div');
   title.style.cssText='font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;';
-  title.textContent='🔐 Acceso Supervisor';
+  title.textContent=(iconos[rol]||'🔐')+' '+(titulos[rol]||'Acceso');
+
+  // Selector de punto si no hay punto detectado
+  let _modalPunto = selPunto;
+  if(!_modalPunto){
+    const ptGrid=document.createElement('div');
+    ptGrid.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;';
+    [{id:'soacha',ico:'🏠',n:'Soacha'},{id:'plaza',ico:'🏬',n:'Mi Plaza'}].forEach(pt=>{
+      const btn=document.createElement('div');
+      btn.className='punto-card';
+      btn.id='modal-pc-'+pt.id;
+      btn.style.cssText='padding:10px 8px;cursor:pointer;text-align:center;';
+      btn.innerHTML='<div style="font-size:20px;">'+pt.ico+'</div><div style="font-size:11px;font-weight:700;color:var(--text);">'+pt.n+'</div>';
+      btn.onclick=function(){
+        _modalPunto=pt.id;
+        ptGrid.querySelectorAll('.punto-card').forEach(x=>x.classList.remove('selected'));
+        btn.classList.add('selected');
+      };
+      ptGrid.appendChild(btn);
+    });
+    box.appendChild(title);
+    box.appendChild(ptGrid);
+  } else {
+    box.appendChild(title);
+  }
 
   const sub=document.createElement('div');
   sub.style.cssText='font-size:12px;color:var(--text3);margin-bottom:18px;';
@@ -1831,7 +1938,9 @@ function mostrarPinModal(nombre, rol){
   function intentarPin(){
     const val=inp.value;
     if(val.length<4){ err.textContent='Ingresa los 4 dígitos'; return; }
+    if(!_modalPunto){ err.textContent='Selecciona un punto'; return; }
     if(val===_PINS[rol]){
+      selPunto=_modalPunto;
       overlay.remove();
       _completarLogin(nombre, rol);
     } else {
@@ -1854,8 +1963,7 @@ function mostrarPinModal(nombre, rol){
     });
   }, 500);
 
-  box.appendChild(title);
-  box.appendChild(sub);
+    box.appendChild(sub);
   box.appendChild(inp);
   box.appendChild(err);
   btnRow.appendChild(btnCancel);
