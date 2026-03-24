@@ -1851,11 +1851,14 @@ function _completarLogin(nombre, rol){
   startClock();
   showScreen('home');
   updateHomeUI();
-  // Forzar botón papas visible para roles altos (por si acaso)
+  // Forzar botones según rol
   if(['admin','gerente','supervisor','jefe'].includes(curRol)){
     const pb=document.getElementById('cab-btn-papas');
     if(pb) pb.style.display='flex';
   }
+  // Dashboard solo para gerente
+  const ab=document.getElementById('cab-btn-admin');
+  if(ab) ab.style.display=(curRol==='gerente')?'flex':'none';
   _cargarDatosHero(curPunto);
 }
 
