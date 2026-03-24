@@ -2124,7 +2124,7 @@ function updateHomeUI(){
       // Cierre se evalúa al día siguiente
       const areaNames={admin:'Admin/Cajero',cocina:'Cocina',caja:'Caja',domi:'Domiciliarios',neveras:'Neveras',bodega:'Bodega'};
       [{id:'soacha',ico:'🏠'},{id:'plaza',ico:'🏬'}].forEach(pt=>{
-        if(horaDecimal>=13.5){
+        if(horaDecimal>=13){
           // Verificar apertura
           const areasApert=['admin','cocina','caja','domi','neveras'];
           areasApert.forEach(ar=>{
@@ -2137,12 +2137,20 @@ function updateHomeUI(){
           });
         }
         if(horaDecimal>=19){
-          // Verificar turno medio
           const areasMedio=['admin','cocina','caja','neveras'];
           areasMedio.forEach(ar=>{
             const pr=calcProg(pt.id,hoy,ar,'medio');
             if(pr.total>0&&!pr.hay){
               alertas.push('⚠️ '+pt.ico+' '+areaNames[ar]+' en '+PUNTOS[pt.id].name+': turno medio sin registrar');
+            }
+          });
+        }
+        if(horaDecimal>=22){
+          const areasCierre=['admin','cocina','caja','domi','neveras'];
+          areasCierre.forEach(ar=>{
+            const pr=calcProg(pt.id,hoy,ar,'cierre');
+            if(pr.total>0&&!pr.hay){
+              alertas.push('🔴 '+pt.ico+' '+areaNames[ar]+' en '+PUNTOS[pt.id].name+': cierre sin registrar');
             }
           });
         }
@@ -2241,7 +2249,7 @@ function updateHomeUI(){
       const horaA=new Date().getHours()+(new Date().getMinutes()/60);
       const areaLabels={admin:'Admin/Cajero apertura',cocina:'Cocina',caja:'Caja',domi:'Domiciliarios',neveras:'Neveras'};
       const alertasAdmin=[];
-      if(horaA>=13.5){
+      if(horaA>=13){
         ['admin','cocina','caja','domi','neveras'].forEach(ar=>{
           const pr=calcProg(curPunto,hoy,ar,'apertura');
           if(pr.total>0&&!pr.hay) alertasAdmin.push('⚠️ '+areaLabels[ar]+': apertura sin registrar');
@@ -2252,6 +2260,12 @@ function updateHomeUI(){
         ['admin','cocina','caja','neveras'].forEach(ar=>{
           const pr=calcProg(curPunto,hoy,ar,'medio');
           if(pr.total>0&&!pr.hay) alertasAdmin.push('⚠️ '+areaLabels[ar]+': turno medio sin registrar');
+        });
+      }
+      if(horaA>=22){
+        ['admin','cocina','caja','domi','neveras'].forEach(ar=>{
+          const pr=calcProg(curPunto,hoy,ar,'cierre');
+          if(pr.total>0&&!pr.hay) alertasAdmin.push('🔴 '+areaLabels[ar]+': cierre sin registrar');
         });
       }
       const alertasStr=alertasAdmin.length?' | 🔔 '+alertasAdmin.length+' área(s) pendiente(s)':'';
