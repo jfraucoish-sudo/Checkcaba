@@ -195,8 +195,6 @@ const CL = {
       {t:'Aseo área caja cierre',tipo:'aseo',label:'Aseo caja',crit:true},
     ],
     hora:[
-      {t:'Temperatura nevera refrigeración',tipo:'temp',rango:[-1,5],crit:true,unit:'°C'},
-      {t:'Temperatura nevera congelación',tipo:'temp',rango:[-22,-15],crit:true,unit:'°C'},
       {t:'Rappi C — pedidos activos, sin errores',tipo:'check',crit:true},
       {t:'Rappi T — pedidos activos, sin errores',tipo:'check',crit:true},
       {t:'DiDi C — pedidos activos, sin errores',tipo:'check',crit:true},
@@ -207,6 +205,7 @@ const CL = {
   },
   domi:{
     apertura:[
+      {t:'Temperatura nevera gaseosa (2–8°C)',tipo:'temp',rango:[2,8],crit:true,unit:'°C'},
       {t:'Realizar apertura del salón',tipo:'check',crit:true},
       {t:'Poner bolsas de basura en canecas',tipo:'check',crit:true},
       {t:'Llenar tarros de salsas (rotativo diario)',tipo:'check',crit:true,badge:'rot'},
@@ -232,6 +231,7 @@ const CL = {
       {t:'Maletas limpias y desinfectadas',tipo:'check',crit:true},
       {t:'Bandejas limpias y desinfectadas',tipo:'check',crit:true},
       {t:'Datáfono funcionando',tipo:'check',crit:true},
+      {t:'Temperatura nevera gaseosa al cierre (2–8°C)',tipo:'temp',rango:[2,8],crit:true,unit:'°C'},
       {t:'Aseo final salón',tipo:'aseo',label:'Aseo salón',crit:true},
       {t:'Aseo final baños',tipo:'aseo',label:'Aseo baños',crit:true},
       {t:'Tiempo de pedidos al cierre — evaluación del día',tipo:'aseo',label:'Tiempo pedidos',crit:true},
