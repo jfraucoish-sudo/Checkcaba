@@ -1666,7 +1666,6 @@ function selectMood(el,val,emoji){
 
 function confirmarMood(){
   if(!_moodSelVal) return;
-  // Guardar en Firebase
   const hoy=todayStr();
   const docId=curPunto+'_'+hoy+'_mood_'+curUser.replace(/ /g,'_');
   try{
@@ -1676,6 +1675,9 @@ function confirmarMood(){
       rol:curRol, ts:Date.now()
     });
   }catch(e){}
+  // Marcar que ya respondió hoy — no volver a preguntar
+  const moodKey='mood_done_'+curUser.replace(/ /g,'_')+'_'+hoy;
+  localStorage.setItem(moodKey,'1');
   cerrarMoodBanner();
 }
 
@@ -1784,10 +1786,12 @@ function _completarLogin(nombre, rol){
   const bp=document.getElementById('btn-pines');
   if(bp) bp.style.display=(curRol==='gerente')?'flex':'none';
   _cargarDatosHero(curPunto);
-  // Mostrar banner de estado emocional
-  // Supervisor y gerente no lo ven (ellos ven el de los demás)
+  // Mostrar banner de estado emocional — solo una vez por día por empleado
   if(!['supervisor','gerente'].includes(curRol)){
-    setTimeout(()=>mostrarMoodBanner(), 400);
+    const moodKey='mood_done_'+curUser.replace(/ /g,'_')+'_'+todayStr();
+    if(!localStorage.getItem(moodKey)){
+      setTimeout(()=>mostrarMoodBanner(), 400);
+    }
   }
 }
 
