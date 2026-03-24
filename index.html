@@ -649,6 +649,18 @@ select{padding:5px 8px;}
 .hero-t-fill.g{background:#4CAF50;}.hero-t-fill.m{background:#FF9800;}.hero-t-fill.l{background:#f44336;}.hero-t-fill.n{background:rgba(253,246,238,.1);}
 /* Bloque ayer */
 .hero-ayer{padding:11px 18px 14px;border-top:1px solid rgba(253,246,238,.08);}
+
+/* MOOD BANNER */
+#mood-overlay{position:fixed;inset:0;background:rgba(18,8,4,.85);backdrop-filter:blur(6px);z-index:8000;display:flex;align-items:flex-end;justify-content:center;padding:0 0 24px;}
+.mood-card{background:var(--surface);border-radius:24px 24px 20px 20px;padding:26px 20px 24px;width:100%;max-width:380px;text-align:center;border:1px solid var(--bg3);}
+.mood-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--text);margin-bottom:4px;}
+.mood-sub{font-size:12px;color:var(--text3);margin-bottom:22px;line-height:1.5;}
+.mood-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px;}
+.mood-btn{padding:14px 4px;border-radius:16px;border:2px solid var(--bg3);background:var(--bg2);cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;}
+.mood-btn:active{transform:scale(.9);}
+.mood-btn .mood-emoji{font-size:32px;}
+.mood-btn.selected{border-color:var(--accent);background:rgba(232,114,12,.12);}
+.mood-skip{font-size:11px;color:var(--text3);text-decoration:underline;cursor:pointer;margin-top:4px;}
 .hero-dias{display:flex;gap:6px;margin-bottom:10px;}
 .hero-dia-btn{flex:1;padding:7px 4px;background:rgba(253,246,238,.08);border:1px solid rgba(253,246,238,.12);border-radius:10px;text-align:center;cursor:pointer;transition:all .15s;}
 .hero-dia-btn.active{background:var(--accent);border-color:var(--accent);}
@@ -1487,6 +1499,116 @@ function mostrarLoginSupervisor(){
 function mostrarLoginGerente(){
   _abrirModalAccesoEspecial('gerente');
 }
+async function _cargarMoodsEquipo(punto, msgEl, rol){
+  try{
+    const hoy=todayStr();
+    let q=_db.collection('moods').where('fecha','==',hoy);
+    if(punto) q=q.where('punto','==',punto);
+    const snap=await q.get();
+    if(snap.empty) return;
+
+    const moodLabels={5:{e:'🚀',t:'Con toda'},4:{e:'😊',t:'Bien'},3:{e:'🔋',t:'Cansado'},2:{e:'🤯',t:'Estresado'},1:{e:'🌧️',t:'Difícil'}};
+    const todos=[]; snap.forEach(d=>todos.push(d.data()));
+
+    // Agrupar por emoji
+    const conteo={};
+    todos.forEach(m=>{ conteo[m.val]=(conteo[m.val]||0)+1; });
+
+    // Detectar alertas
+    const criticos=todos.filter(m=>m.val<=2);
+    const bajos=todos.filter(m=>m.val===3);
+
+    // Construir resumen
+    const resumen=Object.entries(conteo).sort((a,b)=>b[0]-a[0])
+      .map(([v,n])=>`${moodLabels[v]?.e||'?'} ×${n}`).join('  ');
+
+    let moodMsg='';
+    if(criticos.length){
+      const nombres=criticos.map(m=>m.nombre.split(' ')[0]).join(', ');
+      moodMsg=`🌡️ Estado equipo: ${resumen} | ⚠️ ${nombres} necesita${criticos.length>1?'n':''} apoyo hoy`;
+    } else if(bajos.length){
+      moodMsg=`🌡️ Estado equipo: ${resumen} | 🔋 Algunos cansados — considera rotarlos`;
+    } else {
+      moodMsg=`🌡️ Estado equipo: ${resumen} — ¡El equipo viene bien hoy!`;
+    }
+
+    // Agregar al mensaje del hero sin sobreescribir
+    if(msgEl){
+      const existing=msgEl.innerHTML||msgEl.textContent||'';
+      if(existing && !existing.includes('🌡️')){
+        msgEl.innerHTML=(msgEl.innerHTML||'')+'<div style="margin-top:6px;font-size:11px;color:rgba(253,246,238,.7);">'+moodMsg+'</div>';
+      } else if(!existing){
+        msgEl.textContent=moodMsg;
+        msgEl.className='hero-ayer-msg ok';
+      }
+    }
+  }catch(e){}
+}
+
+function mostrarMoodBanner(){
+  if(document.getElementById('mood-overlay')) return;
+  const moods=[
+    {emoji:'🚀',lbl:'Con toda',val:5,color:'#FF9800'},
+    {emoji:'😊',lbl:'Bien',val:4,color:'#4CAF50'},
+    {emoji:'🔋',lbl:'Cansado',val:3,color:'#2196F3'},
+    {emoji:'🤯',lbl:'Estresado',val:2,color:'#9C27B0'},
+    {emoji:'🌧️',lbl:'Difícil',val:1,color:'#607D8B'},
+  ];
+  const ov=document.createElement('div');
+  ov.id='mood-overlay';
+  const nombre=curUser.split(' ')[0];
+  ov.innerHTML=`
+  <div class="mood-card">
+    <div class="mood-title">¿Cómo llegás hoy, ${nombre}? 👋</div>
+    <div class="mood-sub">Toca cómo te sientes. Solo tú y tu líder lo ven.</div>
+    <div class="mood-grid">
+      ${moods.map(m=>`
+      <div class="mood-btn" data-val="${m.val}" onclick="selectMood(this,${m.val},'${m.emoji}')">
+        <div class="mood-emoji">${m.emoji}</div>
+      </div>`).join('')}
+    </div>
+    <button id="mood-confirm-btn" onclick="confirmarMood()" disabled
+      style="width:100%;padding:13px;background:var(--accent);border:none;border-radius:14px;color:#fff;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;opacity:.4;transition:opacity .2s;">
+      Confirmar →
+    </button>
+  </div>`;
+  document.body.appendChild(ov);
+}
+
+let _moodSelVal=null, _moodSelEmoji=null;
+function selectMood(el,val,emoji){
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  _moodSelVal=val; _moodSelEmoji=emoji;
+  const btn=document.getElementById('mood-confirm-btn');
+  if(btn){btn.disabled=false;btn.style.opacity='1';}
+}
+
+function confirmarMood(){
+  if(!_moodSelVal) return;
+  // Guardar en Firebase
+  const hoy=todayStr();
+  const docId=curPunto+'_'+hoy+'_mood_'+curUser.replace(/ /g,'_');
+  try{
+    _db.collection('moods').doc(docId).set({
+      nombre:curUser, punto:curPunto, fecha:hoy,
+      val:_moodSelVal, emoji:_moodSelEmoji,
+      rol:curRol, ts:Date.now()
+    });
+  }catch(e){}
+  cerrarMoodBanner();
+}
+
+function cerrarMoodBanner(){
+  const ov=document.getElementById('mood-overlay');
+  if(ov){
+    ov.style.opacity='0';
+    ov.style.transition='opacity .25s';
+    setTimeout(()=>ov.remove(),250);
+  }
+  _moodSelVal=null; _moodSelEmoji=null;
+}
+
 function cerrarModales(){
   ['modal-pin','admin-login-modal'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.remove();
@@ -1571,15 +1693,18 @@ function _completarLogin(nombre, rol){
   startClock();
   showScreen('home');
   updateHomeUI();
-  // Forzar botones según rol
   if(['admin','gerente','supervisor','jefe'].includes(curRol)){
     const pb=document.getElementById('cab-btn-papas');
     if(pb) pb.style.display='flex';
   }
-  // Dashboard solo para gerente
   const ab=document.getElementById('cab-btn-admin');
   if(ab) ab.style.display=(curRol==='gerente')?'flex':'none';
   _cargarDatosHero(curPunto);
+  // Mostrar banner de estado emocional
+  // Supervisor y gerente no lo ven (ellos ven el de los demás)
+  if(!['supervisor','gerente'].includes(curRol)){
+    setTimeout(()=>mostrarMoodBanner(), 400);
+  }
 }
 
 // PIN guardado como hash simple para no exponerlo en el DOM
@@ -2092,6 +2217,8 @@ function updateHomeUI(){
         else if(promAyer>=70) alertas.push('📊 Ayer: '+promAyer+'% de cumplimiento en puntos. Hay margen de mejora.');
         else alertas.push('📉 Ayer solo '+promAyer+'% de cumplimiento en los puntos. Habla con los administradores hoy.');
       }
+      // Termómetro del equipo — moods del día (supervisor ve ambos puntos)
+      _cargarMoodsEquipo(null, ayerMsg, curRol);
       // Tiempo de pedidos ayer — ambos puntos
       const ptsTiempo=[{id:'soacha',ico:'🏠'},{id:'plaza',ico:'🏬'}];
       const tiempoMsjs=[];
@@ -2238,6 +2365,8 @@ function updateHomeUI(){
         });
       }
       const alertasStr=alertasAdmin.length?' | 🔔 '+alertasAdmin.length+' área(s) pendiente(s)':'';
+      // Termómetro del equipo — moods del día
+      _cargarMoodsEquipo(curPunto, ayerMsg, curRol);
       // Tiempo de pedidos ayer — de admin+cocina+domi cierre
       let tiempoPedidosMsj='';
       const areasConTiempo=['admin','cocina','domi'];
