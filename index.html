@@ -1560,7 +1560,7 @@ function mostrarMoodBanner(){
   ov.innerHTML=`
   <div class="mood-card">
     <div class="mood-title">¿Cómo llegás hoy, ${nombre}? 👋</div>
-    <div class="mood-sub">Toca cómo te sientes. Solo tú y tu líder lo ven.</div>
+    <div class="mood-sub">Toca cómo te sientes.</div>
     <div class="mood-grid">
       ${moods.map(m=>`
       <div class="mood-btn" data-val="${m.val}" onclick="selectMood(this,${m.val},'${m.emoji}')">
