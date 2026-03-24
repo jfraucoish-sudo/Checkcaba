@@ -1580,48 +1580,54 @@ async function _cargarMoodsEquipo(punto, msgEl, rol){
     const hoy=todayStr();
     // Supervisor: cargar ambos puntos por separado (evita índice compuesto)
     const puntos=punto?[punto]:['soacha','plaza'];
-    const todos=[];
+    const moodLabels={5:{e:'🚀'},4:{e:'😊'},3:{e:'🔋'},2:{e:'🤯'},1:{e:'🌧️'}};
+    const ptNames={soacha:'🏠 Soacha',plaza:'🏬 Mi Plaza'};
+
+    // Construir resumen por punto separado
+    const lineas=[];
     for(const pt of puntos){
       const snap=await _db.collection('moods')
         .where('fecha','==',hoy)
         .where('punto','==',pt)
         .get();
-      snap.forEach(d=>todos.push(d.data()));
+      if(snap.empty) continue;
+      const datos=[]; snap.forEach(d=>datos.push(d.data()));
+      const conteo={};
+      datos.forEach(m=>{ conteo[m.val]=(conteo[m.val]||0)+1; });
+      const resumen=Object.entries(conteo)
+        .sort((a,b)=>Number(b[0])-Number(a[0]))
+        .map(([v,n])=>`${moodLabels[v]?.e||'?'}×${n}`).join(' ');
+      const criticos=datos.filter(m=>m.val<=2);
+      let alerta='';
+      if(criticos.length){
+        const nombres=criticos.map(m=>m.nombre.split(' ')[0]).join(', ');
+        alerta=' ⚠️ '+nombres;
+      }
+      lineas.push({pt, resumen, alerta, total:datos.length});
     }
-    if(!todos.length) return;
+    if(!lineas.length) return;
 
-    const moodLabels={5:{e:'🚀'},4:{e:'😊'},3:{e:'🔋'},2:{e:'🤯'},1:{e:'🌧️'}};
-    const conteo={};
-    todos.forEach(m=>{ conteo[m.val]=(conteo[m.val]||0)+1; });
-    const criticos=todos.filter(m=>m.val<=2);
-    const bajos=todos.filter(m=>m.val===3);
-    const resumen=Object.entries(conteo)
-      .sort((a,b)=>Number(b[0])-Number(a[0]))
-      .map(([v,n])=>`${moodLabels[v]?.e||'?'}×${n}`).join(' ');
-
-    let moodMsg='';
-    if(criticos.length){
-      const nombres=criticos.map(m=>m.nombre.split(' ')[0]).join(', ');
-      moodMsg='🌡️ '+resumen+' | ⚠️ '+nombres+' necesita'+(criticos.length>1?'n':'')+' apoyo hoy';
-    } else if(bajos.length){
-      moodMsg='🌡️ '+resumen+' | 🔋 Algunos cansados — rota si puedes';
-    } else {
-      moodMsg='🌡️ '+resumen+' — ¡Equipo bien hoy!';
-    }
-
-    // Crear elemento propio para moods — no sobreescribir el mensaje existente
+    // Crear elemento propio
     const heroWrap=document.querySelector('#screen-home .hero-ayer')?.parentNode;
     if(!heroWrap) return;
     let moodEl=document.getElementById('hero-mood-strip');
     if(!moodEl){
       moodEl=document.createElement('div');
       moodEl.id='hero-mood-strip';
-      moodEl.style.cssText='padding:7px 18px 8px;border-top:1px solid rgba(253,246,238,.08);font-size:11px;color:rgba(253,246,238,.75);';
+      moodEl.style.cssText='padding:8px 18px 10px;border-top:1px solid rgba(253,246,238,.08);';
       const ayerEl=document.querySelector('.hero-ayer');
       if(ayerEl) ayerEl.parentNode.insertBefore(moodEl, ayerEl.nextSibling);
       else heroWrap.appendChild(moodEl);
     }
-    moodEl.textContent=moodMsg;
+
+    let html='<div style="font-size:9px;font-weight:700;color:rgba(253,246,238,.35);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">🌡️ Estado del equipo hoy</div>';
+    lineas.forEach(l=>{
+      html+=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-size:11px;color:rgba(253,246,238,.5);">${ptNames[l.pt]||l.pt} (${l.total})</span>
+        <span style="font-size:12px;">${l.resumen}${l.alerta?'<span style="font-size:10px;color:#EF9A9A;">'+l.alerta+'</span>':''}</span>
+      </div>`;
+    });
+    moodEl.innerHTML=html;
   }catch(e){ console.warn('moods error',e); }
 }
 
