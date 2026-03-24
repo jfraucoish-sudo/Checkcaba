@@ -1935,13 +1935,33 @@ function mensajeAyer(punto, ayer, rol){
   }
 
   if(rol==='domiciliario'){
+    const pendDomi=[];
+    const kwDomi=[{kw:'caneca',msg:'canecas'},{kw:'baño',msg:'baños'},{kw:'maleta',msg:'maletas'}];
+    ['apertura','medio','cierre'].forEach(tu=>{
+      const data=loadDataDate(punto,ayer,'domi',tu);
+      if(!data||!data.tasks) return;
+      const tasks=(CL['domi']||{})[tu]||[];
+      tasks.forEach((tk,i)=>{
+        const lbl=(tk.t||tk.label||'').toLowerCase();
+        kwDomi.forEach(kc=>{
+          if(lbl.includes(kc.kw)&&!pendDomi.includes(kc.msg)){
+            const s=data.tasks[i];
+            const nok=(tk.tipo==='check'&&!s?.done)||(tk.tipo==='aseo'&&(!s?.aseo||s.aseo===0));
+            if(nok) pendDomi.push(kc.msg);
+          }
+        });
+      });
+    });
     const p1=calcProg(punto,ayer,'domi','apertura');
     const p2=calcProg(punto,ayer,'domi','cierre');
     const pcts=[p1,p2].filter(x=>x.hay);
-    if(!pcts.length) return {msg:'🛵 Ayer no registraste tus tareas. ¡Hoy empieza bien desde el arranque!', cls:'warn'};
+    if(!pcts.length)
+      return {msg:'🛵 Ayer no registraste tus tareas. Recuerda: canecas, baños y maletas son obligatorios. ¡Hoy sí!', cls:'warn'};
     const prom=Math.round(pcts.reduce((a,b)=>a+b.pct,0)/pcts.length);
-    if(prom>=80) return {msg:'🛵 ¡Buen trabajo ayer! '+prom+'% completado. La zona de domicilios quedó bien. ¡Hoy igual!', cls:'ok'};
-    return {msg:'🛵 Ayer completaste el '+prom+'% de tus tareas. Recuerda: baños limpios y canecas desde el arranque.', cls:'warn'};
+    if(pendDomi.length)
+      return {msg:'🛵 Ayer quedó sin hacer: '+pendDomi.join(', ')+'. ¡Hoy compórtalo al inicio del turno sin falta!', cls:'alert'};
+    if(prom>=80) return {msg:'🛵 ¡Buen trabajo ayer! '+prom+'% completado. Zona limpia y en orden. ¡Hoy igual!', cls:'ok'};
+    return {msg:'🛵 '+prom+'% ayer. Recuerda: canecas limpias, baños lavados y maletas desinfectadas cada turno.', cls:'warn'};
   }
 
   if(rol==='admin'||rol==='supervisor'||rol==='gerente'){
@@ -1974,24 +1994,50 @@ function mensajeAyer(punto, ayer, rol){
     return {msg:'⚠️ Cumplimiento ayer: '+prom+'%. Habla con el equipo — los checklists no se están completando.', cls:'alert'};
   }
 
-  // Cocina / jefe (default) — suma cocina+neveras+bodega+admin
-  const areasCocina=['cocina','neveras','bodega','admin'];
-  const turnosIds=['apertura','medio','cierre'];
+  // ── COCINA / JEFE ────────────────────────────────────────────
+  const turnosIdsCoc=['apertura','medio','cierre'];
+  const turnoNombresCoc={apertura:'apertura',medio:'turno medio',cierre:'cierre'};
+
+  // Detectar temperaturas no registradas ayer
+  const tempsOlvidadas=[];
+  turnosIdsCoc.forEach(tu=>{
+    const data=loadDataDate(punto,ayer,'cocina',tu);
+    if(!data||!data.tasks) return;
+    const tasks=(CL['cocina']||{})[tu]||[];
+    let sinTemp=0, totalTemp=0;
+    tasks.forEach((tk,i)=>{
+      if(tk.tipo==='temp'){
+        totalTemp++;
+        if(!data.tasks[i]||data.tasks[i].val==='') sinTemp++;
+      }
+    });
+    if(totalTemp>0&&sinTemp>0)
+      tempsOlvidadas.push(turnoNombresCoc[tu]+': '+sinTemp+' temp'+(sinTemp>1?'s':''));
+  });
+
+  // Calcular % general
+  const areasCocina=['cocina','neveras','admin'];
   const datosAyer=[];
-  areasCocina.forEach(ar=>turnosIds.forEach(tu=>{
+  areasCocina.forEach(ar=>turnosIdsCoc.forEach(tu=>{
     const p=calcProg(punto,ayer,ar,tu);
     if(p.hay) datosAyer.push(p);
   }));
-  const pa=calcProg(punto,ayer,'cocina','apertura');
-  const pm=calcProg(punto,ayer,'cocina','medio');
-  const pc=calcProg(punto,ayer,'cocina','cierre');
-  const turnos=datosAyer.length?datosAyer:[pa,pm,pc].filter(x=>x.hay);
-  if(!turnos.length) return {msg:'Ayer no registraste ningún turno. ¡Hoy es un día nuevo, aprovéchalo! 💪', cls:'warn'};
-  const prom=Math.round(turnos.reduce((a,b)=>a+b.pct,0)/turnos.length);
-  if(prom===100) return {msg:'🌟 ¡Excelente ayer! Completaste el 100% en cocina. ¡Así se lleva La Cabaña!', cls:'ok'};
-  if(prom>=70)   return {msg:'✅ Ayer completaste el '+prom+'% en cocina. ¡Buen trabajo! Hoy al 100% 🔥', cls:'ok'};
-  if(prom>=40)   return {msg:'⚡ Ayer lograste el '+prom+'% en cocina. Hoy sin excusas — ¡completamos todo!', cls:'warn'};
-  return {msg:'⚠️ Ayer solo el '+prom+'% en cocina. El checklist protege a todos. Hoy: completo.', cls:'alert'};
+
+  if(!datosAyer.length){
+    if(tempsOlvidadas.length)
+      return {msg:'⚠️ Ayer no registraste turnos — y faltaron temperaturas. Hoy: registra temps al inicio de cada turno. ¡Es crítico!', cls:'alert'};
+    return {msg:'Ayer no registraste ningún turno. ¡Hoy es un día nuevo, aprovéchalo! 💪', cls:'warn'};
+  }
+  const prom=Math.round(datosAyer.reduce((a,b)=>a+b.pct,0)/datosAyer.length);
+
+  // Temperaturas olvidadas = mensaje prioritario
+  if(tempsOlvidadas.length){
+    return {msg:'🌡️ Ayer olvidaste temperaturas — '+tempsOlvidadas.join(' | ')+'. Hoy: registra al inicio de cada turno. ¡Sin excusas!', cls:'alert'};
+  }
+  if(prom===100) return {msg:'🌟 ¡Perfecto ayer! 100% completado incluyendo todas las temperaturas. ¡Así se trabaja!', cls:'ok'};
+  if(prom>=70)   return {msg:'✅ '+prom+'% ayer en cocina. ¡Buen ritmo! Hoy al 100% — empieza con las temperaturas 🔥', cls:'ok'};
+  if(prom>=40)   return {msg:'⚡ '+prom+'% ayer. Hoy prioridad: registra temperaturas al inicio de cada turno.', cls:'warn'};
+  return {msg:'⚠️ Solo '+prom+'% ayer. Temperaturas sin registrar = riesgo para todos. ¡Hoy completo!', cls:'alert'};
 }
 
 function updateHomeUI(){
@@ -2287,9 +2333,51 @@ function updateHomeUI(){
       return barraHTML(t.ico, t.name, calcPunto(curPunto,hoy,misAreas,t.id));
     }).join('');
 
-    // Mensaje ayer
+    // Mensaje ayer + alerta HOY si hay tareas críticas pendientes
     const {msg,cls}=mensajeAyer(curPunto,ayer,curRol);
-    if(ayerMsg){ayerMsg.textContent=msg;ayerMsg.className='hero-ayer-msg '+cls;}
+    let msgFinal=msg, clsFinal=cls;
+
+    // Alerta de hoy: cocina — temperaturas del turno actual sin registrar
+    if(curRol==='empleado'||curRol==='jefe'){
+      const hora=new Date().getHours();
+      const turnoHoy=hora<13?'apertura':hora<19?'medio':'cierre';
+      const datHoy=loadDataDate(curPunto,hoy,'cocina',turnoHoy);
+      if(datHoy&&datHoy.tasks){
+        const tasks=(CL['cocina']||{})[turnoHoy]||[];
+        let sinTemp=0;
+        tasks.forEach((tk,i)=>{
+          if(tk.tipo==='temp'&&(!datHoy.tasks[i]||datHoy.tasks[i].val==='')) sinTemp++;
+        });
+        if(sinTemp>0){
+          msgFinal='🌡️ Tienes '+sinTemp+' temperatura'+(sinTemp>1?'s':'')+' sin registrar en este turno. ¡Hazlo ahora!';
+          clsFinal='alert';
+        }
+      }
+    }
+    // Alerta de hoy: domi — canecas/baños sin completar
+    if(curRol==='domiciliario'){
+      const hora=new Date().getHours();
+      const turnoHoy=hora<13?'apertura':hora<19?'medio':'cierre';
+      const datHoy=loadDataDate(curPunto,hoy,'domi',turnoHoy);
+      if(datHoy&&datHoy.tasks){
+        const tasks=(CL['domi']||{})[turnoHoy]||[];
+        const pendientes=[];
+        tasks.forEach((tk,i)=>{
+          const label=(tk.t||'').toLowerCase();
+          if(label.includes('caneca')||label.includes('baño')||label.includes('maleta')){
+            const s=datHoy.tasks[i];
+            const noCumplida=(tk.tipo==='check'&&!s?.done)||(tk.tipo==='aseo'&&(!s?.aseo||s.aseo===0));
+            if(noCumplida) pendientes.push(label.includes('caneca')?'canecas':label.includes('baño')?'baños':'maletas');
+          }
+        });
+        if(pendientes.length){
+          msgFinal='🛵 Pendiente en este turno: '+[...new Set(pendientes)].join(', ')+'. ¡Completa antes de salir!';
+          clsFinal='alert';
+        }
+      }
+    }
+
+    if(ayerMsg){ayerMsg.textContent=msgFinal;ayerMsg.className='hero-ayer-msg '+clsFinal;}
   }
 
   const adminBtn=document.getElementById('cab-btn-admin');
