@@ -1241,10 +1241,14 @@ function renderEncPersonal(){
   const areas=[
     {id:'cocina',        label:'Cocina',              cls:'area-cocina'},
     {id:'recepcion',     label:'Recepción / Cajeros',  cls:'area-recepcion'},
+    {id:'cajeros',       label:'Cajeros',              cls:'area-recepcion'},
     {id:'domiciliarios', label:'Domiciliarios',         cls:'area-domi'},
     {id:'supervisor',    label:'Supervisores',          cls:'area-recepcion'},
     {id:'administrador', label:'Administradores',       cls:'area-cocina'},
+    {id:'gerente',       label:'Gerentes',              cls:'area-cocina'},
   ];
+  // También mostrar empleados con área no reconocida al final
+  const areasKnown = areas.map(a=>a.id);
 
   const estadoBadge = (info) => {
     const e = info.estado||'activo';
@@ -1265,7 +1269,15 @@ function renderEncPersonal(){
     <button onclick="abrirModalPersona()" style="padding:8px 14px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;">+ Agregar</button>
   </div>`;
 
-  areas.forEach(area=>{
+  // Agregar sección dinámica con áreas no reconocidas
+  const areasExtra = [...new Set(
+    Object.values(PERSONAL)
+      .map(p=>p.area)
+      .filter(a=>a && !areasKnown.includes(a))
+  )].map(id=>({id, label:id.charAt(0).toUpperCase()+id.slice(1), cls:'area-cocina'}));
+  const todasAreas = [...areas, ...areasExtra];
+
+  todasAreas.forEach(area=>{
     const emps = Object.entries(PERSONAL).filter(([n,p])=>p.area===area.id);
     html+=`<div class="area-section fade-up" style="background:#F9F5F1;border:1px solid #E8DDD5;border-radius:14px;padding:12px 14px;margin-bottom:12px;">
       <div class="area-hdr"><span class="area-badge ${area.cls}">${area.label} — ${emps.length}</span></div>`;
