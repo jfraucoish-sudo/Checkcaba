@@ -107,13 +107,13 @@ body{font-family:'DM Sans',sans-serif;color:var(--text);min-height:100vh;}
 
 /* EMPLOYEE ROW */
 .emp-card{background:var(--surface);border:1px solid var(--bg3);border-radius:12px;box-shadow:var(--shadow);margin-bottom:8px;overflow:hidden;}
-.emp-card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;cursor:pointer;}
-.emp-info{display:flex;align-items:center;gap:10px;}
-.emp-avatar{width:34px;height:34px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
-.emp-name{font-size:13px;font-weight:700;color:var(--text);}
+.emp-card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;cursor:pointer;gap:8px;}
+.emp-info{display:flex;align-items:center;gap:8px;min-width:0;flex-shrink:1;}
+.emp-avatar{width:30px;height:30px;border-radius:50%;background:var(--brand);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+.emp-name{font-size:13px;font-weight:800;color:var(--text);letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px;}
 .emp-meta{font-size:10px;color:var(--text3);margin-top:1px;}
 .emp-week-dots{display:flex;gap:3px;}
-.day-dot{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;cursor:pointer;transition:all .12s;}
+.day-dot{width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;cursor:pointer;transition:all .12s;flex-shrink:0;}
 .day-dot.work{background:rgba(59,109,17,.2);color:var(--green-t);}
 .day-dot.rest{background:rgba(255,145,0,.2);color:var(--naranja);}
 .day-dot.other{background:rgba(24,95,165,.2);color:var(--blue-t);}
@@ -390,13 +390,13 @@ select option { background: #fff !important; color: var(--text) !important; }
         <input type="tel" id="login-pin" maxlength="4" placeholder="••••" autocomplete="off">
       </div>
       <button class="btn-primary" onclick="doLogin()">Entrar →</button>
-      <div id="login-err" style="font-size:12px;color:#F09595;text-align:center;margin-top:8px;min-height:16px;"></div>
-      <div style="text-align:center;margin-top:14px;border-top:1px solid var(--bg3);padding-top:12px;">
+      <div style="text-align:center;margin-top:12px;border-top:1px solid var(--bg3);padding-top:10px;">
         <button onclick="window.location.href='index.html'" style="background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;display:flex;align-items:center;gap:5px;margin:0 auto;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
           Volver a La Cabaña App
         </button>
       </div>
+      <div id="login-err" style="font-size:12px;color:#F09595;text-align:center;margin-top:8px;min-height:16px;"></div>
     </div>
   </div>
 </div>
@@ -681,9 +681,16 @@ function initLogin(){
   if(!sel) return;
   sel.innerHTML = '<option value="">Selecciona tu nombre...</option>';
   sel.innerHTML += '<option value="__encargada__">👩‍💼 Encargada / Supervisora</option>';
-  // Solo empleados activos
+  // Solo empleados activos — deduplicar por nombre lowercase
+  const vistos = new Set();
   const activos = Object.entries(PERSONAL)
-    .filter(([n,p])=>p.estado!=='retirado'&&p.estado!=='inactivo')
+    .filter(([n,p])=>{
+      const e=(p.estado||'activo').toLowerCase();
+      if(e==='retirado'||e==='inactivo') return false;
+      const lower=n.toLowerCase();
+      if(vistos.has(lower)) return false;
+      vistos.add(lower); return true;
+    })
     .sort((a,b)=>a[0].localeCompare(b[0]));
   activos.forEach(([n])=> sel.innerHTML += `<option value="${n}">${n}</option>`);
   sel.onchange = ()=>{
@@ -740,11 +747,9 @@ function doLogout(){
   if(pinEl) pinEl.value='';
   if(errEl) errEl.textContent='';
   if(_fromCabana){
-    // Siempre navegar directo — window.close() no funciona en móvil
-    window.location.href='index.html';
-    return;
-    // fallback (no llega aquí)
+    // Volver a La Cabaña en vez de mostrar login de Horarios
     window.close();
+    // Si window.close() no funciona (algunos navegadores lo bloquean)
     setTimeout(()=>{ window.location.href='index.html'; }, 200);
   } else {
     showScreen('sc-login');
@@ -1192,7 +1197,13 @@ async function loadPersonalDB(){
     const snap = await _db.collection('personal').get();
     if(!snap.empty){
       snap.forEach(doc=>{
-        PERSONAL[doc.id] = doc.data();
+        const fbNombre = doc.id;
+        const fbLower = fbNombre.toLowerCase();
+        // Eliminar duplicado hardcodeado con diferente capitalización
+        Object.keys(PERSONAL).forEach(hc=>{
+          if(hc.toLowerCase()===fbLower && hc!==fbNombre) delete PERSONAL[hc];
+        });
+        PERSONAL[fbNombre] = Object.assign({}, PERSONAL[fbNombre]||{}, doc.data());
       });
     } else {
       // Primera vez — guardar los hardcodeados en Firebase
@@ -1267,9 +1278,9 @@ function renderEncPersonal(){
       const ini=nombre.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
       const activo = info.estado !== 'retirado' && info.estado !== 'inactivo';
       html+=`<div style="background:rgba(254,242,223,.05);border:1px solid var(--border);border-radius:12px;padding:11px 13px;margin-bottom:8px;display:flex;align-items:center;gap:10px;opacity:${activo?1:.5};">
-        <div class="emp-avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0;">${ini}</div>
+        <div class="emp-avatar" style="width:38px;height:38px;font-size:13px;flex-shrink:0;background:var(--naranja);">${ini}</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:var(--crema);">${nombre}</div>
+          <div style="font-family:'Poppins',sans-serif;font-size:15px;font-weight:800;color:var(--crema);letter-spacing:-.3px;">${nombre}</div>
           <div style="font-size:10px;color:rgba(254,242,223,.4);margin-top:2px;display:flex;align-items:center;gap:5px;">
             <span>${info.rota?'🔄':'📍'} ${info.punto==='hogares'?'Hogares':info.punto==='soacha'?'Soacha':'Ambos'}</span>
             ${estadoBadge(info)}
