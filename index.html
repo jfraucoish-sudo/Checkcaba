@@ -2384,23 +2384,24 @@ function irAChecklist(){
 }
 
 function filterAreasByRol(){
-  // Admin and jefe see all areas
-  // cajero sees only caja
-  // domiciliario sees only domi
-  // cocinero/empleado sees cocina, neveras, bodega
   const rolAreas={
-    admin:   ['admin','caja'],   // admin ve su checklist + caja
-    jefe:    null,               // jefe ve todo
-    cajero:  ['caja','admin'],   // cajero ve caja + admin (puede reemplazar)
+    admin:        ['admin','caja'],
+    jefe:         null,
+    cajero:       ['caja','admin'],
     domiciliario: ['domi'],
-    empleado:['cocina','neveras','bodega'],
+    empleado:     ['cocina','neveras','bodega'],
   };
   const allowed=rolAreas[curRol];
   if(allowed){
-    // filter AREAS_LIST temporarily — we store in window
     window._filteredAreas=AREAS_LIST.filter(a=>allowed.includes(a.id));
+    // Asegurar que curArea sea válida para este rol
+    if(!allowed.includes(curArea)){
+      curArea=allowed[0];
+    }
   } else {
     window._filteredAreas=null;
+    // Jefe/supervisor/gerente — si curArea no existe en AREAS_LIST, resetear
+    if(!AREAS_LIST.find(a=>a.id===curArea)) curArea='admin';
   }
 }
 
