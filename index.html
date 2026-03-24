@@ -649,6 +649,12 @@ select{padding:5px 8px;}
 .hero-t-fill.g{background:#4CAF50;}.hero-t-fill.m{background:#FF9800;}.hero-t-fill.l{background:#f44336;}.hero-t-fill.n{background:rgba(253,246,238,.1);}
 /* Bloque ayer */
 .hero-ayer{padding:11px 18px 14px;border-top:1px solid rgba(253,246,238,.08);}
+.hero-dias{display:flex;gap:6px;margin-bottom:10px;}
+.hero-dia-btn{flex:1;padding:7px 4px;background:rgba(253,246,238,.08);border:1px solid rgba(253,246,238,.12);border-radius:10px;text-align:center;cursor:pointer;transition:all .15s;}
+.hero-dia-btn.active{background:var(--accent);border-color:var(--accent);}
+.hero-dia-btn .hdb-pct{font-size:13px;font-weight:700;color:#FDF6EE;}
+.hero-dia-btn .hdb-lbl{font-size:9px;color:rgba(253,246,238,.5);margin-top:2px;}
+.hero-dia-btn.active .hdb-lbl{color:rgba(253,246,238,.8);}
 .hero-ayer-lbl{font-size:9px;font-weight:700;color:rgba(253,246,238,.35);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;}
 .hero-ayer-msg{font-size:12px;line-height:1.5;font-weight:500;}
 .hero-ayer-msg.ok{color:#81C784;}.hero-ayer-msg.warn{color:#FFB74D;}.hero-ayer-msg.alert{color:#FF8A65;}
@@ -1518,7 +1524,7 @@ window.addEventListener('offline',()=>{ _fbOnline=false; showFbStatus(false); })
 // SESSION STATE
 // ══════════════════════════════════════════════════════════════
 let curPunto=null, curUser='', curArea='admin', curTurno='apertura';
-let curTab='checklist', adminDate=todayStr();
+let curTab='checklist', adminDate=todayStr(), heroFecha=todayStr();
 let selPunto=null;
 
 // Mapa de rol por defecto según área del personal
@@ -1977,6 +1983,24 @@ function mostrarPinModal(nombre, rol){
   setTimeout(()=>inp.focus(), 200);
 }
 
+function heroSetFecha(f){
+  heroFecha=f;
+  // Recargar datos de Firebase para la fecha si no están en localStorage
+  const areas=['cocina','neveras','admin','caja','domi','bodega'];
+  const turnos=['apertura','medio','cierre'];
+  const puntos=(curRol==='supervisor'||curRol==='gerente')?['soacha','plaza']:[curPunto];
+  const promesas=[];
+  puntos.forEach(pt=>areas.forEach(ar=>turnos.forEach(tu=>{
+    const key=_lsKey(pt,f,ar,tu);
+    if(!localStorage.getItem(key)){
+      promesas.push(_db.collection('checklists').doc(_fbDocId(pt,f,ar,tu)).get()
+        .then(doc=>{if(doc.exists)localStorage.setItem(key,JSON.stringify(doc.data()));})
+        .catch(()=>{}));
+    }
+  })));
+  Promise.all(promesas).then(()=>updateHomeUI());
+}
+
 // ── Cargar firmas app papa para el hero del supervisor ────────────
 async function _heroCargarFirmas(ayerMsgEl, alertasPrevias){
   const hoy = todayStr();
@@ -2240,20 +2264,47 @@ function updateHomeUI(){
   }
 
   if(wrap){
-    // ── SUPERVISOR: ve los DOS puntos ────────────────────────────
+    // ── SUPERVISOR/GERENTE: ve los DOS puntos + botones 3 días ──
     if(curRol==='supervisor'||curRol==='gerente'){
+      // Calcular % por punto por día para los botones
+      function pctPuntoDia(pid, fecha){
+        let tot=0,don=0;
+        misAreas.forEach(ar=>['apertura','medio','cierre'].forEach(tu=>{
+          const pr=calcProg(pid,fecha,ar,tu);
+          don+=pr.done; tot+=pr.total;
+        }));
+        return tot?Math.round(don/tot*100):null;
+      }
+      // Botones de 3 días
+      const dias3H=[];
+      for(let i=2;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dias3H.push(d.toISOString().slice(0,10));}
+      const dLbls={[dias3H[2]]:'Hoy',[dias3H[1]]:'Ayer',[dias3H[0]]:'Antier'};
+      let html='<div class="hero-dias">';
+      dias3H.forEach(fecha=>{
+        const p1=pctPuntoDia('soacha',fecha), p2=pctPuntoDia('plaza',fecha);
+        const promDia=(p1!==null&&p2!==null)?Math.round((p1+p2)/2):(p1??p2);
+        const isActive=fecha===heroFecha;
+        const col=promDia===null?'rgba(253,246,238,.25)':promDia>=80?'#81C784':promDia>=50?'#FFB74D':'#EF9A9A';
+        html+='<div class="hero-dia-btn'+(isActive?' active':'')+'" onclick="heroSetFecha(&quot;'+fecha+'&quot;)">';
+        html+='<div class="hdb-pct" style="color:'+col+'">'+(promDia!==null?promDia+'%':'—')+'</div>';
+        html+='<div class="hdb-lbl">'+(dLbls[fecha]||fecha.slice(5))+'</div>';
+        html+='</div>';
+      });
+      html+='</div>';
+      html+='<div style="font-size:9px;font-weight:700;color:rgba(253,246,238,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;">Puntos — '+(dLbls[heroFecha]||heroFecha.slice(5))+'</div>';
+
       const puntos=[{id:'soacha',ico:'🏠',name:'Soacha'},{id:'plaza',ico:'🏬',name:'Mi Plaza'}];
-      let html='<div style="font-size:9px;font-weight:700;color:rgba(253,246,238,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;">Cumplimiento por punto</div>';
+      const fechaVer=heroFecha;
       const alertas=[];
       puntos.forEach(pt=>{
-        const pr=calcPunto(pt.id,hoy,misAreas,'apertura');
-        const pm2=calcPunto(pt.id,hoy,misAreas,'medio');
-        const pc=calcPunto(pt.id,hoy,misAreas,'cierre');
+        const pr=calcPunto(pt.id,fechaVer,misAreas,'apertura');
+        const pm2=calcPunto(pt.id,fechaVer,misAreas,'medio');
+        const pc=calcPunto(pt.id,fechaVer,misAreas,'cierre');
         const conDatos=[pr,pm2,pc].filter(x=>x.hay);
         const promG=conDatos.length?Math.round(conDatos.reduce((a,b)=>a+b.pct,0)/conDatos.length):0;
         const cls=!conDatos.length?'n':promG>=80?'g':promG>=40?'m':'l';
         const txt=conDatos.length?promG+'%':'Sin datos';
-        html+=barraHTML(pt.ico, pt.name+' — Hoy', {pct:promG,hay:conDatos.length>0});
+        html+=barraHTML(pt.ico, pt.name, {pct:promG,hay:conDatos.length>0});
         if(!conDatos.length) alertas.push('⚠️ '+pt.name+': sin registros hoy. ¡Requiere supervisión!');
         else if(promG<50) alertas.push('🔴 '+pt.name+': solo '+promG+'% completado. Intervenir.');
       });
@@ -2333,18 +2384,36 @@ function updateHomeUI(){
       return;
     }
 
-    // ── ADMIN: su checklist + resumen del punto ──────────────────
+    // ── ADMIN: su checklist + resumen del punto + 3 días ────────
     if(curRol==='admin'){
       const turnos3=[
         {id:'apertura',ico:'☀️',name:'Apertura'},
         {id:'medio',   ico:'🌤️',name:'Turno medio'},
         {id:'cierre',  ico:'🌙',name:'Cierre'}
       ];
-      // Mi progreso (admin + caja + neveras)
       const misAreasAdmin = ['admin','caja','neveras'];
-      let html='<div style="font-size:9px;font-weight:700;color:rgba(253,246,238,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">Mi checklist</div>';
+      // Botones 3 días para admin
+      const dias3A=[];
+      for(let i=2;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dias3A.push(d.toISOString().slice(0,10));}
+      const dLblsA={[dias3A[2]]:'Hoy',[dias3A[1]]:'Ayer',[dias3A[0]]:'Antier'};
+      let html='<div class="hero-dias">';
+      dias3A.forEach(fecha=>{
+        let tot=0,don=0;
+        ['admin','cocina','caja','domi','neveras','bodega'].forEach(ar=>turnos3.forEach(t=>{
+          const pr=calcProg(curPunto,fecha,ar,t.id);don+=pr.done;tot+=pr.total;
+        }));
+        const pct=tot?Math.round(don/tot*100):null;
+        const isActive=fecha===heroFecha;
+        const col=pct===null?'rgba(253,246,238,.25)':pct>=80?'#81C784':pct>=50?'#FFB74D':'#EF9A9A';
+        html+='<div class="hero-dia-btn'+(isActive?' active':'')+'" onclick="heroSetFecha(&quot;'+fecha+'&quot;)">';
+        html+='<div class="hdb-pct" style="color:'+col+'">'+(pct!==null?pct+'%':'—')+'</div>';
+        html+='<div class="hdb-lbl">'+(dLblsA[fecha]||fecha.slice(5))+'</div>';
+        html+='</div>';
+      });
+      html+='</div>';
+      html+='<div style="font-size:9px;font-weight:700;color:rgba(253,246,238,.4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;">Mi checklist — '+(dLblsA[heroFecha]||heroFecha.slice(5))+'</div>';
       turnos3.forEach(t=>{
-        html+=barraHTML(t.ico, t.name, calcPunto(curPunto,hoy,misAreasAdmin,t.id));
+        html+=barraHTML(t.ico, t.name, calcPunto(curPunto,heroFecha,misAreasAdmin,t.id));
       });
       // Cumplimiento general del punto
       let done2=0,total2=0,hay2=false;
