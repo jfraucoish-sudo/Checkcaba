@@ -1578,47 +1578,51 @@ async function _mostrarComentsSV(punto){
 async function _cargarMoodsEquipo(punto, msgEl, rol){
   try{
     const hoy=todayStr();
-    let q=_db.collection('moods').where('fecha','==',hoy);
-    if(punto) q=q.where('punto','==',punto);
-    const snap=await q.get();
-    if(snap.empty) return;
+    // Supervisor: cargar ambos puntos por separado (evita índice compuesto)
+    const puntos=punto?[punto]:['soacha','plaza'];
+    const todos=[];
+    for(const pt of puntos){
+      const snap=await _db.collection('moods')
+        .where('fecha','==',hoy)
+        .where('punto','==',pt)
+        .get();
+      snap.forEach(d=>todos.push(d.data()));
+    }
+    if(!todos.length) return;
 
-    const moodLabels={5:{e:'🚀',t:'Con toda'},4:{e:'😊',t:'Bien'},3:{e:'🔋',t:'Cansado'},2:{e:'🤯',t:'Estresado'},1:{e:'🌧️',t:'Difícil'}};
-    const todos=[]; snap.forEach(d=>todos.push(d.data()));
-
-    // Agrupar por emoji
+    const moodLabels={5:{e:'🚀'},4:{e:'😊'},3:{e:'🔋'},2:{e:'🤯'},1:{e:'🌧️'}};
     const conteo={};
     todos.forEach(m=>{ conteo[m.val]=(conteo[m.val]||0)+1; });
-
-    // Detectar alertas
     const criticos=todos.filter(m=>m.val<=2);
     const bajos=todos.filter(m=>m.val===3);
-
-    // Construir resumen
-    const resumen=Object.entries(conteo).sort((a,b)=>b[0]-a[0])
-      .map(([v,n])=>`${moodLabels[v]?.e||'?'} ×${n}`).join('  ');
+    const resumen=Object.entries(conteo)
+      .sort((a,b)=>Number(b[0])-Number(a[0]))
+      .map(([v,n])=>`${moodLabels[v]?.e||'?'}×${n}`).join(' ');
 
     let moodMsg='';
     if(criticos.length){
       const nombres=criticos.map(m=>m.nombre.split(' ')[0]).join(', ');
-      moodMsg=`🌡️ Estado equipo: ${resumen} | ⚠️ ${nombres} necesita${criticos.length>1?'n':''} apoyo hoy`;
+      moodMsg='🌡️ '+resumen+' | ⚠️ '+nombres+' necesita'+(criticos.length>1?'n':'')+' apoyo hoy';
     } else if(bajos.length){
-      moodMsg=`🌡️ Estado equipo: ${resumen} | 🔋 Algunos cansados — considera rotarlos`;
+      moodMsg='🌡️ '+resumen+' | 🔋 Algunos cansados — rota si puedes';
     } else {
-      moodMsg=`🌡️ Estado equipo: ${resumen} — ¡El equipo viene bien hoy!`;
+      moodMsg='🌡️ '+resumen+' — ¡Equipo bien hoy!';
     }
 
-    // Agregar al mensaje del hero sin sobreescribir
-    if(msgEl){
-      const existing=msgEl.innerHTML||msgEl.textContent||'';
-      if(existing && !existing.includes('🌡️')){
-        msgEl.innerHTML=(msgEl.innerHTML||'')+'<div style="margin-top:6px;font-size:11px;color:rgba(253,246,238,.7);">'+moodMsg+'</div>';
-      } else if(!existing){
-        msgEl.textContent=moodMsg;
-        msgEl.className='hero-ayer-msg ok';
-      }
+    // Crear elemento propio para moods — no sobreescribir el mensaje existente
+    const heroWrap=document.querySelector('#screen-home .hero-ayer')?.parentNode;
+    if(!heroWrap) return;
+    let moodEl=document.getElementById('hero-mood-strip');
+    if(!moodEl){
+      moodEl=document.createElement('div');
+      moodEl.id='hero-mood-strip';
+      moodEl.style.cssText='padding:7px 18px 8px;border-top:1px solid rgba(253,246,238,.08);font-size:11px;color:rgba(253,246,238,.75);';
+      const ayerEl=document.querySelector('.hero-ayer');
+      if(ayerEl) ayerEl.parentNode.insertBefore(moodEl, ayerEl.nextSibling);
+      else heroWrap.appendChild(moodEl);
     }
-  }catch(e){}
+    moodEl.textContent=moodMsg;
+  }catch(e){ console.warn('moods error',e); }
 }
 
 function mostrarMoodBanner(){
