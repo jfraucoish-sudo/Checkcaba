@@ -1526,11 +1526,11 @@ function aplicarModoAcceso(modo) {
   // 1. Leer sesión compartida de La Cabaña App
   let modoFromCabana = null;
   try {
-    const raw = sessionStorage.getItem('cabana_session');
+    const raw = localStorage.getItem('cabana_session') || sessionStorage.getItem('cabana_session');
     if(raw){
       const session = JSON.parse(raw);
       if(Date.now() - session.ts < 12*60*60*1000){
-        const modoMap = {admin:'super',gerente:'super',jefe:'super',supervisor:'super',cajero:'1',domiciliario:'1',empleado:'1'};
+        const modoMap = {admin:'1',gerente:'super',jefe:'1',supervisor:'super',cajero:'1',domiciliario:'1',empleado:'1'};
         modoFromCabana = modoMap[session.rol] || '1';
       }
     }
@@ -1541,7 +1541,7 @@ function aplicarModoAcceso(modo) {
     const params = new URLSearchParams(window.location.search);
     const fromCabana = params.get('cabana_rol');
     if(fromCabana){
-      const modoMap = {admin:'super',gerente:'super',jefe:'super',supervisor:'super',cajero:'1',domiciliario:'1',empleado:'1','1':'1'};
+      const modoMap = {admin:'1',gerente:'super',jefe:'1',supervisor:'super',cajero:'1',domiciliario:'1',empleado:'1','1':'1'};
       modoFromCabana = modoMap[fromCabana] || '1';
     }
   }
