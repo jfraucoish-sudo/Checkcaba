@@ -1770,9 +1770,12 @@ function _completarLogin(nombre, rol){
   } catch(e){}
   startClock();
   showScreen('home');
-  // Mostrar — primero sin datos, luego actualizar con Firebase
   updateHomeUI();
-  // Cargar datos de Firebase y actualizar hero
+  // Forzar botón papas visible para roles altos (por si acaso)
+  if(['admin','gerente','supervisor','jefe'].includes(curRol)){
+    const pb=document.getElementById('cab-btn-papas');
+    if(pb) pb.style.display='flex';
+  }
   _cargarDatosHero(curPunto);
 }
 
@@ -2383,7 +2386,7 @@ function updateHomeUI(){
   const adminBtn=document.getElementById('cab-btn-admin');
   if(adminBtn) adminBtn.style.display=(curRol==='gerente')?'flex':'none';
   const papasBtn=document.getElementById('cab-btn-papas');
-  const rolesConPapas=['admin','gerente','jefe','supervisor','empleado'];
+  const rolesConPapas=['admin','gerente','jefe','supervisor','empleado','cajero'];
   if(papasBtn) papasBtn.style.display=rolesConPapas.includes(curRol)?'flex':'none';
   const guiaBtn=document.getElementById('cab-btn-guia');
   if(guiaBtn) guiaBtn.style.display=['empleado','jefe','admin','supervisor','gerente','cajero'].includes(curRol)?'flex':'none';
