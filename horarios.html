@@ -534,7 +534,14 @@ _db.enablePersistence().catch(()=>{});
 // ═══════════════════════════════════════════════════
 // DATOS DEL PERSONAL
 // ═══════════════════════════════════════════════════
-const ENCARGADA_PIN = '1234'; // PIN encargada — cambiar
+let ENCARGADA_PIN = '1234'; // PIN encargada — se actualiza desde Firebase
+// Cargar PIN desde Firebase config
+async function _cargarPinEncargada(){
+  try{
+    const doc=await _db.collection('config').doc('pins').get();
+    if(doc.exists&&doc.data().encargada) ENCARGADA_PIN=doc.data().encargada;
+  }catch(e){}
+}
 
 const PERSONAL = {
   // HOGARES
@@ -1736,7 +1743,8 @@ async function enviarSolicitud(){
 // INIT
 // ═══════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async ()=>{
-  // Cargar personal desde Firebase y poblar select
+  // Cargar PIN y personal desde Firebase
+  await _cargarPinEncargada();
   await loadPersonalDB();
   initLogin();
   // Si hay sesión de La Cabaña App, preseleccionar nombre
