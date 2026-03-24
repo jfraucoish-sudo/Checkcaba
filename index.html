@@ -649,6 +649,22 @@ select{padding:5px 8px;}
 .hero-t-fill.g{background:#4CAF50;}.hero-t-fill.m{background:#FF9800;}.hero-t-fill.l{background:#f44336;}.hero-t-fill.n{background:rgba(253,246,238,.1);}
 /* Bloque ayer */
 .hero-ayer{padding:11px 18px 14px;border-top:1px solid rgba(253,246,238,.08);}
+.sv-tab-row{display:flex;gap:6px;padding:10px 14px 0;overflow-x:auto;scrollbar-width:none;}
+.sv-tab{padding:6px 14px;border-radius:20px;border:1px solid var(--bg3);background:var(--bg2);font-size:11px;font-weight:700;color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;}
+.sv-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.sv-pt-btn{flex:1;padding:10px;border-radius:12px;border:1.5px solid var(--bg3);background:var(--bg2);font-size:13px;font-weight:700;color:var(--text2);cursor:pointer;transition:all .15s;}
+.sv-pt-btn.active{border-color:var(--accent);background:rgba(232,114,12,.12);color:var(--accent);}
+.sv-area-btn{padding:7px 12px;border-radius:10px;border:1px solid var(--bg3);background:var(--bg2);font-size:11px;font-weight:700;color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;}
+.sv-area-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.sv-task-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--bg3);}
+.sv-task-ok{color:#81C784;font-size:16px;}
+.sv-task-no{color:#EF9A9A;font-size:16px;}
+.sv-task-pend{color:var(--text3);font-size:16px;}
+.sv-comment-box{width:100%;padding:10px 12px;background:var(--bg2);border:1.5px solid var(--bg3);border-radius:12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;resize:none;outline:none;box-sizing:border-box;transition:border-color .15s;}
+.sv-comment-box:focus{border-color:var(--accent);}
+.sv-badge-ok{background:rgba(129,199,132,.15);color:#81C784;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;}
+.sv-badge-warn{background:rgba(255,183,77,.15);color:#FFB74D;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;}
+.sv-badge-alert{background:rgba(239,154,154,.15);color:#EF9A9A;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;}
 
 /* MOOD BANNER */
 #mood-overlay{position:fixed;inset:0;background:rgba(18,8,4,.85);backdrop-filter:blur(6px);z-index:8000;display:flex;align-items:flex-end;justify-content:center;padding:0 0 24px;}
@@ -992,9 +1008,13 @@ select{padding:5px 8px;}
           <div class="cab-btn-icon"><svg viewBox="0 0 24 24"><path fill="var(--brand)" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg></div>
           <div class="cab-btn-lbl">Beneficios empleado</div>
         </div>
+        <div class="cab-btn" id="cab-btn-sv" style="display:none;" onclick="irASupervisión()">
+          <div class="cab-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+          <div class="cab-btn-lbl">Supervisión</div>
+        </div>
         <div class="cab-btn" id="cab-btn-admin" style="display:none;" onclick="irAAdmin()">
           <div class="cab-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
-          <div class="cab-btn-lbl">Dashboard admin</div>
+          <div class="cab-btn-lbl">Dashboard</div>
         </div>
       </div>
       <button class="cab-cta" onclick="irAChecklist()">
@@ -1090,6 +1110,25 @@ select{padding:5px 8px;}
       <span class="bn-label">Historial</span>
     </div>
   </div>
+</div>
+
+<!-- ══ SCREEN: SUPERVISIÓN ══════════════════════════════════ -->
+<div class="screen" id="screen-sv">
+  <div class="app-header">
+    <div class="hdr-left">
+      <div class="hdr-logo"><svg viewBox="0 0 24 24" fill="none" stroke="#FF9100" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+      <div>
+        <div class="hdr-title">Supervisión</div>
+        <div class="hdr-sub" id="sv-sub">Vista de checklist</div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-btn" onclick="goBack()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="page-content" id="sv-content" style="padding:0;"></div>
 </div>
 
 <!-- ══ SCREEN: ADMIN ══════════════════════════════════════════ -->
@@ -1503,6 +1542,39 @@ function mostrarLoginSupervisor(){
 function mostrarLoginGerente(){
   _abrirModalAccesoEspecial('gerente');
 }
+async function _mostrarComentsSV(punto){
+  // Mostrar últimas observaciones del supervisor al admin
+  const hoy=todayStr();
+  const wrapId='sv-hero-comments';
+  let wrap=document.getElementById(wrapId);
+  if(!wrap){
+    // Crear el contenedor debajo del hero-ayer
+    const ayerEl=document.querySelector('.hero-ayer');
+    if(!ayerEl) return;
+    wrap=document.createElement('div');
+    wrap.id=wrapId;
+    wrap.style.cssText='padding:8px 18px 10px;border-top:1px solid rgba(253,246,238,.08);';
+    ayerEl.parentNode.insertBefore(wrap,ayerEl.nextSibling);
+  }
+  try{
+    const snap=await _db.collection('supervisiones')
+      .where('punto','==',punto)
+      .where('fecha','==',hoy)
+      .orderBy('ts','desc').limit(3).get();
+    if(snap.empty){wrap.innerHTML='';return;}
+    let html='<div style="font-size:9px;font-weight:700;color:rgba(253,246,238,.35);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">💬 Observaciones del supervisor hoy</div>';
+    snap.forEach(doc=>{
+      const d=doc.data();
+      const areaN={admin:'Admin',cocina:'Cocina',caja:'Caja',domi:'Domi',neveras:'Neveras'}[d.area]||d.area;
+      html+=`<div style="background:rgba(255,145,0,.08);border:1px solid rgba(255,145,0,.2);border-radius:8px;padding:7px 10px;margin-bottom:5px;">
+        <div style="font-size:9px;color:rgba(253,246,238,.4);margin-bottom:2px;">${areaN} · ${d.turno||''}</div>
+        <div style="font-size:11px;color:rgba(253,246,238,.85);">${d.comentario}</div>
+      </div>`;
+    });
+    wrap.innerHTML=html;
+  }catch(e){wrap.innerHTML='';}
+}
+
 async function _cargarMoodsEquipo(punto, msgEl, rol){
   try{
     const hoy=todayStr();
@@ -1703,6 +1775,8 @@ function _completarLogin(nombre, rol){
   }
   const ab=document.getElementById('cab-btn-admin');
   if(ab) ab.style.display=(curRol==='gerente')?'flex':'none';
+  const bsv=document.getElementById('cab-btn-sv');
+  if(bsv) bsv.style.display=(curRol==='supervisor'||curRol==='gerente')?'flex':'none';
   const bp=document.getElementById('btn-pines');
   if(bp) bp.style.display=(curRol==='gerente')?'flex':'none';
   _cargarDatosHero(curPunto);
@@ -2385,6 +2459,8 @@ function updateHomeUI(){
       const alertasStr=alertasAdmin.length?' | 🔔 '+alertasAdmin.length+' área(s) pendiente(s)':'';
       // Termómetro del equipo — moods del día
       _cargarMoodsEquipo(curPunto, ayerMsg, curRol);
+      // Comentarios del supervisor
+      _mostrarComentsSV(curPunto);
       // Tiempo de pedidos ayer — de admin+cocina+domi cierre
       let tiempoPedidosMsj='';
       const areasConTiempo=['admin','cocina','domi'];
@@ -2689,6 +2765,188 @@ function startClock(){
   setInterval(tickClock,1000);
 }
 function entrarAdmin(){ irAAdmin(); }
+
+// ══════════════════════════════════════════════════════════════
+// SUPERVISIÓN — Vista activa de checklist + comentarios
+// ══════════════════════════════════════════════════════════════
+let svPunto='soacha', svArea='admin', svTurno='apertura', svFecha=null;
+
+function irASupervisión(){
+  svFecha = svFecha || todayStr();
+  showScreen('sv');
+  renderSV();
+}
+
+function renderSV(){
+  const cont = document.getElementById('sv-content');
+  const cl = getCLpunto(svPunto);
+  const areas = ['admin','cocina','caja','domi','neveras'];
+  const turnos = [{id:'apertura',ico:'☀️'},{id:'medio',ico:'🌤️'},{id:'cierre',ico:'🌙'},{id:'hora',ico:'📊'}];
+  const areaNames = {admin:'Admin',cocina:'Cocina',caja:'Caja',domi:'Domi',neveras:'Neveras'};
+
+  // Calcular % general hoy por punto
+  function pctPuntoSV(pt, fecha){
+    let tot=0,don=0;
+    areas.forEach(ar=>turnos.forEach(tu=>{
+      const pr=calcProg(pt,fecha,ar,tu.id);don+=pr.done;tot+=pr.total;
+    }));
+    return tot?Math.round(don/tot*100):null;
+  }
+
+  const hoy=todayStr();
+  const ayerD=new Date();ayerD.setDate(ayerD.getDate()-1);
+  const ayer=ayerD.toISOString().slice(0,10);
+  const dias=[{f:hoy,l:'Hoy'},{f:ayer,l:'Ayer'}];
+
+  // ── Selector punto ────────────────────────────────────────
+  let html=`<div style="padding:12px 14px 0;">
+  <div style="display:flex;gap:8px;margin-bottom:10px;">
+    <button class="sv-pt-btn${svPunto==='soacha'?' active':''}" onclick="svSetPunto('soacha')">🏠 Soacha</button>
+    <button class="sv-pt-btn${svPunto==='plaza'?' active':''}" onclick="svSetPunto('plaza')">🏬 Mi Plaza</button>
+  </div>`;
+
+  // Resumen del punto seleccionado
+  const pctHoy=pctPuntoSV(svPunto,hoy);
+  const pctAyer=pctPuntoSV(svPunto,ayer);
+  const badgeCls=pctHoy===null?'sv-badge-warn':pctHoy>=80?'sv-badge-ok':pctHoy>=50?'sv-badge-warn':'sv-badge-alert';
+  html+=`<div style="background:var(--bg2);border:1px solid var(--bg3);border-radius:12px;padding:10px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-size:12px;color:var(--text2);">Hoy <span class="${badgeCls}">${pctHoy!==null?pctHoy+'%':'Sin datos'}</span></div>
+    <div style="font-size:12px;color:var(--text3);">Ayer: ${pctAyer!==null?pctAyer+'%':'—'}</div>
+  </div>`;
+
+  // ── Selector área ─────────────────────────────────────────
+  html+=`<div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;margin-bottom:8px;">`;
+  areas.forEach(ar=>{
+    const pr=calcProg(svPunto,svFecha||hoy,ar,svTurno);
+    const dot=!pr.hay?'⚪':pr.pct>=80?'🟢':pr.pct>=50?'🟡':'🔴';
+    html+=`<button class="sv-area-btn${svArea===ar?' active':''}" onclick="svSetArea('${ar}')">${dot} ${areaNames[ar]}</button>`;
+  });
+  html+=`</div>`;
+
+  // ── Selector turno ────────────────────────────────────────
+  html+=`<div style="display:flex;gap:6px;margin-bottom:12px;">`;
+  turnos.forEach(tu=>{
+    const pr=calcProg(svPunto,svFecha||hoy,svArea,tu.id);
+    const pct=pr.hay?pr.pct+'%':'—';
+    const bg=svTurno===tu.id?'background:var(--accent);color:#fff;':'';
+    html+=`<button onclick="svSetTurno('${tu.id}')" style="flex:1;padding:8px 4px;border-radius:10px;border:1px solid var(--bg3);background:var(--bg2);cursor:pointer;font-size:11px;font-weight:700;color:var(--text3);${bg}">
+      ${tu.ico}<div style="font-size:10px;margin-top:2px;">${pct}</div></button>`;
+  });
+  html+=`</div></div>`;
+
+  // ── Lista de tareas ───────────────────────────────────────
+  const tasks=(cl[svArea]||{})[svTurno]||[];
+  const data=loadDataDate(svPunto,svFecha||hoy,svArea,svTurno);
+  const fechaLabel=(svFecha===hoy)?'Hoy':(svFecha===ayer)?'Ayer':svFecha||'Hoy';
+
+  html+=`<div style="padding:0 14px;">
+  <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">
+    ${areaNames[svArea]} · ${svTurno.charAt(0).toUpperCase()+svTurno.slice(1)} · ${fechaLabel} · ${PUNTOS[svPunto].name}
+  </div>`;
+
+  if(!tasks.length){
+    html+=`<div style="font-size:13px;color:var(--text3);padding:16px 0;">Sin tareas para esta combinación</div>`;
+  } else if(!data){
+    html+=`<div style="background:rgba(239,154,154,.1);border:1px solid rgba(239,154,154,.3);border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px;color:#EF9A9A;">⚠️ Sin registros para este turno — el área no ha iniciado el checklist</div>`;
+    tasks.forEach((tk,i)=>{
+      html+=`<div class="sv-task-row"><span class="sv-task-pend">○</span><span style="font-size:12px;color:var(--text3);">${tk.t}</span></div>`;
+    });
+  } else {
+    let ok=0,no=0;
+    tasks.forEach((tk,i)=>{
+      const s=data.tasks?.[i];
+      let done=false,val='';
+      if(tk.tipo==='check') done=s?.done;
+      else if(tk.tipo==='temp'||tk.tipo==='dinero') {done=s?.val!=='';val=s?.val?'  '+s.val+(tk.unit||''):'';}
+      else if(tk.tipo==='aseo') {done=s?.aseo>0;val=s?.aseo?'  '+['','⭐','⭐⭐','⭐⭐⭐','⭐⭐⭐⭐','⭐⭐⭐⭐⭐'][s.aseo]||'':'';}
+      else done=true;
+      if(done) ok++; else no++;
+      const icon=done?'<span class="sv-task-ok">✓</span>':'<span class="sv-task-no">✗</span>';
+      html+=`<div class="sv-task-row">${icon}<span style="font-size:12px;color:${done?'var(--text)':'var(--text3)'};">${tk.t}<span style="color:var(--text3);font-size:11px;">${val}</span></span></div>`;
+    });
+    const pct=tasks.length?Math.round(ok/tasks.length*100):0;
+    const cls=pct>=80?'sv-badge-ok':pct>=50?'sv-badge-warn':'sv-badge-alert';
+    html+=`<div style="padding:10px 0;border-top:1px solid var(--bg3);margin-top:4px;display:flex;justify-content:space-between;font-size:12px;color:var(--text3);">
+      <span>✓ ${ok} completadas · ✗ ${no} pendientes</span>
+      <span class="${cls}">${pct}%</span>
+    </div>`;
+  }
+
+  // ── Comentario del supervisor ─────────────────────────────
+  const comentKey=`sv_coment_${svPunto}_${svFecha||hoy}_${svArea}_${svTurno}`;
+  const comentExist=localStorage.getItem(comentKey)||'';
+  html+=`<div style="margin-top:14px;">
+    <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">💬 Comentario del supervisor</div>
+    <textarea id="sv-coment-inp" class="sv-comment-box" rows="3" placeholder="Ej: Cocina al 40% a la 1pm. Reforzar mise en place. Hablar con el jefe...">${comentExist}</textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button onclick="guardarComentSV()" style="flex:1;padding:10px;background:var(--accent);border:none;border-radius:10px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;">💾 Guardar observación</button>
+      <button onclick="svVerHistorial()" style="padding:10px 14px;background:var(--bg2);border:1px solid var(--bg3);border-radius:10px;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;">📋 Historial</button>
+    </div>
+    <div id="sv-coment-ok" style="font-size:11px;color:#81C784;margin-top:4px;min-height:14px;"></div>
+  </div></div>
+
+  <!-- Historial de comentarios -->
+  <div id="sv-historial-wrap" style="padding:0 14px 80px;display:none;"></div>`;
+
+  cont.innerHTML=html;
+}
+
+function svSetPunto(p){ svPunto=p; renderSV(); }
+function svSetArea(a){ svArea=a; renderSV(); }
+function svSetTurno(t){ svTurno=t; renderSV(); }
+
+async function guardarComentSV(){
+  const inp=document.getElementById('sv-coment-inp');
+  const okEl=document.getElementById('sv-coment-ok');
+  if(!inp) return;
+  const texto=inp.value.trim();
+  if(!texto){okEl.textContent='Escribe una observación primero';okEl.style.color='#EF9A9A';setTimeout(()=>okEl.textContent='',2000);return;}
+
+  const fecha=svFecha||todayStr();
+  const comentKey=`sv_coment_${svPunto}_${fecha}_${svArea}_${svTurno}`;
+  // Guardar local
+  localStorage.setItem(comentKey, texto);
+  // Guardar en Firebase
+  const docId=`${svPunto}_${fecha}_${svArea}_${svTurno}`;
+  try{
+    await _db.collection('supervisiones').doc(docId).set({
+      punto:svPunto, fecha, area:svArea, turno:svTurno,
+      comentario:texto, supervisor:curUser, ts:Date.now()
+    },{merge:true});
+    okEl.textContent='✅ Observación guardada';okEl.style.color='#81C784';
+  }catch(e){
+    okEl.textContent='⚠️ Guardado local (sin conexión)';okEl.style.color='#FFB74D';
+  }
+  setTimeout(()=>okEl.textContent='',3000);
+}
+
+async function svVerHistorial(){
+  const wrap=document.getElementById('sv-historial-wrap');
+  if(!wrap) return;
+  const visible=wrap.style.display!=='none';
+  if(visible){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  wrap.innerHTML='<div style="font-size:11px;color:var(--text3);padding:8px 0;">Cargando historial...</div>';
+  try{
+    const snap=await _db.collection('supervisiones')
+      .where('punto','==',svPunto)
+      .orderBy('ts','desc').limit(20).get();
+    if(snap.empty){wrap.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0;">Sin observaciones registradas aún.</div>';return;}
+    let html='<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Observaciones recientes</div>';
+    snap.forEach(doc=>{
+      const d=doc.data();
+      const areaN={admin:'Admin',cocina:'Cocina',caja:'Caja',domi:'Domi',neveras:'Neveras'}[d.area]||d.area;
+      const ts=d.ts?new Date(d.ts).toLocaleString('es-CO',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+      html+=`<div style="background:var(--bg2);border:1px solid var(--bg3);border-radius:10px;padding:10px 12px;margin-bottom:8px;">
+        <div style="font-size:10px;color:var(--text3);margin-bottom:4px;">${d.fecha} · ${areaN} · ${d.turno||''} · ${d.supervisor||''} · ${ts}</div>
+        <div style="font-size:12px;color:var(--text);">${d.comentario}</div>
+      </div>`;
+    });
+    wrap.innerHTML=html;
+  }catch(e){
+    wrap.innerHTML='<div style="font-size:12px;color:#EF9A9A;">Error cargando historial</div>';
+  }
+}
 
 async function abrirPanelPines(){
   const existing=document.getElementById('modal-pines');
