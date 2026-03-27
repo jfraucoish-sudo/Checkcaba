@@ -2026,13 +2026,24 @@ function calcProg(punto, fecha, area, turno){
   const data = loadDataDate(punto, fecha, area, turno);
   const tasks = (getCLpunto(punto||curPunto||'soacha')[area]||{})[turno]||[];
   if(!tasks.length) return {pct:0, done:0, total:0, hay:false};
+  const extra = (data&&data.extra)||{};
   let done=0;
-  (data&&data.tasks||[]).forEach((t,i)=>{
-    const tk=tasks[i]; if(!tk) return;
+  tasks.forEach((tk,i)=>{
+    const t=(data&&data.tasks&&data.tasks[i])||{};
     if(tk.tipo==='check'&&t.done) done++;
     else if(tk.tipo==='aseo'&&t.aseo>0) done++;
-    else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='') done++;
+    else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!==''&&t.val!==undefined) done++;
     else if(tk.tipo==='arqueo'||tk.tipo==='datofonos') done++;
+    else if(tk.tipo==='plataforma'){
+      // Estado guardado en data.extra con clave plat_area_turno_i
+      const nk='plat_'+area+'_'+turno+'_'+i;
+      if(extra[nk]&&extra[nk].done) done++;
+    }
+    else if(tk.tipo==='cierre_area'){
+      // Estado guardado en data.extra con clave area_turno_i
+      const ck=area+'_'+turno+'_'+i;
+      if(extra[ck]&&extra[ck].done) done++;
+    }
   });
   return {pct:Math.round(done/tasks.length*100), done, total:tasks.length, hay:!!(data&&data.tasks&&data.tasks.length)};
 }
@@ -3706,13 +3717,16 @@ function renderHistorialTab(){
       const tasks=(CL[area.id]||{})[turno.id]||[];
       if(!tasks.length)return;
       let done=0;
-      (d?.tasks||[]).forEach((t,i)=>{
-        const tk=tasks[i];if(!tk)return;
+      {const _ex2=(d&&d.extra)||{};
+      tasks.forEach((tk,i)=>{
+        const t=(d&&d.tasks&&d.tasks[i])||{};
         if(tk.tipo==='check'&&t.done)done++;
         else if(tk.tipo==='aseo'&&t.aseo>0)done++;
         else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')done++;
         else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')done++;
-      });
+        else if(tk.tipo==='plataforma'){const nk='plat_'+area.id+'_'+turno.id+'_'+i;if(_ex2[nk]&&_ex2[nk].done)done++;}
+        else if(tk.tipo==='cierre_area'){const ck=area.id+'_'+turno.id+'_'+i;if(_ex2[ck]&&_ex2[ck].done)done++;}
+      });}
       const p=tasks.length?Math.round(done/tasks.length*100):0;
       const col=p>=80?'#639922':p>=50?'#EF9F27':'#E24B4A';
       const signed=d?.signed;
@@ -3790,13 +3804,16 @@ function renderAdmin(){
       if(!tasks.length)return;
       const d=loadDataDateAdmin(pid,fecha,area.id,turno.id);
       tot+=tasks.length;
-      (d?.tasks||[]).forEach((t,i)=>{
-        const tk=tasks[i];if(!tk)return;
+      {const _exD=(d&&d.extra)||{};
+      tasks.forEach((tk,i)=>{
+        const t=(d&&d.tasks&&d.tasks[i])||{};
         if(tk.tipo==='check'&&t.done)don++;
         else if(tk.tipo==='aseo'&&t.aseo>0)don++;
         else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')don++;
         else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')don++;
-      });
+        else if(tk.tipo==='plataforma'){const nk='plat_'+area.id+'_'+turno.id+'_'+i;if(_exD[nk]&&_exD[nk].done)don++;}
+        else if(tk.tipo==='cierre_area'){const ck=area.id+'_'+turno.id+'_'+i;if(_exD[ck]&&_exD[ck].done)don++;}
+      });}
     }));
     return tot?Math.round(don/tot*100):null;
   }
@@ -3840,13 +3857,16 @@ function renderAdmin(){
         if(!tasks.length)return;
         const d=loadDataDateAdmin(pid,adminDate,area.id,turno.id);
         total+=tasks.length;
-        (d?.tasks||[]).forEach((t,i)=>{
-          const tk=tasks[i];if(!tk)return;
+        {const _ex=(d&&d.extra)||{};
+        tasks.forEach((tk,i)=>{
+          const t=(d&&d.tasks&&d.tasks[i])||{};
           if(tk.tipo==='check'&&t.done)done++;
           else if(tk.tipo==='aseo'&&t.aseo>0)done++;
           else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')done++;
           else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')done++;
-        });
+          else if(tk.tipo==='plataforma'){const nk='plat_'+area.id+'_'+turno.id+'_'+i;if(_ex[nk]&&_ex[nk].done)done++;}
+          else if(tk.tipo==='cierre_area'){const ck=area.id+'_'+turno.id+'_'+i;if(_ex[ck]&&_ex[ck].done)done++;}
+        });}
       });
     });
     const pct2=total?Math.round(done/total*100):0;
@@ -3873,13 +3893,16 @@ function renderAdmin(){
         const tasks=(CL[area.id]||{})[turno.id]||[];
         const d=loadDataDateAdmin(pid,adminDate,area.id,turno.id);
         total+=tasks.length;
-        (d?.tasks||[]).forEach((t,i)=>{
-          const tk=tasks[i];if(!tk)return;
+        {const _ex=(d&&d.extra)||{};
+        tasks.forEach((tk,i)=>{
+          const t=(d&&d.tasks&&d.tasks[i])||{};
           if(tk.tipo==='check'&&t.done)done++;
           else if(tk.tipo==='aseo'&&t.aseo>0)done++;
           else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')done++;
           else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')done++;
-        });
+          else if(tk.tipo==='plataforma'){const nk='plat_'+area.id+'_'+turno.id+'_'+i;if(_ex[nk]&&_ex[nk].done)done++;}
+          else if(tk.tipo==='cierre_area'){const ck=area.id+'_'+turno.id+'_'+i;if(_ex[ck]&&_ex[ck].done)done++;}
+        });}
       });
       const pp=total?Math.round(done/total*100):0;
       const col=idx===0?'#D85A30':'#534AB7';
@@ -3968,13 +3991,16 @@ function sendWspAdmin(){
         const tasks=(CL[area.id]||{})[turno.id]||[];
         const d=loadDataDateAdmin(pid,adminDate,area.id,turno.id);
         total+=tasks.length;
-        (d?.tasks||[]).forEach((t,i)=>{
-          const tk=tasks[i];if(!tk)return;
+        {const _ex=(d&&d.extra)||{};
+        tasks.forEach((tk,i)=>{
+          const t=(d&&d.tasks&&d.tasks[i])||{};
           if(tk.tipo==='check'&&t.done)done++;
           else if(tk.tipo==='aseo'&&t.aseo>0)done++;
           else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')done++;
           else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')done++;
-        });
+          else if(tk.tipo==='plataforma'){const nk='plat_'+area.id+'_'+turno.id+'_'+i;if(_ex[nk]&&_ex[nk].done)done++;}
+          else if(tk.tipo==='cierre_area'){const ck=area.id+'_'+turno.id+'_'+i;if(_ex[ck]&&_ex[ck].done)done++;}
+        });}
       });
       if(total){
         const pp=Math.round(done/total*100);
