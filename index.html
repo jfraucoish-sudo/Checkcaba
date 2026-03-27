@@ -2026,24 +2026,13 @@ function calcProg(punto, fecha, area, turno){
   const data = loadDataDate(punto, fecha, area, turno);
   const tasks = (getCLpunto(punto||curPunto||'soacha')[area]||{})[turno]||[];
   if(!tasks.length) return {pct:0, done:0, total:0, hay:false};
-  const extra = (data&&data.extra)||{};
   let done=0;
-  tasks.forEach((tk,i)=>{
-    const t=(data&&data.tasks&&data.tasks[i])||{};
+  (data&&data.tasks||[]).forEach((t,i)=>{
+    const tk=tasks[i]; if(!tk) return;
     if(tk.tipo==='check'&&t.done) done++;
     else if(tk.tipo==='aseo'&&t.aseo>0) done++;
-    else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!==''&&t.val!==undefined) done++;
+    else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='') done++;
     else if(tk.tipo==='arqueo'||tk.tipo==='datofonos') done++;
-    else if(tk.tipo==='plataforma'){
-      // Estado guardado en data.extra con clave plat_area_turno_i
-      const nk='plat_'+area+'_'+turno+'_'+i;
-      if(extra[nk]&&extra[nk].done) done++;
-    }
-    else if(tk.tipo==='cierre_area'){
-      // Estado guardado en data.extra con clave area_turno_i
-      const ck=area+'_'+turno+'_'+i;
-      if(extra[ck]&&extra[ck].done) done++;
-    }
   });
   return {pct:Math.round(done/tasks.length*100), done, total:tasks.length, hay:!!(data&&data.tasks&&data.tasks.length)};
 }
@@ -2932,14 +2921,25 @@ function renderSV(){
       html+=`<div class="sv-task-row"><span class="sv-task-pend">○</span><span style="font-size:12px;color:var(--text3);">${tk.t}</span></div>`;
     });
   } else {
+    const extra=(data&&data.extra)||{};
     let ok=0,no=0;
     tasks.forEach((tk,i)=>{
-      const s=data.tasks?.[i];
+      const s=(data.tasks&&data.tasks[i])||{};
       let done=false,val='';
-      if(tk.tipo==='check') done=s?.done;
-      else if(tk.tipo==='temp'||tk.tipo==='dinero') {done=s?.val!=='';val=s?.val?'  '+s.val+(tk.unit||''):'';}
-      else if(tk.tipo==='aseo') {done=s?.aseo>0;val=s?.aseo?'  '+['','⭐','⭐⭐','⭐⭐⭐','⭐⭐⭐⭐','⭐⭐⭐⭐⭐'][s.aseo]||'':'';}
-      else done=true;
+      if(tk.tipo==='check') done=!!s.done;
+      else if(tk.tipo==='temp'||tk.tipo==='dinero'){done=s.val!==''&&s.val!==undefined;val=s.val?'  '+s.val+(tk.unit||''):'';}
+      else if(tk.tipo==='aseo'){done=s.aseo>0;val=s.aseo?'  '+['','⭐','⭐⭐','⭐⭐⭐','⭐⭐⭐⭐','⭐⭐⭐⭐⭐'][s.aseo]||'':'';}
+      else if(tk.tipo==='arqueo'||tk.tipo==='datofonos') done=true;
+      else if(tk.tipo==='plataforma'){
+        const nk='plat_'+svArea+'_'+svTurno+'_'+i;
+        done=!!(extra[nk]&&extra[nk].done);
+        val=extra[nk]&&extra[nk].nov?' 📝':'';
+      }
+      else if(tk.tipo==='cierre_area'){
+        const ck=svArea+'_'+svTurno+'_'+i;
+        done=!!(extra[ck]&&extra[ck].done);
+      }
+      else done=false; // tipos desconocidos: pendiente
       if(done) ok++; else no++;
       const icon=done?'<span class="sv-task-ok">✓</span>':'<span class="sv-task-no">✗</span>';
       html+=`<div class="sv-task-row">${icon}<span style="font-size:12px;color:${done?'var(--text)':'var(--text3)'};">${tk.t}<span style="color:var(--text3);font-size:11px;">${val}</span></span></div>`;
@@ -3033,6 +3033,25 @@ async function svVerHistorial(){
 // PENDIENTES SUPERVISOR — ayer y antier por punto/área/turno
 // ══════════════════════════════════════════════════════════════
 let _pendFecha = null;
+const _firmasCache = {}; // { fecha: { soacha_calc, soacha_aceite, plaza_calc, plaza_aceite } }
+
+async function _cargarFirmasFecha(fecha){
+  if(_firmasCache[fecha]) return _firmasCache[fecha];
+  const result = {soacha_calc:false,soacha_aceite:false,plaza_calc:false,plaza_aceite:false,loaded:false};
+  try{
+    const snap = await _db.collection('firmas').where('fecha','==',fecha).get();
+    snap.forEach(doc=>{
+      const k = doc.id;
+      if(k.includes('soacha')&&k.includes('calc'))   result.soacha_calc=true;
+      if(k.includes('soacha')&&k.includes('aceite'))  result.soacha_aceite=true;
+      if(k.includes('plaza')&&k.includes('calc'))     result.plaza_calc=true;
+      if(k.includes('plaza')&&k.includes('aceite'))   result.plaza_aceite=true;
+    });
+    result.loaded=true;
+  }catch(e){}
+  _firmasCache[fecha]=result;
+  return result;
+}
 
 function mostrarPendientes(){
   const overlay=document.getElementById('pend-overlay');
@@ -3059,8 +3078,13 @@ function mostrarPendientes(){
     return '<button class="pend-tab'+act+'" onclick="_pendSetFecha(this,\''+d.f+'\')">'+d.l+' <span style="font-size:10px;opacity:.6;">'+d.f.slice(5)+'</span></button>';
   }).join('');
 
-  _renderPendientes(_pendFecha);
   overlay.classList.remove('hidden');
+  // Cargar firmas de Firebase para ambas fechas en background, luego renderizar
+  const body=document.getElementById('pend-body');
+  if(body) body.innerHTML='<div style="text-align:center;padding:24px;color:var(--txt3);font-size:13px;">Cargando...</div>';
+  Promise.all([_cargarFirmasFecha(ayer),_cargarFirmasFecha(antier)]).then(()=>{
+    _renderPendientes(_pendFecha);
+  });
 }
 
 function _pendSetFecha(el,f){
@@ -3122,6 +3146,29 @@ function _renderPendientes(fecha){
     } else {
       html+=rows;
     }
+  });
+
+  // ── Sección Calculadora de papas y Control de aceite ──────────
+  const firmas=_firmasCache[fecha]||{};
+  const firmasOk=firmas.loaded;
+  html+='<div class="pend-punto-lbl" style="margin-top:14px;">📋 App Papas y Aceite</div>';
+  const appItems=[
+    {key:'soacha_calc', ico:'🏠', label:'Soacha — Calculadora papas'},
+    {key:'soacha_aceite',ico:'🏠', label:'Soacha — Control de aceite'},
+    {key:'plaza_calc',  ico:'🏬', label:'Mi Plaza — Calculadora papas'},
+    {key:'plaza_aceite',ico:'🏬', label:'Mi Plaza — Control de aceite'},
+  ];
+  appItems.forEach(item=>{
+    const ok=firmas[item.key];
+    const cls=!firmasOk?'nodata':ok?'ok':'alert';
+    const label=!firmasOk?'Sin datos':ok?'✓ Firmado':'Sin firma';
+    if(ok) return; // si está ok no molesta
+    totalPend++;
+    html+='<div class="pend-item '+cls+'" style="cursor:default;">'+
+      '<div class="pend-dot '+cls+'"></div>'+
+      '<div class="pend-info" style="font-size:12px;font-weight:600;color:var(--espresso);">'+item.ico+' '+item.label+'</div>'+
+      '<div class="pend-pct '+cls+'">'+label+'</div>'+
+    '</div>';
   });
 
   if(totalPend===0){
@@ -3717,16 +3764,13 @@ function renderHistorialTab(){
       const tasks=(CL[area.id]||{})[turno.id]||[];
       if(!tasks.length)return;
       let done=0;
-      {const _ex2=(d&&d.extra)||{};
-      tasks.forEach((tk,i)=>{
-        const t=(d&&d.tasks&&d.tasks[i])||{};
+      (d?.tasks||[]).forEach((t,i)=>{
+        const tk=tasks[i];if(!tk)return;
         if(tk.tipo==='check'&&t.done)done++;
         else if(tk.tipo==='aseo'&&t.aseo>0)done++;
         else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')done++;
         else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')done++;
-        else if(tk.tipo==='plataforma'){const nk='plat_'+area.id+'_'+turno.id+'_'+i;if(_ex2[nk]&&_ex2[nk].done)done++;}
-        else if(tk.tipo==='cierre_area'){const ck=area.id+'_'+turno.id+'_'+i;if(_ex2[ck]&&_ex2[ck].done)done++;}
-      });}
+      });
       const p=tasks.length?Math.round(done/tasks.length*100):0;
       const col=p>=80?'#639922':p>=50?'#EF9F27':'#E24B4A';
       const signed=d?.signed;
@@ -3804,16 +3848,13 @@ function renderAdmin(){
       if(!tasks.length)return;
       const d=loadDataDateAdmin(pid,fecha,area.id,turno.id);
       tot+=tasks.length;
-      {const _exD=(d&&d.extra)||{};
-      tasks.forEach((tk,i)=>{
-        const t=(d&&d.tasks&&d.tasks[i])||{};
+      (d?.tasks||[]).forEach((t,i)=>{
+        const tk=tasks[i];if(!tk)return;
         if(tk.tipo==='check'&&t.done)don++;
         else if(tk.tipo==='aseo'&&t.aseo>0)don++;
         else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')don++;
         else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')don++;
-        else if(tk.tipo==='plataforma'){const nk='plat_'+area.id+'_'+turno.id+'_'+i;if(_exD[nk]&&_exD[nk].done)don++;}
-        else if(tk.tipo==='cierre_area'){const ck=area.id+'_'+turno.id+'_'+i;if(_exD[ck]&&_exD[ck].done)don++;}
-      });}
+      });
     }));
     return tot?Math.round(don/tot*100):null;
   }
@@ -3857,16 +3898,13 @@ function renderAdmin(){
         if(!tasks.length)return;
         const d=loadDataDateAdmin(pid,adminDate,area.id,turno.id);
         total+=tasks.length;
-        {const _ex=(d&&d.extra)||{};
-        tasks.forEach((tk,i)=>{
-          const t=(d&&d.tasks&&d.tasks[i])||{};
+        (d?.tasks||[]).forEach((t,i)=>{
+          const tk=tasks[i];if(!tk)return;
           if(tk.tipo==='check'&&t.done)done++;
           else if(tk.tipo==='aseo'&&t.aseo>0)done++;
           else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')done++;
           else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')done++;
-          else if(tk.tipo==='plataforma'){const nk='plat_'+area.id+'_'+turno.id+'_'+i;if(_ex[nk]&&_ex[nk].done)done++;}
-          else if(tk.tipo==='cierre_area'){const ck=area.id+'_'+turno.id+'_'+i;if(_ex[ck]&&_ex[ck].done)done++;}
-        });}
+        });
       });
     });
     const pct2=total?Math.round(done/total*100):0;
@@ -3893,16 +3931,13 @@ function renderAdmin(){
         const tasks=(CL[area.id]||{})[turno.id]||[];
         const d=loadDataDateAdmin(pid,adminDate,area.id,turno.id);
         total+=tasks.length;
-        {const _ex=(d&&d.extra)||{};
-        tasks.forEach((tk,i)=>{
-          const t=(d&&d.tasks&&d.tasks[i])||{};
+        (d?.tasks||[]).forEach((t,i)=>{
+          const tk=tasks[i];if(!tk)return;
           if(tk.tipo==='check'&&t.done)done++;
           else if(tk.tipo==='aseo'&&t.aseo>0)done++;
           else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')done++;
           else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')done++;
-          else if(tk.tipo==='plataforma'){const nk='plat_'+area.id+'_'+turno.id+'_'+i;if(_ex[nk]&&_ex[nk].done)done++;}
-          else if(tk.tipo==='cierre_area'){const ck=area.id+'_'+turno.id+'_'+i;if(_ex[ck]&&_ex[ck].done)done++;}
-        });}
+        });
       });
       const pp=total?Math.round(done/total*100):0;
       const col=idx===0?'#D85A30':'#534AB7';
@@ -3991,16 +4026,13 @@ function sendWspAdmin(){
         const tasks=(CL[area.id]||{})[turno.id]||[];
         const d=loadDataDateAdmin(pid,adminDate,area.id,turno.id);
         total+=tasks.length;
-        {const _ex=(d&&d.extra)||{};
-        tasks.forEach((tk,i)=>{
-          const t=(d&&d.tasks&&d.tasks[i])||{};
+        (d?.tasks||[]).forEach((t,i)=>{
+          const tk=tasks[i];if(!tk)return;
           if(tk.tipo==='check'&&t.done)done++;
           else if(tk.tipo==='aseo'&&t.aseo>0)done++;
           else if((tk.tipo==='temp'||tk.tipo==='dinero')&&t.val!=='')done++;
           else if(tk.tipo==='arqueo'||tk.tipo==='datofonos')done++;
-          else if(tk.tipo==='plataforma'){const nk='plat_'+area.id+'_'+turno.id+'_'+i;if(_ex[nk]&&_ex[nk].done)done++;}
-          else if(tk.tipo==='cierre_area'){const ck=area.id+'_'+turno.id+'_'+i;if(_ex[ck]&&_ex[ck].done)done++;}
-        });}
+        });
       });
       if(total){
         const pp=Math.round(done/total*100);
