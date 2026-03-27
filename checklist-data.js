@@ -343,6 +343,23 @@ function getCLpunto(punto){
     });
   }
 
+  // Domi: ajustar según punto (plaza no tiene salón)
+  if(esHogares){
+    // Apertura: sin "Realizar apertura del salón" ni "Aseo salón apertura"
+    cl.domi.apertura = cl.domi.apertura.filter(t=>{
+      if(t.t && t.t.toLowerCase().includes('apertura del sal')) return false;
+      if(t.label && t.label.toLowerCase().includes('aseo salón')) return false;
+      return true;
+    });
+    // Cierre: sin "Aseo final salón", "Aseo final baños" ni "Aseo salón de atrás"
+    cl.domi.cierre = cl.domi.cierre.filter(t=>{
+      if(t.label && t.label.toLowerCase() === 'aseo salón') return false;
+      if(t.label && t.label.toLowerCase() === 'aseo baños') return false;
+      if(t.t && t.t.toLowerCase().includes('salón')) return false;
+      return true;
+    });
+  }
+
   return cl;
 }
 
