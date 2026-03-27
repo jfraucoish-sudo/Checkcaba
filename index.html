@@ -794,6 +794,36 @@ select{padding:5px 8px;}
   0%   { transform: translateX(0); }
   100% { transform: translateX(-100%); }
 }
+
+/* ── OVERLAY PENDIENTES SUPERVISOR ── */
+#pend-overlay{position:fixed;inset:0;background:rgba(18,8,4,.88);backdrop-filter:blur(5px);z-index:9000;display:flex;align-items:flex-end;justify-content:center;padding:0;}
+#pend-overlay.hidden{display:none;}
+#pend-sheet{background:var(--crema);border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;}
+.pend-hdr{padding:18px 18px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.pend-hdr-title{font-size:16px;font-weight:800;color:var(--espresso);}
+.pend-hdr-sub{font-size:11px;color:var(--txt3);margin-top:2px;}
+.pend-close{width:32px;height:32px;background:var(--bg3);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--txt2);}
+.pend-tabs{display:flex;gap:6px;padding:12px 18px 0;flex-shrink:0;}
+.pend-tab{flex:1;padding:8px 4px;border-radius:10px;border:1.5px solid var(--bg3);background:var(--bg2);cursor:pointer;font-size:12px;font-weight:700;color:var(--txt3);text-align:center;transition:all .15s;}
+.pend-tab.active{background:var(--espresso);border-color:var(--espresso);color:var(--crema);}
+.pend-body{flex:1;overflow-y:auto;padding:12px 18px 32px;}
+.pend-punto-lbl{font-size:10px;font-weight:800;color:var(--txt3);text-transform:uppercase;letter-spacing:.7px;margin:10px 0 6px;}
+.pend-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:11px;margin-bottom:5px;border:1.5px solid;}
+.pend-item.ok{background:#EAF3DE;border-color:#97C459;}
+.pend-item.warn{background:#FAEEDA;border-color:#FAC775;}
+.pend-item.alert{background:#FCEBEB;border-color:#F7C1C1;}
+.pend-item.nodata{background:var(--bg2);border-color:var(--bg3);}
+.pend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.pend-dot.ok{background:#3B6D11;}.pend-dot.warn{background:#BA7517;}.pend-dot.alert{background:#A32D2D;}.pend-dot.nodata{background:#999;}
+.pend-info{flex:1;}
+.pend-area{font-size:12px;font-weight:700;color:var(--espresso);}
+.pend-turno{font-size:10px;color:var(--txt3);margin-top:1px;}
+.pend-pct{font-size:14px;font-weight:800;}
+.pend-pct.ok{color:#3B6D11;}.pend-pct.warn{color:#BA7517;}.pend-pct.alert{color:#A32D2D;}.pend-pct.nodata{color:#999;}
+.pend-empty{text-align:center;padding:28px 0;font-size:13px;color:var(--txt3);}
+.pend-sv-btn{margin-top:8px;width:100%;padding:11px;background:var(--naranja);border:none;border-radius:12px;color:var(--espresso);font-size:12px;font-weight:800;cursor:pointer;letter-spacing:.3px;}
+.hero-pend-btn{margin-top:8px;width:100%;padding:9px 12px;background:rgba(253,246,238,.1);border:1px solid rgba(253,246,238,.2);border-radius:11px;color:rgba(253,246,238,.75);font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;font-family:'DM Sans',sans-serif;}
+.hero-pend-btn:active{background:rgba(253,246,238,.18);}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -870,6 +900,21 @@ select{padding:5px 8px;}
       </div>
     </div>
     </div>
+  </div>
+</div>
+
+<!-- ══ OVERLAY: PENDIENTES SUPERVISOR ════════════════════════════ -->
+<div id="pend-overlay" class="hidden" onclick="if(event.target===this)cerrarPendientes()">
+  <div id="pend-sheet">
+    <div class="pend-hdr">
+      <div>
+        <div class="pend-hdr-title">📋 Pendientes del equipo</div>
+        <div class="pend-hdr-sub" id="pend-hdr-sub">Áreas que no llegaron al 100%</div>
+      </div>
+      <button class="pend-close" onclick="cerrarPendientes()">✕</button>
+    </div>
+    <div class="pend-tabs" id="pend-tabs"></div>
+    <div class="pend-body" id="pend-body"></div>
   </div>
 </div>
 
@@ -2353,6 +2398,15 @@ function updateHomeUI(){
       }
 
       wrap.innerHTML=html;
+      // ── Botón Pendientes en el bloque hero-ayer ───────────────
+      const ayerBlock=document.getElementById('hero-ayer-block');
+      if(ayerBlock&&!ayerBlock.querySelector('.hero-pend-btn')){
+        const pendBtn=document.createElement('button');
+        pendBtn.className='hero-pend-btn';
+        pendBtn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Ver pendientes ayer / antier';
+        pendBtn.onclick=mostrarPendientes;
+        ayerBlock.appendChild(pendBtn);
+      }
       // Cargar firmas app papa en background
       _heroCargarFirmas(ayerMsg, alertas);
       return;
@@ -2961,6 +3015,122 @@ async function svVerHistorial(){
   }catch(e){
     wrap.innerHTML='<div style="font-size:12px;color:#EF9A9A;">Error cargando historial</div>';
   }
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// PENDIENTES SUPERVISOR — ayer y antier por punto/área/turno
+// ══════════════════════════════════════════════════════════════
+let _pendFecha = null;
+
+function mostrarPendientes(){
+  const overlay=document.getElementById('pend-overlay');
+  const tabsEl=document.getElementById('pend-tabs');
+  const subEl=document.getElementById('pend-hdr-sub');
+  if(!overlay) return;
+
+  const hoy=todayStr();
+  const ayerD=new Date(); ayerD.setDate(ayerD.getDate()-1);
+  const ayer=ayerD.toISOString().slice(0,10);
+  const antierD=new Date(); antierD.setDate(antierD.getDate()-2);
+  const antier=antierD.toISOString().slice(0,10);
+
+  const dias=[
+    {f:ayer,   l:'Ayer'},
+    {f:antier, l:'Antier'},
+  ];
+
+  if(!_pendFecha) _pendFecha=ayer;
+
+  // Tabs
+  tabsEl.innerHTML=dias.map(function(d){
+    var act=d.f===_pendFecha?' active':'';
+    return '<button class="pend-tab'+act+'" onclick="_pendSetFecha(this,\''+d.f+'\')">'+d.l+' <span style="font-size:10px;opacity:.6;">'+d.f.slice(5)+'</span></button>';
+  }).join('');
+
+  _renderPendientes(_pendFecha);
+  overlay.classList.remove('hidden');
+}
+
+function _pendSetFecha(el,f){
+  _pendFecha=f;
+  document.querySelectorAll('.pend-tab').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  _renderPendientes(f);
+}
+
+function _renderPendientes(fecha){
+  const body=document.getElementById('pend-body');
+  if(!body) return;
+
+  const puntos=[{id:'soacha',ico:'🏠',name:'Soacha'},{id:'plaza',ico:'🏬',name:'Mi Plaza'}];
+  const areas=['admin','cocina','caja','domi','neveras'];
+  const turnos=[
+    {id:'apertura',name:'☀️ Apertura'},
+    {id:'medio',   name:'🌤️ T. Medio'},
+    {id:'cierre',  name:'🌙 Cierre'},
+  ];
+  const areaNombres={admin:'Admin / Cajero',cocina:'Cocina',caja:'Caja',domi:'Domiciliarios',neveras:'Neveras / Frío'};
+
+  let html='';
+  let totalPend=0;
+
+  puntos.forEach(pt=>{
+    let rows='';
+    areas.forEach(ar=>{
+      turnos.forEach(tu=>{
+        const pr=calcProg(pt.id,fecha,ar,tu.id);
+        if(!pr.total) return; // sin tareas para esta combinación
+        let cls, label;
+        if(!pr.hay){
+          cls='nodata'; label='Sin registros';
+        } else if(pr.pct===100){
+          cls='ok'; label='100%';
+        } else if(pr.pct>=60){
+          cls='warn'; label=pr.pct+'%';
+        } else {
+          cls='alert'; label=pr.pct+'%';
+        }
+        if(cls==='ok') return; // solo mostrar los que NO llegaron a 100%
+        totalPend++;
+        rows+='<div class="pend-item '+cls+'" onclick="_pendIrASV(this)" data-pt="'+pt.id+'" data-ar="'+ar+'" data-tu="'+tu.id+'" data-fecha="'+fecha+'" style="cursor:pointer;">'+
+          '<div class="pend-dot '+cls+'"></div>'+
+          '<div class="pend-info">'+
+            '<div class="pend-area">'+areaNombres[ar]+'</div>'+
+            '<div class="pend-turno">'+tu.name+'</div>'+
+          '</div>'+
+          '<div class="pend-pct '+cls+'">'+label+'</div>'+
+          '<div style="font-size:10px;color:var(--txt3);margin-left:4px;">›</div>'+
+        '</div>';
+      });
+    });
+
+    html+='<div class="pend-punto-lbl">'+pt.ico+' '+pt.name+'</div>';
+    if(!rows){
+      html+='<div style="background:#EAF3DE;border:1.5px solid #97C459;border-radius:11px;padding:10px 14px;margin-bottom:5px;font-size:12px;font-weight:700;color:#3B6D11;">✅ Todo completado al 100%</div>';
+    } else {
+      html+=rows;
+    }
+  });
+
+  if(totalPend===0){
+    html='<div class="pend-empty">🎉 ¡Todo al 100%!<br><span style="font-size:11px;">Ambos puntos completaron todos los turnos.</span></div>';
+  }
+
+  body.innerHTML=html;
+}
+
+function _pendIrASV(el){
+  // Lee parámetros de data attributes — evita problemas de comillas inline
+  const d=el.dataset;
+  svPunto=d.pt; svArea=d.ar; svTurno=d.tu; svFecha=d.fecha;
+  cerrarPendientes();
+  setTimeout(function(){ irASupervisión(); }, 120);
+}
+
+function cerrarPendientes(){
+  const overlay=document.getElementById('pend-overlay');
+  if(overlay) overlay.classList.add('hidden');
 }
 
 async function abrirPanelPines(){
