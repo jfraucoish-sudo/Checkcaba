@@ -1426,7 +1426,7 @@ async function onNombreChange(nombre){
 
   if(puntoDetectado){
     selPunto=puntoDetectado;
-    if(puntoEl) puntoEl.textContent=puntoNombres[puntoDetectado]||puntoDetectado;
+    if(puntoEl) puntoEl.innerHTML=puntoNombres[puntoDetectado]||puntoDetectado;
     if(rolEl) rolEl.textContent=rolLabels[rolDetectado]||rolDetectado;
     if(infoEl) infoEl.style.display='block';
     if(manualEl) manualEl.style.display='none';
@@ -2599,7 +2599,7 @@ function updateHomeUI(){
       }
     }
 
-    if(ayerMsg){ayerMsg.textContent=msgFinal;ayerMsg.className='hero-ayer-msg '+clsFinal;}
+    if(ayerMsg){ayerMsg.innerHTML=msgFinal;ayerMsg.className='hero-ayer-msg '+clsFinal;}
   }
 
   const adminBtn=document.getElementById('cab-btn-admin');
