@@ -1613,7 +1613,7 @@ async function _cargarMoodsEquipo(punto, msgEl, rol){
     const hoy=todayStr();
     // Supervisor: cargar ambos puntos por separado (evita índice compuesto)
     const puntos=punto?[punto]:['soacha','plaza'];
-    const moodLabels={5:{e:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>'},4:{e:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg>'},3:{e:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg>'},2:{e:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg>'},1:{e:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg>️'}};
+    const moodLabels={5:{e:'🚀'},4:{e:'😊'},3:{e:'🔋'},2:{e:'🤯'},1:{e:'🌧️'}};
     const ptNames={soacha:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Soacha',plaza:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><rect x="4" y="2" width="16" height="20"/><line x1="9" y1="7" x2="9.01" y2="7"/><line x1="15" y1="7" x2="15.01" y2="7"/><line x1="9" y1="12" x2="9.01" y2="12"/></svg> Mi Plaza'};
 
     // Construir resumen por punto separado
@@ -1667,18 +1667,18 @@ async function _cargarMoodsEquipo(punto, msgEl, rol){
 function mostrarMoodBanner(){
   if(document.getElementById('mood-overlay')) return;
   const moods=[
-    {emoji:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>',lbl:'Con toda',val:5,color:'#FF9800'},
-    {emoji:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg>',lbl:'Bien',val:4,color:'#4CAF50'},
-    {emoji:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg>',lbl:'Cansado',val:3,color:'#2196F3'},
-    {emoji:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg>',lbl:'Estresado',val:2,color:'#9C27B0'},
-    {emoji:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg>️',lbl:'Difícil',val:1,color:'#607D8B'},
+    {emoji:'🚀',lbl:'Con toda',val:5,color:'#FF9800'},
+    {emoji:'😊',lbl:'Bien',val:4,color:'#4CAF50'},
+    {emoji:'🔋',lbl:'Cansado',val:3,color:'#2196F3'},
+    {emoji:'🤯',lbl:'Estresado',val:2,color:'#9C27B0'},
+    {emoji:'🌧️',lbl:'Difícil',val:1,color:'#607D8B'},
   ];
   const ov=document.createElement('div');
   ov.id='mood-overlay';
   const nombre=curUser.split(' ')[0];
   ov.innerHTML=`
   <div class="mood-card">
-    <div class="mood-title">¿Cómo llegás hoy, ${nombre}? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><path d="M18 11V6a2 2 0 00-4 0v5"/><path d="M14 10V4a2 2 0 00-4 0v2"/><path d="M10 10.5V6a2 2 0 00-4 0v8"/><path d="M6 14a4 4 0 00-2 3.5V19a4 4 0 004 4h4a6 6 0 006-6v-2a2 2 0 00-4 0v2"/></svg></div>
+    <div class="mood-title">¿Cómo llegás hoy, ${nombre}? 👋</div>
     <div class="mood-sub">Toca cómo te sientes.</div>
     <div class="mood-grid">
       ${moods.map(m=>`
@@ -1865,7 +1865,7 @@ function mostrarPinModal(nombre, rol){
 
   const title=document.createElement('div');
   title.style.cssText='font-size:15px;font-weight:700;color:var(--txt);margin-bottom:4px;';
-  title.textContent=(iconos[rol]||'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>')+' '+(titulos[rol]||'Acceso');
+  title.innerHTML=(iconos[rol]||'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>')+' '+(titulos[rol]||'Acceso');
 
   // Selector de punto si no hay punto detectado
   let _modalPunto = selPunto;
