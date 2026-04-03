@@ -1311,7 +1311,7 @@ function showFbStatus(ok){
     el.style.cssText='position:fixed;bottom:70px;right:12px;font-size:10px;padding:3px 8px;border-radius:8px;z-index:200;font-weight:600;transition:opacity .5s;';
     document.body.appendChild(el);
   }
-  el.textContent=ok?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg>️ Sincronizado':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg> Sin conexión';
+  el.innerHTML=ok?'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg>️ Sincronizado':'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg> Sin conexión';
   el.style.background=ok?'rgba(59,109,17,.2)':'rgba(163,45,45,.2)';
   el.style.color=ok?'#3B6D11':'#A32D2D';
   el.style.opacity='1';
@@ -2002,7 +2002,7 @@ async function _heroCargarFirmas(ayerMsgEl, alertasPrevias){
       ayerMsgEl.innerHTML=alertas.map(a=>'<div style="margin-bottom:4px;">'+a+'</div>').join('');
       ayerMsgEl.className='hero-ayer-msg alert';
     } else {
-      ayerMsgEl.textContent='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Ambos puntos al día. ¡El equipo va bien, sigue así!';
+      ayerMsgEl.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Ambos puntos al día. ¡El equipo va bien, sigue así!';
       ayerMsgEl.className='hero-ayer-msg ok';
     }
   }
@@ -2178,12 +2178,12 @@ function updateHomeUI(){
       const monIdx=new Date().getDay()===0?6:new Date().getDay()-1;
       const diaHoy=horSem[curUser][monIdx];
       if(diaHoy&&diaHoy.tipo==='descanso'){
-        if(el('cab-horario-hero')) el('cab-horario-hero').textContent='<svg width="10" height="10" viewBox="0 0 24 24" fill="#eab308" stroke="none" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg> Día de descanso';
+        if(el('cab-horario-hero')) el('cab-horario-hero').innerHTML='<svg width="10" height="10" viewBox="0 0 24 24" fill="#eab308" stroke="none" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg> Día de descanso';
       } else if(diaHoy&&diaHoy.entrada){
         let txt=diaHoy.entrada;
         if(diaHoy.pico_ini) txt+=' ('+diaHoy.pico_ini+'–'+diaHoy.pico_fin+')';
         txt+=' → '+diaHoy.cierre;
-        if(el('cab-horario-hero')) el('cab-horario-hero').textContent='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg> '+txt;
+        if(el('cab-horario-hero')) el('cab-horario-hero').innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><circle cx="12" cy="12" r="10"/></svg> '+txt;
       }
     }
   } catch(e){}
@@ -2980,11 +2980,11 @@ async function guardarComentSV(){
       punto:svPunto, fecha, area:svArea, turno:svTurno,
       comentario:texto, supervisor:curUser, ts:Date.now()
     },{merge:true});
-    okEl.textContent='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Observación guardada';okEl.style.color='#81C784';
+    okEl.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Observación guardada';okEl.style.color='#81C784';
   }catch(e){
-    okEl.textContent='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>️ Guardado local (sin conexión)';okEl.style.color='#FFB74D';
+    okEl.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>️ Guardado local (sin conexión)';okEl.style.color='#FFB74D';
   }
-  setTimeout(()=>okEl.textContent='',3000);
+  setTimeout(()=>okEl.innerHTML='',3000);
 }
 
 async function svVerHistorial(){
@@ -3236,7 +3236,7 @@ async function guardarPinIndividual(key){
   if(!inp) return;
   const val=inp.value.trim();
   if(val.length!==4){
-    if(okEl){okEl.textContent='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>️ Debe ser 4 dígitos';okEl.style.color='#FF6B55';}
+    if(okEl){okEl.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>️ Debe ser 4 dígitos';okEl.style.color='#FF6B55';}
     return;
   }
   try{
@@ -3244,10 +3244,10 @@ async function guardarPinIndividual(key){
     await _db.collection('config').doc('pins').set({[key]:val},{merge:true});
     // Actualizar en memoria
     _PINS[key]=val;
-    if(okEl){okEl.textContent='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Guardado';okEl.style.color='#4CAF50';}
-    setTimeout(()=>{if(okEl)okEl.textContent='';},2500);
+    if(okEl){okEl.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Guardado';okEl.style.color='#4CAF50';}
+    setTimeout(()=>{if(okEl)okEl.innerHTML='';},2500);
   }catch(e){
-    if(okEl){okEl.textContent='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Error al guardar';okEl.style.color='#FF6B55';}
+    if(okEl){okEl.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Error al guardar';okEl.style.color='#FF6B55';}
   }
 }
 function goBack(){if(curUser){showScreen('home');}else{showScreen('login');}}
